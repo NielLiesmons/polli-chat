@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.polli.core"
+    namespace = "com.polli.domain"
     compileSdk = 36
 
     defaultConfig {
@@ -23,14 +23,10 @@ kotlin {
             kotlinOptions.jvmTarget = "17"
         }
     }
-    jvm()
 
     sourceSets {
-        commonTest.dependencies {
-            implementation(kotlin("test"))
-        }
-        val jvmTest by getting {
-            dependsOn(commonTest.get())
+        commonMain.dependencies {
+            implementation(project(":polli-core"))
         }
     }
 }

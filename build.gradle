@@ -5,6 +5,9 @@ plugins {
     id 'org.jetbrains.kotlin.android' version '2.0.21'
     id 'org.jetbrains.kotlin.plugin.compose' version '2.0.21'
     id 'org.jetbrains.kotlin.jvm' version '2.0.21' apply false
+    id 'org.jetbrains.kotlin.multiplatform' version '2.0.21' apply false
+    id 'com.android.library' version '8.11.1' apply false
+    id 'org.jetbrains.compose' version '1.7.1' apply false
 }
 
 repositories {
@@ -204,6 +207,8 @@ dependencies {
     implementation composeBom
     androidTestImplementation composeBom
     implementation project(':polli-core')
+    implementation project(':polli-domain')
+    implementation project(':polli-ui')
     implementation 'androidx.compose.ui:ui'
     implementation 'androidx.compose.ui:ui-tooling-preview'
     implementation 'androidx.compose.material3:material3'

@@ -3,6 +3,7 @@ package com.polli.android.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
@@ -16,6 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.polli.android.theme.LabDimens
 import androidx.compose.ui.viewinterop.AndroidView
 import com.b44t.messenger.DcContact
 import com.b44t.messenger.DcContext
@@ -103,25 +105,43 @@ fun SelfAvatar(
 fun RoundBackButton(
     onClick: () -> Unit,
     hazeState: HazeState? = null,
+    iconSize: Dp = 14.dp,
+    iconEndPadding: Dp = 0.dp,
 ) {
+    val buttonSize = LabDimens.DetailBackButtonSize
+    val iconModifier = if (iconEndPadding > 0.dp) {
+        Modifier.padding(end = iconEndPadding)
+    } else {
+        Modifier
+    }
     if (hazeState != null) {
         FrostedCircleButton(
             onClick = onClick,
             hazeState = hazeState,
-            modifier = Modifier.size(36.dp),
+            modifier = Modifier.size(buttonSize),
         ) {
-            LabIcon(LabIconName.ChevronLeft, 14.dp, com.polli.android.theme.LabColors.White33)
+            LabIcon(
+                LabIconName.ChevronLeft,
+                iconSize,
+                com.polli.android.theme.LabColors.White33,
+                modifier = iconModifier,
+            )
         }
     } else {
         Box(
             modifier = Modifier
-                .size(36.dp)
+                .size(buttonSize)
                 .clip(CircleShape)
                 .background(com.polli.android.theme.LabColors.Gray66)
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center,
         ) {
-            LabIcon(LabIconName.ChevronLeft, 14.dp, com.polli.android.theme.LabColors.White33)
+            LabIcon(
+                LabIconName.ChevronLeft,
+                iconSize,
+                com.polli.android.theme.LabColors.White33,
+                modifier = iconModifier,
+            )
         }
     }
 }

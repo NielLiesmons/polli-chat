@@ -98,7 +98,7 @@ private fun ReactionPill(
                 bottom = 3.dp,
             ),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(2.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(text = reaction.emoji, fontSize = 15.sp, lineHeight = 15.sp)
         if (reaction.count <= 3) {

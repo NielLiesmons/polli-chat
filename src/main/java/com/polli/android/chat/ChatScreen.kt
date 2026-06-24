@@ -19,6 +19,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
@@ -46,7 +50,8 @@ import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabDimens
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.ChatFeedEdgeGradients
-import com.polli.android.ui.RoundBackButton
+import androidx.compose.foundation.layout.absoluteOffset
+import com.polli.android.ui.LabAvatar
 import com.polli.android.ui.rememberLazyListShowTopFadeDerived
 import com.polli.android.ui.rememberPolliHazeState
 import dev.chrisbanes.haze.hazeSource
@@ -54,6 +59,9 @@ import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 import org.thoughtcrime.securesms.AllMediaActivity
 import org.thoughtcrime.securesms.R
+
+internal val LocalIncomingAvatarSticky = staticCompositionLocalOf<IncomingAvatarStickyState?> { null }
+internal val LocalChatDisplayItems = staticCompositionLocalOf<List<FeedItem>> { emptyList() }
 
 @Composable
 fun ChatScreen(
@@ -135,6 +143,8 @@ fun ChatScreen(
             userScrollEnabled = false,
         ) { page ->
             when (tabs[page]) {
+                ChatDetailTab.Search -> ChatTabPlaceholder("Search — coming soon")
+                ChatDetailTab.Activity -> ChatTabPlaceholder("Activity — coming soon")
                 ChatDetailTab.Chat -> ChatFeedPage(
                     viewModel = viewModel,
                     listState = listState,
@@ -281,6 +291,9 @@ private fun ChatFeedPage(
     val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
     val displayItems = remember(viewModel.feedItems) { viewModel.feedItems.asReversed() }
     var prevItemCount by remember { mutableIntStateOf(0) }
+    val avatarStickyState = remember { IncomingAvatarStickyState() }
+    val density = LocalDensity.current
+    val bottomPadPx = with(density) { (composerClearance + imeBottom).toPx() }
 
     LaunchedEffect(viewModel.reloadGeneration, displayItems.size) {
         if (displayItems.isEmpty()) {
@@ -313,32 +326,64 @@ private fun ChatFeedPage(
         prevItemCount = displayItems.size
     }
 
+    var feedRootTopLeft by remember { mutableStateOf(androidx.compose.ui.geometry.Offset.Zero) }
+
     Box(modifier = Modifier.fillMaxSize().hazeSource(state = hazeState)) {
-        LazyColumn(
-            state = listState,
-            reverseLayout = true,
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                top = headerClearance,
-                bottom = composerClearance + imeBottom,
-            ),
+        val stickyOverlay = avatarStickyState.overlay(listState, displayItems)
+        CompositionLocalProvider(
+            LocalIncomingAvatarSticky provides avatarStickyState,
+            LocalChatDisplayItems provides displayItems,
         ) {
-            itemsIndexed(
-                items = displayItems,
-                key = { _, item ->
-                    when (item) {
-                        is FeedItem.DayMarker -> "day-${item.label}"
-                        is FeedItem.Message -> "msg-${item.message.id}"
-                    }
-                },
-            ) { _, item ->
-                ChatFeedItem(
-                    item = item,
-                    viewModel = viewModel,
-                    onQuoteClick = onScrollToMessage,
-                    onOpenMessageOverlay = onOpenMessageOverlay,
-                )
+            LazyColumn(
+                state = listState,
+                reverseLayout = true,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .onGloballyPositioned { coords ->
+                        val root = coords.boundsInRoot()
+                        feedRootTopLeft = androidx.compose.ui.geometry.Offset(root.left, root.top)
+                        avatarStickyState.updateFeedAnchor(
+                            rootLeft = root.left,
+                            stickyBottom = root.bottom - bottomPadPx,
+                        )
+                    },
+                contentPadding = PaddingValues(
+                    top = headerClearance,
+                    bottom = composerClearance + imeBottom,
+                ),
+            ) {
+                itemsIndexed(
+                    items = displayItems,
+                    key = { _, item ->
+                        when (item) {
+                            is FeedItem.DayMarker -> "day-${item.label}"
+                            is FeedItem.Message -> "msg-${item.message.id}"
+                        }
+                    },
+                ) { _, item ->
+                    ChatFeedItem(
+                        item = item,
+                        viewModel = viewModel,
+                        listState = listState,
+                        onQuoteClick = onScrollToMessage,
+                        onOpenMessageOverlay = onOpenMessageOverlay,
+                    )
+                }
             }
+        }
+        stickyOverlay?.let { overlay ->
+            LabAvatar(
+                name = overlay.authorName,
+                seed = overlay.authorKey,
+                size = LabDimens.ChatAvatarSize,
+                contactId = overlay.authorId,
+                modifier = Modifier
+                    .zIndex(2f)
+                    .absoluteOffset(
+                        x = with(density) { (overlay.rootTopLeftX - feedRootTopLeft.x).toDp() },
+                        y = with(density) { (overlay.rootTopLeftY - feedRootTopLeft.y).toDp() },
+                    ),
+            )
         }
     }
 }
@@ -347,6 +392,7 @@ private fun ChatFeedPage(
 private fun ChatFeedItem(
     item: FeedItem,
     viewModel: ChatViewModel,
+    listState: androidx.compose.foundation.lazy.LazyListState,
     onQuoteClick: (Int) -> Unit,
     onOpenMessageOverlay: (ChatMessage) -> Unit,
 ) {
@@ -382,6 +428,7 @@ private fun ChatFeedItem(
                     highlighted = viewModel.highlightId == msg.id,
                     reactionReloadKey = viewModel.reloadGeneration,
                     pulseEmoji = pulseEmoji,
+                    listState = listState,
                     onSwipeReply = { viewModel.setReply(msg) },
                     onSwipeOptions = { onOpenMessageOverlay(msg) },
                     onClick = { onOpenMessageOverlay(msg) },
@@ -401,41 +448,14 @@ private fun SimpleChatHeader(
     hazeState: dev.chrisbanes.haze.HazeState? = null,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(
-                top = AppInsets.statusBarTop() + 6.dp,
-                start = LabDimens.HomeBarPadding,
-                end = LabDimens.HomeBarPadding,
-                bottom = 6.dp,
-            ),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        RoundBackButton(onClick = onBack, hazeState = hazeState)
-        Spacer(modifier = Modifier.width(12.dp))
-        com.polli.android.ui.LabAvatar(
-            name = title,
-            seed = seed,
-            size = LabDimens.DetailBackButtonSize,
-            chatId = chatId,
-        )
-        Spacer(modifier = Modifier.width(LabDimens.ChatAvatarGap))
-        Text(
-            text = title,
-            color = LabColors.White85,
-            style = MaterialTheme.typography.titleSmall,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
-        )
-        ChatHeaderIconButton(
-            icon = com.polli.android.icons.LabIconName.Bell,
-            iconSize = 16.dp,
-            onClick = {},
-            hazeState = hazeState,
-        )
-    }
+    ChatHeaderTitleRow(
+        title = title,
+        chatId = chatId,
+        chatSeed = seed,
+        onBack = onBack,
+        hazeState = hazeState,
+        modifier = modifier,
+    )
 }
 
 @Composable

@@ -11,26 +11,24 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
+import com.polli.domain.prefs.UiPreferences
+import com.polli.domain.prefs.UiScalePreset
+
+typealias UiScalePreset = com.polli.domain.prefs.UiScalePreset
 
 private const val PREFS = "polli_prefs"
 private const val KEY_SCALE = "ui_scale_preset"
 private const val KEY_RESPECT_SYSTEM = "respect_system_scale"
 private const val KEY_USE_DC_HOME = "use_dc_home"
 
-enum class UiScalePreset(val factor: Float, val label: String) {
-    Small(0.925f, "Small"),
-    Normal(1.0f, "Normal"),
-    Large(1.075f, "Large"),
-}
-
-class AppPrefs(context: Context) {
+class AppPrefs(context: Context) : UiPreferences {
     private val sp = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
-    var uiScalePreset: UiScalePreset
+    override var uiScalePreset: UiScalePreset
         get() = UiScalePreset.entries.getOrElse(sp.getInt(KEY_SCALE, 1)) { UiScalePreset.Normal }
         set(value) = sp.edit().putInt(KEY_SCALE, value.ordinal).apply()
 
-    var respectSystemScale: Boolean
+    override var respectSystemScale: Boolean
         get() = sp.getBoolean(KEY_RESPECT_SYSTEM, true)
         set(value) = sp.edit().putBoolean(KEY_RESPECT_SYSTEM, value).apply()
 
@@ -39,17 +37,10 @@ class AppPrefs(context: Context) {
         get() = sp.getBoolean(KEY_USE_DC_HOME, false)
         set(value) = sp.edit().putBoolean(KEY_USE_DC_HOME, value).apply()
 
-    fun effectiveScale(systemFontScale: Float): Float {
-        val base = uiScalePreset.factor
-        return if (respectSystemScale) {
-            (base * systemFontScale).coerceIn(0.8f, 1.35f)
-        } else {
-            base
-        }
-    }
 }
 
 val LocalAppPrefs = staticCompositionLocalOf<AppPrefs> {
+
     error("AppPrefs not provided")
 }
 

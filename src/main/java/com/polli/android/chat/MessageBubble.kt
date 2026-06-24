@@ -7,15 +7,18 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -24,11 +27,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabDimens
 import com.polli.android.theme.ProfileColors
@@ -92,6 +95,8 @@ fun MessageBubble(
     )
 
     val insetH = LabDimens.ChatBubbleInsetH
+    val richContentPadH = LabDimens.ChatQuoteBubblePadH
+    val richContentWidth = maxBubbleWidth - richContentPadH * 2
     val quoteStyle = when {
         message.isOutgoing -> QuotedMessageStyle.InOutgoingBubble
         else -> QuotedMessageStyle.InIncomingBubble
@@ -103,7 +108,11 @@ fun MessageBubble(
             .clip(shape)
             .background(bg, shape),
     ) {
-        Column(modifier = Modifier.padding(shellPadding)) {
+        Column(
+            modifier = Modifier
+                .padding(shellPadding)
+                .fillMaxWidth(),
+        ) {
             if (!message.isOutgoing && layout.isFirstInStack) {
                 IncomingBubbleHeader(
                     authorName = message.authorName,
@@ -123,16 +132,16 @@ fun MessageBubble(
             if (hasAttachment) {
                 MessageMediaContent(
                     message = message,
-                    modifier = Modifier.padding(horizontal = insetH),
+                    contentWidth = richContentWidth,
+                    modifier = Modifier
+                        .padding(horizontal = richContentPadH)
+                        .padding(bottom = 4.dp),
                 )
             }
             if (bodyHasText) {
-                Text(
+                MessageBubbleText(
                     text = message.text,
-                    color = if (message.isOutgoing) LabColors.White else LabColors.White85,
-                    fontSize = 14.5.sp,
-                    lineHeight = 19.5.sp,
-                    fontWeight = FontWeight.Normal,
+                    isOutgoing = message.isOutgoing,
                     modifier = Modifier.padding(horizontal = insetH),
                 )
             }
@@ -202,6 +211,7 @@ fun SingleIncomingMessageRow(
     highlighted: Boolean,
     reactionReloadKey: Int,
     pulseEmoji: String?,
+    listState: LazyListState,
     onSwipeReply: () -> Unit,
     onSwipeOptions: (Rect) -> Unit,
     onClick: (Rect) -> Unit,
@@ -209,13 +219,41 @@ fun SingleIncomingMessageRow(
 ) {
     val rowTop = if (layout.isFirstInStack) LabDimens.ChatRowTop else LabDimens.ChatRowTopCollapsed
     val showAvatar = layout.isLastInStack
+    val avatarSticky = LocalIncomingAvatarSticky.current
     var avatarSwipe by remember { mutableFloatStateOf(0f) }
     val avatarScale = 1f - avatarSwipe * 0.22f
     val avatarOpacity = 1f - avatarSwipe * 0.92f
+    var rowBounds by remember(message.id) { mutableStateOf<Rect?>(null) }
+    var avatarAnchor by remember(message.id) { mutableStateOf<Rect?>(null) }
+    val displayItems = LocalChatDisplayItems.current
+
+    fun reportGeometry() {
+        val bounds = rowBounds ?: return
+        avatarSticky?.reportRow(
+            IncomingRowGeometry(
+                messageId = message.id,
+                authorKey = message.authorKey,
+                isFirstInStack = layout.isFirstInStack,
+                isLastInStack = layout.isLastInStack,
+                rowBounds = bounds,
+                avatarAnchor = avatarAnchor,
+            ),
+        )
+    }
+
+    DisposableEffect(message.id, avatarSticky) {
+        onDispose { avatarSticky?.clearRow(message.id) }
+    }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .onGloballyPositioned { coords ->
+                if (coords.isAttached) {
+                    rowBounds = coords.boundsInRoot()
+                    reportGeometry()
+                }
+            }
             .padding(
                 start = LabDimens.ChatRowPaddingH,
                 end = LabDimens.ChatRowIncomingRight,
@@ -252,24 +290,35 @@ fun SingleIncomingMessageRow(
             }
         }
         if (showAvatar) {
-            LabAvatar(
-                name = message.authorName,
-                seed = message.authorKey,
-                size = LabDimens.ChatAvatarSize,
+            val pinned = avatarSticky?.isPinned(message.id, listState, displayItems) == true
+            Box(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
-                    .graphicsLayer {
+                    .size(LabDimens.ChatAvatarSize)
+                    .onGloballyPositioned { coords ->
+                        if (coords.isAttached) {
+                            avatarAnchor = coords.boundsInRoot()
+                            reportGeometry()
+                        }
+                    },
+            ) {
+                LabAvatar(
+                    name = message.authorName,
+                    seed = message.authorKey,
+                    size = LabDimens.ChatAvatarSize,
+                    modifier = Modifier.graphicsLayer {
+                        alpha = if (pinned) 0f else avatarOpacity
                         scaleX = avatarScale
                         scaleY = avatarScale
-                        alpha = avatarOpacity
                         clip = false
                         transformOrigin = androidx.compose.ui.graphics.TransformOrigin(
                             pivotFractionX = 0.5f,
                             pivotFractionY = 1f,
                         )
                     },
-                contactId = message.authorId,
-            )
+                    contactId = message.authorId,
+                )
+            }
         }
     }
 }
