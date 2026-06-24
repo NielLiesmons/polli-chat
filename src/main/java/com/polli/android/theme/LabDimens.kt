@@ -20,7 +20,7 @@ object LabDimens {
     val TabButtonHPadding = 15.dp
     val TabGap = 8.dp
     val TabSectionGap = 14.dp
-    val TabContentTopGap = 7.dp
+    val TabContentTopGap = 14.dp
     val TabContentBottomPad = 24.dp
 
     val StoryRingOuter = 58.dp

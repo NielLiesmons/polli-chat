@@ -1,7 +1,6 @@
 package com.polli.android.chat
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -9,7 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -158,102 +157,6 @@ fun MessageBubble(
 }
 
 @Composable
-fun IncomingMessageGroup(
-    stack: List<Pair<ChatMessage, MessageGroupLayout>>,
-    highlightedId: Int?,
-    reactionReloadKey: Int,
-    pulseEmojiFor: (Int) -> String?,
-    onSwipeReply: (ChatMessage) -> Unit,
-    onSwipeOptions: (ChatMessage, Rect) -> Unit,
-    onBubbleClick: (ChatMessage, Rect) -> Unit,
-    onQuoteClick: (Int) -> Unit,
-) {
-    if (stack.isEmpty()) return
-    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
-    val maxGroupWidth = screenWidth * LabDimens.ChatBubbleMaxWidthFraction
-    val firstLayout = stack.first().second
-    val lastLayout = stack.last().second
-    val lastMsg = stack.last().first
-    val rowTop = if (firstLayout.isFirstInStack) LabDimens.ChatRowTop else LabDimens.ChatRowTopCollapsed
-    var avatarSwipe by remember { mutableFloatStateOf(0f) }
-    val avatarScale = 1f - avatarSwipe * 0.22f
-    val avatarOpacity = 1f - avatarSwipe * 0.92f
-    val showAvatar = lastLayout.isLastInStack
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(
-                start = LabDimens.ChatRowPaddingH,
-                end = LabDimens.ChatRowIncomingRight,
-                top = rowTop,
-            ),
-        verticalAlignment = Alignment.Bottom,
-    ) {
-        Box(modifier = Modifier.widthIn(max = maxGroupWidth)) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .graphicsLayer {
-                        scaleX = avatarScale
-                        scaleY = avatarScale
-                        alpha = avatarOpacity
-                        transformOrigin = androidx.compose.ui.graphics.TransformOrigin(
-                            pivotFractionX = 0.5f,
-                            pivotFractionY = 1f,
-                        )
-                    },
-            ) {
-                if (showAvatar) {
-                    LabAvatar(
-                        name = lastMsg.authorName,
-                        seed = lastMsg.authorKey,
-                        size = LabDimens.ChatAvatarSize,
-                        contactId = lastMsg.authorId,
-                    )
-                } else {
-                    Spacer(modifier = Modifier.size(LabDimens.ChatAvatarSize))
-                }
-            }
-            Column(
-                modifier = Modifier
-                    .padding(start = LabDimens.ChatIncomingGroupAvatarOffset)
-                    .widthIn(max = maxGroupWidth - LabDimens.ChatIncomingGroupAvatarOffset),
-                verticalArrangement = Arrangement.spacedBy(LabDimens.ChatIncomingGroupBubbleGap),
-            ) {
-                stack.forEachIndexed { index, (msg, layout) ->
-                    val isLastInGroup = index == stack.lastIndex
-                    val drivesAvatar = isLastInGroup && showAvatar
-                    BubbleSwiper(
-                        modifier = Modifier.messageRowHighlight(highlightedId == msg.id),
-                        alignEnd = false,
-                        replyIconInset = 8f,
-                        optionsIconInset = 8f,
-                        onSwipeReply = { onSwipeReply(msg) },
-                        onSwipeOptions = { bounds -> onSwipeOptions(msg, bounds) },
-                        onTap = { bounds -> onBubbleClick(msg, bounds) },
-                        onDragProgress = if (drivesAvatar) {
-                            { dx: Float -> avatarSwipe = ((-dx).coerceIn(0f, 40f)) / 40f }
-                        } else {
-                            null
-                        },
-                    ) {
-                        MessageBubble(
-                            message = msg,
-                            layout = layout,
-                            incomingInGroup = true,
-                            reactionReloadKey = reactionReloadKey,
-                            pulseEmoji = pulseEmojiFor(msg.id),
-                            onQuoteClick = onQuoteClick,
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
 fun OutgoingMessageRow(
     message: ChatMessage,
     layout: MessageGroupLayout,
@@ -305,7 +208,12 @@ fun SingleIncomingMessageRow(
     onQuoteClick: (Int) -> Unit,
 ) {
     val rowTop = if (layout.isFirstInStack) LabDimens.ChatRowTop else LabDimens.ChatRowTopCollapsed
-    Row(
+    val showAvatar = layout.isLastInStack
+    var avatarSwipe by remember { mutableFloatStateOf(0f) }
+    val avatarScale = 1f - avatarSwipe * 0.22f
+    val avatarOpacity = 1f - avatarSwipe * 0.92f
+
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(
@@ -313,35 +221,54 @@ fun SingleIncomingMessageRow(
                 end = LabDimens.ChatRowIncomingRight,
                 top = rowTop,
             ),
-        verticalAlignment = Alignment.Bottom,
     ) {
-        if (layout.isLastInStack) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            Spacer(modifier = Modifier.width(LabDimens.ChatIncomingGroupAvatarOffset))
+            BubbleSwiper(
+                modifier = Modifier.messageRowHighlight(highlighted),
+                alignEnd = false,
+                replyIconInset = 8f,
+                optionsIconInset = 8f,
+                onSwipeReply = onSwipeReply,
+                onSwipeOptions = onSwipeOptions,
+                onTap = onClick,
+                onDragProgress = if (showAvatar) {
+                    { dx: Float -> avatarSwipe = ((-dx).coerceIn(0f, 40f)) / 40f }
+                } else {
+                    null
+                },
+            ) {
+                MessageBubble(
+                    message = message,
+                    layout = layout,
+                    incomingInGroup = !layout.isFirstInStack,
+                    reactionReloadKey = reactionReloadKey,
+                    pulseEmoji = pulseEmoji,
+                    onQuoteClick = onQuoteClick,
+                )
+            }
+        }
+        if (showAvatar) {
             LabAvatar(
                 name = message.authorName,
                 seed = message.authorKey,
                 size = LabDimens.ChatAvatarSize,
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .graphicsLayer {
+                        scaleX = avatarScale
+                        scaleY = avatarScale
+                        alpha = avatarOpacity
+                        clip = false
+                        transformOrigin = androidx.compose.ui.graphics.TransformOrigin(
+                            pivotFractionX = 0.5f,
+                            pivotFractionY = 1f,
+                        )
+                    },
                 contactId = message.authorId,
-            )
-            Spacer(modifier = Modifier.size(LabDimens.ChatAvatarGap))
-        } else {
-            Spacer(modifier = Modifier.size(LabDimens.ChatIncomingGroupAvatarOffset))
-        }
-        BubbleSwiper(
-            modifier = Modifier.messageRowHighlight(highlighted),
-            alignEnd = false,
-            replyIconInset = 50f,
-            optionsIconInset = 8f,
-            onSwipeReply = onSwipeReply,
-            onSwipeOptions = onSwipeOptions,
-            onTap = onClick,
-        ) {
-            MessageBubble(
-                message = message,
-                layout = layout,
-                incomingInGroup = false,
-                reactionReloadKey = reactionReloadKey,
-                pulseEmoji = pulseEmoji,
-                onQuoteClick = onQuoteClick,
             )
         }
     }

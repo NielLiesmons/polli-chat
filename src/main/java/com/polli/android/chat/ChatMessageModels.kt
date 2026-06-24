@@ -56,7 +56,6 @@ private fun authorColorSeed(dcContext: DcContext, fromId: Int, authorName: Strin
 sealed class FeedItem {
     data class DayMarker(val label: String) : FeedItem()
     data class Message(val message: ChatMessage, val layout: MessageGroupLayout) : FeedItem()
-    data class IncomingStack(val messages: List<Pair<ChatMessage, MessageGroupLayout>>) : FeedItem()
 }
 
 object MessageLoader {
@@ -134,33 +133,14 @@ object MessageLoader {
         if (display.isEmpty()) return emptyList()
 
         val layouts = layoutsForMessages(display)
-        val items = ArrayList<FeedItem>()
-        var i = 0
-        while (i < display.size) {
-            val msg = display[i]
-            if (msg.isOutgoing) {
-                items.add(
-                    FeedItem.Message(
-                        msg,
-                        layouts[msg.id] ?: MessageGroupLayout(),
-                    ),
-                )
-                i++
-                continue
-            }
-            // Consecutive incoming from same author — always one IncomingStack (polli feed_render_units).
-            val start = i
-            i++
-            while (i < display.size) {
-                val older = display[i - 1]
-                val newer = display[i]
-                if (newer.isOutgoing || !continuesGroup(older, newer)) break
-                i++
-            }
-            val stack = display.subList(start, i).map { m ->
-                m to (layouts[m.id] ?: MessageGroupLayout())
-            }
-            items.add(FeedItem.IncomingStack(stack))
+        val items = ArrayList<FeedItem>(display.size)
+        for (msg in display) {
+            items.add(
+                FeedItem.Message(
+                    msg,
+                    layouts[msg.id] ?: MessageGroupLayout(),
+                ),
+            )
         }
         return items
     }

@@ -18,10 +18,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.polli.android.theme.LabColors
 
-private val HighlightBandColor = LabColors.Blurple.copy(alpha = 0.16f)
+private val HighlightBandColor = LabColors.White8
 
 /**
- * Full-width blurple band behind a bubble row — draws edge-to-edge without changing layout or alignment.
+ * Full-width white band behind a bubble row — draws edge-to-edge without changing layout or alignment.
  */
 fun Modifier.messageRowHighlight(visible: Boolean): Modifier = composed {
     val alpha by animateFloatAsState(

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -40,11 +41,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.polli.android.bridge.InboxItem
@@ -54,11 +54,11 @@ import com.polli.android.theme.LabDimens
 import com.polli.android.ui.LabAvatar
 import com.polli.android.ui.SelfAvatar
 import com.polli.android.ui.AppInsets
-import com.polli.android.ui.ShellDivider
 import com.polli.android.ui.scrollFadeMask
 import com.polli.android.ui.rememberLazyListShowTopFadeDerived
+import org.thoughtcrime.securesms.R
 
-enum class HomeTab { Spaces, Mail }
+enum class HomeTab { Spaces, Mail, Sigils }
 
 @Composable
 fun HomeScreen(
@@ -83,12 +83,14 @@ fun HomeScreen(
 
     val loadedItems = items ?: rememberInboxItems(query)
     val loadedChannels = channels ?: rememberChannels(loadedItems)
+    val archiveLink = rememberArchiveLinkState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(LabColors.Black)
             .padding(top = AppInsets.statusBarTop()),
+        verticalArrangement = Arrangement.spacedBy(LabDimens.TabSectionGap),
     ) {
         HomeTopBar(
             profileName = profileName,
@@ -100,20 +102,17 @@ fun HomeScreen(
             onCancelSearch = { isSearching = false; query = ""; onSearch("") },
             onQueryChange = { query = it; onSearch(it) },
             onPlusClick = onPlusClick,
-            onArchiveClick = onArchiveClick,
         )
 
         if (!isSearching) {
-            ChannelStoriesRow(channels = loadedChannels, onSelect = onChannelClick)
-            TabRow(active = tab, onSelect = { tab = it })
-            ShellDivider()
-            Spacer(modifier = Modifier.height(LabDimens.TabContentTopGap))
-        }
-
-        val filtered = loadedItems.filter {
-            when (tab) {
-                HomeTab.Spaces -> it.category == ChatCategory.Space
-                HomeTab.Mail -> it.category == ChatCategory.Mail
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(LabDimens.TabSectionGap),
+            ) {
+                if (loadedChannels.isNotEmpty()) {
+                    ChannelStoriesRow(channels = loadedChannels, onSelect = onChannelClick)
+                }
+                TabRow(active = tab, onSelect = { tab = it })
             }
         }
 
@@ -123,7 +122,20 @@ fun HomeScreen(
                 .fillMaxWidth()
                 .background(LabColors.Black),
         ) {
-            if (filtered.isEmpty()) {
+            if (tab == HomeTab.Sigils) {
+                SigilsTab()
+            } else {
+            val filtered = loadedItems.filter {
+                when (tab) {
+                    HomeTab.Spaces -> it.category == ChatCategory.Space
+                    HomeTab.Mail -> it.category == ChatCategory.Mail
+                    HomeTab.Sigils -> false
+                }
+            }
+            val showArchiveRow = tab == HomeTab.Mail && archiveLink.visible
+            val showFeed = filtered.isNotEmpty() || showArchiveRow
+
+            if (!showFeed) {
                 val spaceCount = loadedItems.count { it.category == ChatCategory.Space }
                 val mailCount = loadedItems.count { it.category == ChatCategory.Mail }
                 val channelCount = loadedItems.count { it.category == ChatCategory.Channel }
@@ -151,14 +163,26 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .scrollFadeMask(showTopFade),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                    contentPadding = PaddingValues(
+                        start = LabDimens.HomeBarPadding,
+                        end = LabDimens.HomeBarPadding,
                         bottom = AppInsets.navigationBarBottom() + LabDimens.TabContentBottomPad,
                     ),
+                    verticalArrangement = Arrangement.spacedBy(LabDimens.TabSectionGap),
                 ) {
+                    if (showArchiveRow) {
+                        item(key = "archive-link") {
+                            ArchiveRow(
+                                unreadCount = archiveLink.unreadCount,
+                                onClick = onArchiveClick,
+                            )
+                        }
+                    }
                     items(filtered, key = { it.chatId }) { item ->
                         ChatInboxCard(item = item, onClick = { onChatClick(item.chatId) })
                     }
                 }
+            }
             }
         }
     }
@@ -175,14 +199,14 @@ private fun HomeTopBar(
     onCancelSearch: () -> Unit,
     onQueryChange: (String) -> Unit,
     onPlusClick: () -> Unit,
-    onArchiveClick: () -> Unit,
 ) {
     val profileAlpha by animateFloatAsState(if (isSearching) 0f else 1f, label = "profileAlpha")
-    Column(modifier = Modifier.padding(horizontal = LabDimens.HomeBarPadding)) {
-        Row(
-            modifier = Modifier.padding(vertical = LabDimens.HomeBarVerticalPad),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+    Row(
+        modifier = Modifier
+            .padding(horizontal = LabDimens.HomeBarPadding)
+            .padding(vertical = LabDimens.HomeBarVerticalPad),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
             if (!isSearching) {
                 SelfAvatar(
                     name = profileName,
@@ -238,44 +262,28 @@ private fun HomeTopBar(
                         .size(LabDimens.HomePillActionSize)
                         .clip(CircleShape)
                         .background(LabColors.Gray66)
-                        .clickable(onClick = onArchiveClick),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text("⌂", color = LabColors.White66, fontSize = 14.sp)
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Box(
-                    modifier = Modifier
-                        .size(LabDimens.HomePillActionSize)
-                        .clip(CircleShape)
-                        .background(LabColors.Gray66)
                         .clickable(onClick = onPlusClick),
                     contentAlignment = Alignment.Center,
                 ) {
                     LabIcon(LabIconName.Plus, 14.dp, LabColors.White66)
                 }
             }
-        }
-        ShellDivider(screenPad = 0.dp)
     }
 }
 
 @Composable
 private fun ChannelStoriesRow(channels: List<InboxItem>, onSelect: (Int) -> Unit) {
     if (channels.isEmpty()) return
-    Column(modifier = Modifier.padding(horizontal = LabDimens.StoriesRowPadding)) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(top = LabDimens.StoryRowVerticalPadTop, bottom = LabDimens.StoryRowVerticalPadBottom),
-            horizontalArrangement = Arrangement.spacedBy(LabDimens.StoryRingSpacing),
-        ) {
-            channels.forEach { channel ->
-                StoryRing(channel = channel, onClick = { onSelect(channel.chatId) })
-            }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = LabDimens.StoriesRowPadding)
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(LabDimens.StoryRingSpacing),
+    ) {
+        channels.forEach { channel ->
+            StoryRing(channel = channel, onClick = { onSelect(channel.chatId) })
         }
-        ShellDivider(screenPad = 0.dp)
     }
 }
 
@@ -313,11 +321,12 @@ private fun TabRow(active: HomeTab, onSelect: (HomeTab) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = LabDimens.HomeBarPadding, vertical = LabDimens.TabSectionGap),
+            .padding(horizontal = LabDimens.HomeBarPadding),
         horizontalArrangement = Arrangement.spacedBy(LabDimens.TabGap),
     ) {
         TabPill("Spaces", active == HomeTab.Spaces) { onSelect(HomeTab.Spaces) }
         TabPill("Mail", active == HomeTab.Mail) { onSelect(HomeTab.Mail) }
+        TabPill("Sigils", active == HomeTab.Sigils) { onSelect(HomeTab.Sigils) }
     }
 }
 
@@ -347,21 +356,61 @@ private fun TabPill(label: String, selected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
+private fun ArchiveRow(unreadCount: Int, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = LabDimens.ListRowPadding),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(LabDimens.AvatarSize)
+                .clip(CircleShape)
+                .background(LabColors.Gray66),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text("⌂", color = LabColors.White66, fontSize = 20.sp)
+        }
+        Text(
+            text = stringResource(R.string.chat_archived_chats_title),
+            color = LabColors.White,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 12.dp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        if (unreadCount > 0) {
+            Box(
+                modifier = Modifier
+                    .height(LabDimens.UnreadBadgeMinSize)
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(Brush.linearGradient(listOf(LabColors.BlurpleGradientStart, LabColors.BlurpleGradientEnd)))
+                    .padding(horizontal = LabDimens.UnreadBadgeHPadding),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = if (unreadCount > 99) "99+" else unreadCount.toString(),
+                    color = LabColors.White,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun ChatInboxCard(item: InboxItem, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .drawBehind {
-                val stroke = LabDimens.ShellBorderWidth.toPx().coerceAtLeast(1f)
-                drawLine(
-                    color = LabColors.ShellBorder,
-                    start = Offset(0f, size.height),
-                    end = Offset(size.width, size.height),
-                    strokeWidth = stroke,
-                )
-            }
-            .padding(vertical = LabDimens.ListRowPadding, horizontal = LabDimens.HomeBarPadding),
+            .padding(vertical = LabDimens.ListRowPadding),
     ) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
             Box(modifier = Modifier.width(LabDimens.AvatarSize).padding(top = 2.dp)) {

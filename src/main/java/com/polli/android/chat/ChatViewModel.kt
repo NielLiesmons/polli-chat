@@ -223,11 +223,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
 
     fun jumpToMessage(msgId: Int, onScroll: (displayIndex: Int) -> Unit) {
         val feedIndex = feedItems.indexOfFirst { item ->
-            when (item) {
-                is FeedItem.Message -> item.message.id == msgId
-                is FeedItem.IncomingStack -> item.messages.any { it.first.id == msgId }
-                else -> false
-            }
+            item is FeedItem.Message && item.message.id == msgId
         }
         if (feedIndex >= 0) {
             onScroll(displayIndexForFeedIndex(feedIndex, feedItems.size))
@@ -237,10 +233,8 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
 
     fun messageIdAtDisplayIndex(displayIndex: Int): Int? {
         val feedIndex = feedItems.size - 1 - displayIndex
-        val item = feedItems.getOrNull(feedIndex) ?: return null
-        return when (item) {
+        return when (val item = feedItems.getOrNull(feedIndex)) {
             is FeedItem.Message -> item.message.id
-            is FeedItem.IncomingStack -> item.messages.first().first.id
             else -> null
         }
     }

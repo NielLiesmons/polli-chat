@@ -5,7 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -74,7 +76,11 @@ private fun ArchiveScreen(onBack: () -> Unit, onOpenChat: (Int) -> Unit) {
                 Text("No archived chats", color = LabColors.White33)
             }
         } else {
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
                 items(items, key = { it.chatId }) { item ->
                     ChatInboxCard(item = item, onClick = { onOpenChat(item.chatId) })
                 }

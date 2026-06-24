@@ -111,7 +111,7 @@ fun ChatScreen(
     }
     val hazeState = rememberPolliHazeState()
 
-    val scrollToMessageInFeed: (Int, (() -> Unit)?) -> Unit = { msgId, onComplete ->
+    val scrollToMessage: (Int, (() -> Unit)?) -> Unit = { msgId, onComplete ->
         viewModel.jumpToMessage(msgId) { displayIndex ->
             scope.launch {
                 listState.scrollToQuoteTarget(displayIndex)
@@ -121,7 +121,7 @@ fun ChatScreen(
     }
 
     val openMessageOverlay: (ChatMessage) -> Unit = { message ->
-        scrollToMessageInFeed(message.id) { viewModel.showOverlay(message) }
+        scrollToMessage(message.id) { viewModel.showOverlay(message) }
     }
 
     Box(
@@ -142,7 +142,7 @@ fun ChatScreen(
                     composerClearance = composerClearance,
                     hazeState = hazeState,
                     onOpenMessageOverlay = openMessageOverlay,
-                    onScrollToMessage = { msgId -> scrollToMessageInFeed(msgId, null) },
+                    onScrollToMessage = { msgId -> scrollToMessage(msgId, null) },
                 )
                 ChatDetailTab.Apps,
                 ChatDetailTab.Files,
@@ -329,11 +329,6 @@ private fun ChatFeedPage(
                     when (item) {
                         is FeedItem.DayMarker -> "day-${item.label}"
                         is FeedItem.Message -> "msg-${item.message.id}"
-                        is FeedItem.IncomingStack -> {
-                            val first = item.messages.first().first.id
-                            val last = item.messages.last().first.id
-                            "stack-$first-$last"
-                        }
                     }
                 },
             ) { _, item ->
@@ -363,20 +358,6 @@ private fun ChatFeedItem(
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
                 textAlign = TextAlign.Center,
-            )
-        }
-        is FeedItem.IncomingStack -> {
-            IncomingMessageGroup(
-                stack = item.messages,
-                highlightedId = viewModel.highlightId.takeIf { it >= 0 },
-                reactionReloadKey = viewModel.reloadGeneration,
-                pulseEmojiFor = { msgId ->
-                    viewModel.reactionPulse?.takeIf { it.msgId == msgId }?.emoji
-                },
-                onSwipeReply = { viewModel.setReply(it) },
-                onSwipeOptions = { msg, _ -> onOpenMessageOverlay(msg) },
-                onBubbleClick = { msg, _ -> onOpenMessageOverlay(msg) },
-                onQuoteClick = onQuoteClick,
             )
         }
         is FeedItem.Message -> {

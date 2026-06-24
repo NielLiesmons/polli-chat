@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -26,6 +27,7 @@ import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabDimens
 import com.polli.android.ui.FrostedCircleButton
 import dev.chrisbanes.haze.HazeState
+import kotlin.math.abs
 
 /** Mirrors [org.thoughtcrime.securesms.ConversationFragment.SCROLL_ANIMATION_THRESHOLD]. */
 private const val SCROLL_ANIMATION_THRESHOLD = 50
@@ -68,13 +70,13 @@ private const val QUOTE_CENTER_TOLERANCE_PX = 4f
 private val chatScrollEasing: Easing = CubicBezierEasing(0.42f, 0f, 0.58f, 1f)
 
 private fun centeringScrollSpec(deltaPx: Float): TweenSpec<Float> {
-    val durationMs = (320 + kotlin.math.abs(deltaPx) * 0.22f).toInt().coerceIn(320, 500)
+    val durationMs = (320 + abs(deltaPx) * 0.22f).toInt().coerceIn(320, 500)
     return tween(durationMillis = durationMs, easing = chatScrollEasing)
 }
 
 /**
  * Pixel delta to move [index] so its vertical center matches the viewport center.
- * Uses live layout coordinates so we never guess [scrollOffset] sign for reverseLayout.
+ * Uses live [layoutInfo] — never [scrollOffset] (positive offset breaks reverseLayout).
  */
 private fun LazyListState.centeringScrollDeltaFor(index: Int): Float? {
     val item = layoutInfo.visibleItemsInfo.find { it.index == index } ?: return null
@@ -82,12 +84,12 @@ private fun LazyListState.centeringScrollDeltaFor(index: Int): Float? {
     val viewportEnd = layoutInfo.viewportEndOffset
     if (viewportEnd <= viewportStart) return null
     val viewportCenter = (viewportStart + viewportEnd) / 2f
-    val itemCenter = item.offset + item.size / 2f
-    return itemCenter - viewportCenter
+    return item.offset + item.size / 2f - viewportCenter
 }
 
 /**
- * Center the target row in the viewport — smooth eased scroll (quote tap, actions, search).
+ * Center the target bubble row — same path that worked for grouped rows.
+ * Each bubble is one lazy row, so row center = bubble center.
  */
 suspend fun LazyListState.scrollToQuoteTarget(displayIndex: Int) {
     if (layoutInfo.totalItemsCount == 0) return
@@ -96,10 +98,16 @@ suspend fun LazyListState.scrollToQuoteTarget(displayIndex: Int) {
     val alreadyVisible = layoutInfo.visibleItemsInfo.any { it.index == index }
     if (!alreadyVisible) {
         animateScrollToItem(index)
+        withFrameNanos { }
     }
 
-    val delta = centeringScrollDeltaFor(index) ?: return
-    if (kotlin.math.abs(delta) < QUOTE_CENTER_TOLERANCE_PX) return
+    var delta = centeringScrollDeltaFor(index)
+    if (delta == null) {
+        withFrameNanos { }
+        delta = centeringScrollDeltaFor(index)
+    }
+    delta ?: return
+    if (abs(delta) < QUOTE_CENTER_TOLERANCE_PX) return
 
     animateScrollBy(delta, centeringScrollSpec(delta))
 }
