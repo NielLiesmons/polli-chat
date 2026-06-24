@@ -30,6 +30,7 @@ import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabDimens
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.FrostedChromeSurface
+import com.polli.android.ui.polliOverlayHazeStyle
 import dev.chrisbanes.haze.HazeState
 
 data class BubbleOverlayAnchor(
@@ -60,6 +61,7 @@ fun BubbleOverlayHost(
     BackHandler(onBack = onDismiss)
 
     val emojiScroll = rememberScrollState()
+    val overlayHazeStyle = remember { polliOverlayHazeStyle(OverlayShellBg) }
     val panelTapBlock = remember { MutableInteractionSource() }
     val statusTop = AppInsets.statusBarTop()
     val navBottom = AppInsets.navigationBarBottom()
@@ -101,6 +103,7 @@ fun BubbleOverlayHost(
                 tint = OverlayShellBg,
                 borderColor = OverlayShellBorder,
                 hazeState = hazeState,
+                hazeStyle = overlayHazeStyle,
             ) {
                 Row(
                     modifier = Modifier
@@ -134,6 +137,7 @@ fun BubbleOverlayHost(
                 tint = OverlayShellBg,
                 borderColor = OverlayShellBorder,
                 hazeState = hazeState,
+                hazeStyle = overlayHazeStyle,
             ) {
                 Column(
                     modifier = Modifier

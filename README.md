@@ -23,7 +23,7 @@ Place branding assets in `assets/branding/`:
 | File | Purpose |
 |------|---------|
 | `icon-full.png` | 1024×1024 composite (purple background + white logo) |
-| `icon-foreground.png` | Optional transparent PNG; auto-extracted from `icon-full.png` if missing |
+| `icon-foreground.png` | 1024×1024 logo on transparent **or solid black** background |
 
 Then run:
 

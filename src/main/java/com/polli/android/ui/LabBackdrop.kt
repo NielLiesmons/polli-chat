@@ -41,6 +41,17 @@ fun polliHazeStyle(tint: Color = LabColors.Gray66): HazeStyle = HazeStyle(
     noiseFactor = HazeDefaults.noiseFactor,
 )
 
+/** Heavier frost for bubble overlay panels so feed text does not bleed through. */
+fun polliOverlayHazeStyle(tint: Color = LabColors.Gray66): HazeStyle = HazeStyle(
+    backgroundColor = tint.copy(alpha = 0.94f),
+    tints = listOf(
+        HazeTint(Color.Black.copy(alpha = 0.50f)),
+        HazeTint(tint.copy(alpha = 0.72f)),
+    ),
+    blurRadius = 48.dp,
+    noiseFactor = HazeDefaults.noiseFactor,
+)
+
 @Composable
 fun rememberPolliHazeState(): HazeState = remember { HazeState() }
 
@@ -52,15 +63,17 @@ fun FrostedChromeSurface(
     tint: Color = LabColors.Gray66,
     borderColor: Color = LabColors.ShellBorder,
     hazeState: HazeState? = null,
+    hazeStyle: HazeStyle? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    val frostTint = tint.copy(alpha = FROST_TINT_ALPHA)
+    val style = hazeStyle ?: polliHazeStyle(tint)
+    val frostTint = style.backgroundColor
     val chromeModifier = modifier
         .clip(shape)
         .border(LabDimens.ShellBorderWidth, borderColor, shape)
         .then(
             if (hazeState != null) {
-                Modifier.hazeEffect(state = hazeState, style = polliHazeStyle(tint)) {
+                Modifier.hazeEffect(state = hazeState, style = style) {
                     inputScale = HazeInputScale.Auto
                     backgroundColor = frostTint
                 }

@@ -111,19 +111,17 @@ fun ChatScreen(
     }
     val hazeState = rememberPolliHazeState()
 
-    val scrollToMessageInFeed: (Int, (() -> Unit)?) -> Unit = { msgId, onComplete ->
+    val scrollToMessageInFeed: (Int, (() -> Unit)?, Boolean) -> Unit = { msgId, onComplete, forOverlay ->
         viewModel.jumpToMessage(msgId) { displayIndex ->
             scope.launch {
-                listState.scrollToQuoteTarget(displayIndex)
+                listState.scrollToQuoteTarget(displayIndex, forOverlay = forOverlay)
                 onComplete?.invoke()
             }
         }
     }
 
     val openMessageOverlay: (ChatMessage) -> Unit = { message ->
-        scrollToMessageInFeed(message.id) {
-            viewModel.showOverlay(message)
-        }
+        scrollToMessageInFeed(message.id, onComplete = { viewModel.showOverlay(message) }, forOverlay = true)
     }
 
     Box(
@@ -144,7 +142,7 @@ fun ChatScreen(
                     composerClearance = composerClearance,
                     hazeState = hazeState,
                     onOpenMessageOverlay = openMessageOverlay,
-                    onScrollToMessage = { msgId -> scrollToMessageInFeed(msgId, null) },
+                    onScrollToMessage = { msgId -> scrollToMessageInFeed(msgId, onComplete = null, forOverlay = false) },
                 )
                 ChatDetailTab.Apps,
                 ChatDetailTab.Files,

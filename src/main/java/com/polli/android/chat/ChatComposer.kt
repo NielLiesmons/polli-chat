@@ -97,6 +97,9 @@ fun ChatComposerDock(
     val hasQuote = replyQuote != null
     val flattenTop = hasQuote || hasPendingAttachment || isMultiline || isTall
     val showSend = value.trim().isNotEmpty() || hasPendingAttachment
+    val composerRowExpanded = isMultiline || isTall || hasQuote
+    val composerRowAlign = if (composerRowExpanded) Alignment.Bottom else Alignment.CenterVertically
+    val composerFieldAlign = if (composerRowExpanded) Alignment.BottomStart else Alignment.CenterStart
     val pillRadius = LabDimens.ChatComposerMinHeight / 2
     val shellShape = if (flattenTop) {
         RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = pillRadius, bottomEnd = pillRadius)
@@ -176,7 +179,7 @@ fun ChatComposerDock(
                             bottom = 7.dp,
                             top = if (hasQuote) 0.dp else 7.dp,
                         ),
-                    verticalAlignment = Alignment.CenterVertically,
+                    verticalAlignment = composerRowAlign,
                     horizontalArrangement = Arrangement.spacedBy(7.dp),
                 ) {
                     Box(
@@ -197,9 +200,8 @@ fun ChatComposerDock(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .heightIn(min = 20.dp, max = 180.dp)
-                            .composerTextFadeMask(showTextFade),
-                        contentAlignment = Alignment.CenterStart,
+                            .heightIn(min = 20.dp, max = 180.dp),
+                        contentAlignment = composerFieldAlign,
                     ) {
                         BasicTextField(
                             value = value,
@@ -210,14 +212,19 @@ fun ChatComposerDock(
                                 .verticalScroll(scrollState)
                                 .focusRequester(focusRequester)
                                 .onFocusChanged { isFocused = it.isFocused }
-                                .padding(start = 4.dp, end = 4.dp, bottom = 6.dp),
+                                .padding(horizontal = 4.dp)
+                                .padding(
+                                    top = if (composerRowExpanded) 2.dp else 0.dp,
+                                    bottom = if (composerRowExpanded) 2.dp else 1.dp,
+                                )
+                                .composerTextFadeMask(showTextFade),
                             onTextLayout = { layout: TextLayoutResult ->
                                 textFieldHeightPx = layout.size.height.toFloat()
                             },
                             textStyle = TextStyle(color = LabColors.White85, fontSize = 15.sp, lineHeight = 20.sp),
-                            cursorBrush = SolidColor(LabColors.Blurple),
+                            cursorBrush = SolidColor(LabColors.White),
                             decorationBox = { inner ->
-                                Box(contentAlignment = Alignment.CenterStart) {
+                                Box(contentAlignment = composerFieldAlign) {
                                     if (value.isEmpty() && !isFocused) {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             ComposerCaret()
@@ -225,11 +232,17 @@ fun ChatComposerDock(
                                                 "Message",
                                                 color = LabColors.White33,
                                                 fontSize = 15.sp,
+                                                lineHeight = 20.sp,
                                                 modifier = Modifier.padding(start = 1.dp),
                                             )
                                         }
                                     } else if (value.isEmpty()) {
-                                        Text("Message", color = LabColors.White33, fontSize = 15.sp)
+                                        Text(
+                                            "Message",
+                                            color = LabColors.White33,
+                                            fontSize = 15.sp,
+                                            lineHeight = 20.sp,
+                                        )
                                     }
                                     inner()
                                 }
@@ -308,15 +321,16 @@ private fun ComposerCaret() {
     val transition = rememberInfiniteTransition(label = "composerCaret")
     val alpha by transition.animateFloat(
         initialValue = 1f,
-        targetValue = 0.2f,
+        targetValue = 0f,
         animationSpec = infiniteRepeatable(tween(530), RepeatMode.Reverse),
         label = "caretAlpha",
     )
+    // Match Compose/Android default caret: ~2dp wide, line-height tall.
     Box(
         modifier = Modifier
             .width(2.dp)
-            .height(18.dp)
-            .background(LabColors.Blurple.copy(alpha = alpha)),
+            .height(20.dp)
+            .background(LabColors.White.copy(alpha = alpha)),
     )
 }
 

@@ -49,23 +49,19 @@ def color_distance(a: tuple[int, int, int], b: tuple[int, int, int]) -> float:
     return math.sqrt(sum((x - y) ** 2 for x, y in zip(a, b)))
 
 
-def foreground_is_usable(image: Image.Image) -> bool:
+def foreground_has_alpha(image: Image.Image) -> bool:
     if image.mode not in ("RGBA", "LA"):
         return False
-    alpha = image.getchannel("A")
-    extrema = alpha.getextrema()
-    if extrema[0] >= 250:
-        return False  # must have some transparency
-    rgb = image.convert("RGB")
-    # reject flat black placeholders saved as "transparent" exports
-    pixels = list(rgb.getdata())
-    if max(pixels, key=pixels.count) == (0, 0, 0) and extrema[1] < 20:
-        return False
-    return True
+    lo, hi = image.getchannel("A").getextrema()
+    return lo < 250 and hi > 0
 
 
-def extract_foreground(full: Image.Image, bg: tuple[int, int, int], threshold: float = 42.0) -> Image.Image:
-    rgba = full.convert("RGBA")
+def key_out_background(
+    image: Image.Image,
+    bg: tuple[int, int, int],
+    threshold: float = 40.0,
+) -> Image.Image:
+    rgba = image.convert("RGBA")
     pixels = rgba.load()
     width, height = rgba.size
     for y in range(height):
@@ -76,17 +72,34 @@ def extract_foreground(full: Image.Image, bg: tuple[int, int, int], threshold: f
     return rgba
 
 
+def has_visible_content(image: Image.Image) -> bool:
+    alpha = image.convert("RGBA").getchannel("A")
+    return alpha.getextrema()[1] > 10
+
+
+def extract_foreground(full: Image.Image, bg: tuple[int, int, int], threshold: float = 42.0) -> Image.Image:
+    return key_out_background(full, bg, threshold)
+
+
 def load_foreground(full: Image.Image, bg: tuple[int, int, int]) -> Image.Image:
     if FOREGROUND.exists():
         candidate = Image.open(FOREGROUND)
-        if foreground_is_usable(candidate):
-            print(f"Using foreground asset: {FOREGROUND}")
+        if foreground_has_alpha(candidate):
+            print(f"Using transparent foreground asset: {FOREGROUND}")
             return candidate.convert("RGBA")
+
+        fg_bg = sample_background_color(candidate)
+        keyed = key_out_background(candidate, fg_bg)
+        if has_visible_content(keyed):
+            print(f"Using foreground asset (removed {rgb_to_hex(fg_bg)} background): {FOREGROUND}")
+            return keyed
+
         print(
-            f"Warning: {FOREGROUND} is not a usable transparent PNG; "
-            "extracting foreground from icon-full.png instead.",
+            f"Warning: {FOREGROUND} could not be converted to a foreground layer; "
+            "extracting from icon-full.png instead.",
             file=sys.stderr,
         )
+
     print("Extracting foreground layer from icon-full.png")
     return extract_foreground(full, bg)
 
