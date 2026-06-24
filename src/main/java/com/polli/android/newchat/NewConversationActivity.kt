@@ -1,0 +1,114 @@
+package com.polli.android.newchat
+
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
+import com.polli.android.BaseComposeActivity
+import com.polli.android.icons.LabIcon
+import com.polli.android.icons.LabIconName
+import com.polli.android.navigation.AppNav
+import com.polli.android.settings.AppPrefs
+import com.polli.android.theme.LabColors
+import com.polli.android.theme.LabTheme
+import com.polli.android.ui.AppInsets
+import com.polli.android.ui.RoundBackButton
+import org.thoughtcrime.securesms.qr.QrActivity
+
+class NewConversationActivity : BaseComposeActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val prefs = AppPrefs(this)
+        setContent {
+            LabTheme(prefs = prefs) {
+                NewConversationScreen(
+                    onBack = { finish() },
+                    onNewOneToOne = {
+                        startActivity(ContactPickerActivity.intent(this))
+                        finish()
+                    },
+                    onNewGroup = {
+                        startActivity(GroupCreateActivity.intent(this, broadcast = false))
+                        finish()
+                    },
+                    onNewBroadcast = {
+                        startActivity(GroupCreateActivity.intent(this, broadcast = true))
+                        finish()
+                    },
+                    onScanQr = {
+                        startActivity(Intent(this, QrActivity::class.java))
+                        finish()
+                    },
+                )
+            }
+        }
+    }
+
+    companion object {
+        fun intent(context: Context): Intent =
+            Intent(context, NewConversationActivity::class.java)
+    }
+}
+
+@Composable
+fun NewConversationScreen(
+    onBack: () -> Unit,
+    onNewOneToOne: () -> Unit,
+    onNewGroup: () -> Unit,
+    onNewBroadcast: () -> Unit,
+    onScanQr: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(LabColors.Black)
+            .padding(top = AppInsets.statusBarTop())
+            .padding(horizontal = 16.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            RoundBackButton(onClick = onBack)
+            Spacer(modifier = Modifier.padding(12.dp))
+            Text("New", color = LabColors.White85, style = MaterialTheme.typography.titleLarge)
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        NewAction("New 1:1 chat", LabIconName.EmojiFill, onNewOneToOne)
+        NewAction("New group", LabIconName.Plus, onNewGroup)
+        NewAction("New broadcast", LabIconName.Bell, onNewBroadcast)
+        NewAction("Scan QR code", LabIconName.Camera, onScanQr)
+    }
+}
+
+@Composable
+private fun NewAction(label: String, icon: LabIconName, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(LabColors.Gray33)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        LabIcon(icon, 18.dp, LabColors.White66)
+        Spacer(modifier = Modifier.padding(12.dp))
+        Text(label, color = LabColors.White85, style = MaterialTheme.typography.bodyLarge)
+    }
+}
