@@ -18,12 +18,17 @@ For Polli UI parity notes, see [docs/POLLI_PARITY.md](./docs/POLLI_PARITY.md).
 
 ### Launcher icon
 
-Replace the adaptive launcher assets under `src/main/res/`:
+Place branding assets in `assets/branding/`:
 
-- **Foreground (required):** `mipmap-mdpi` through `mipmap-xxxhdpi` → `ic_launcher_foreground.png` (108×108 dp safe zone; typical PNG sizes: 108, 162, 216, 324, 432 px)
-- **Legacy fallback:** same density folders → `ic_launcher.png` (48–192 px per density)
-- **Adaptive icon XML:** `mipmap-anydpi-v26/ic_launcher.xml` (usually leave as-is)
-- **Background color:** `values/ic_launcher_background.xml`
-- **Monochrome (Android 13+ themed icon):** `drawable/ic_launcher_foreground_monochrome.xml` or replace with a vector/PNG
+| File | Purpose |
+|------|---------|
+| `icon-full.png` | 1024×1024 composite (purple background + white logo) |
+| `icon-foreground.png` | Optional transparent PNG; auto-extracted from `icon-full.png` if missing |
 
-For Play Store / F-Droid listings, also update `fastlane/metadata/android/en-US/images/` (e.g. `icon.png`, `featureGraphic.png`) when you add store assets.
+Then run:
+
+```bash
+./scripts/generate-launcher-icons.sh
+```
+
+This generates all `mipmap-*` densities, sets the adaptive icon background color, and updates the Play Store `fastlane` icon. Reinstall the app after changing icons (launcher caches aggressively).

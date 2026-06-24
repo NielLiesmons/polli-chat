@@ -111,11 +111,17 @@ fun ChatScreen(
     }
     val hazeState = rememberPolliHazeState()
 
-    val openMessageOverlay: (ChatMessage) -> Unit = { message ->
-        scope.launch {
-            viewModel.displayIndexForMessage(message.id)?.let { displayIndex ->
+    val scrollToMessageInFeed: (Int, (() -> Unit)?) -> Unit = { msgId, onComplete ->
+        viewModel.jumpToMessage(msgId) { displayIndex ->
+            scope.launch {
                 listState.scrollToQuoteTarget(displayIndex)
+                onComplete?.invoke()
             }
+        }
+    }
+
+    val openMessageOverlay: (ChatMessage) -> Unit = { message ->
+        scrollToMessageInFeed(message.id) {
             viewModel.showOverlay(message)
         }
     }
@@ -138,6 +144,7 @@ fun ChatScreen(
                     composerClearance = composerClearance,
                     hazeState = hazeState,
                     onOpenMessageOverlay = openMessageOverlay,
+                    onScrollToMessage = { msgId -> scrollToMessageInFeed(msgId, null) },
                 )
                 ChatDetailTab.Apps,
                 ChatDetailTab.Files,
@@ -271,11 +278,11 @@ private fun ChatFeedPage(
     composerClearance: androidx.compose.ui.unit.Dp,
     hazeState: dev.chrisbanes.haze.HazeState,
     onOpenMessageOverlay: (ChatMessage) -> Unit,
+    onScrollToMessage: (Int) -> Unit,
 ) {
     val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
     val displayItems = remember(viewModel.feedItems) { viewModel.feedItems.asReversed() }
     var prevItemCount by remember { mutableIntStateOf(0) }
-    val scrollScope = rememberCoroutineScope()
 
     LaunchedEffect(viewModel.reloadGeneration, displayItems.size) {
         if (displayItems.isEmpty()) {
@@ -335,13 +342,7 @@ private fun ChatFeedPage(
                 ChatFeedItem(
                     item = item,
                     viewModel = viewModel,
-                    onQuoteClick = { quotedId ->
-                        viewModel.jumpToMessage(quotedId) { displayIndex ->
-                            scrollScope.launch {
-                                listState.scrollToQuoteTarget(displayIndex)
-                            }
-                        }
-                    },
+                    onQuoteClick = onScrollToMessage,
                     onOpenMessageOverlay = onOpenMessageOverlay,
                 )
             }

@@ -19,6 +19,7 @@ build.log
 build-log.xml
 .gradle
 build
+.venv-icons/
 signing.properties
 library/lib/
 library/obj/

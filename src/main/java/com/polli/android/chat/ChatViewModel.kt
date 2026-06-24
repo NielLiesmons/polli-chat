@@ -39,6 +39,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
         private set
     var highlightId by mutableIntStateOf(-1)
         private set
+
     /** Bumped on every reload so the feed can preserve scroll or stick to bottom. */
     var reloadGeneration by mutableIntStateOf(0)
         private set
@@ -181,18 +182,6 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
         replyTo = message
         overlayAnchor = null
         persistDraft()
-    }
-
-    fun displayIndexForMessage(msgId: Int): Int? {
-        val feedIndex = feedItems.indexOfFirst { item ->
-            when (item) {
-                is FeedItem.Message -> item.message.id == msgId
-                is FeedItem.IncomingStack -> item.messages.any { it.first.id == msgId }
-                else -> false
-            }
-        }
-        if (feedIndex < 0) return null
-        return displayIndexForFeedIndex(feedIndex, feedItems.size)
     }
 
     fun showOverlay(message: ChatMessage) {
