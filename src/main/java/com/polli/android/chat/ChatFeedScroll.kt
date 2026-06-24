@@ -6,9 +6,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.animation.core.AnimationSpec
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.Easing
+import androidx.compose.animation.core.TweenSpec
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
@@ -64,16 +64,13 @@ fun displayIndexForFeedIndex(feedIndex: Int, feedSize: Int): Int =
 /** Skip centering when the row is already within this many px of viewport center. */
 private const val QUOTE_CENTER_TOLERANCE_PX = 4f
 
-private val chatScrollSpring = spring<Float>(
-    dampingRatio = Spring.DampingRatioLowBouncy,
-    stiffness = Spring.StiffnessMediumLow,
-)
+/** Slow start + slow settle, no positional overshoot. */
+private val chatScrollEasing: Easing = CubicBezierEasing(0.42f, 0f, 0.58f, 1f)
 
-/** Same motion feel but settles quickly so overlay chrome can appear right after centering. */
-private val chatScrollOverlaySpring = spring<Float>(
-    dampingRatio = Spring.DampingRatioNoBouncy,
-    stiffness = Spring.StiffnessMedium,
-)
+private fun centeringScrollSpec(deltaPx: Float): TweenSpec<Float> {
+    val durationMs = (320 + kotlin.math.abs(deltaPx) * 0.22f).toInt().coerceIn(320, 500)
+    return tween(durationMillis = durationMs, easing = chatScrollEasing)
+}
 
 /**
  * Pixel delta to move [index] so its vertical center matches the viewport center.
@@ -90,15 +87,11 @@ private fun LazyListState.centeringScrollDeltaFor(index: Int): Float? {
 }
 
 /**
- * Center the target row in the viewport — smooth spring scroll (quote tap, actions, search).
+ * Center the target row in the viewport — smooth eased scroll (quote tap, actions, search).
  */
-suspend fun LazyListState.scrollToQuoteTarget(
-    displayIndex: Int,
-    forOverlay: Boolean = false,
-) {
+suspend fun LazyListState.scrollToQuoteTarget(displayIndex: Int) {
     if (layoutInfo.totalItemsCount == 0) return
     val index = displayIndex.coerceIn(0, layoutInfo.totalItemsCount - 1)
-    val settleSpring: AnimationSpec<Float> = if (forOverlay) chatScrollOverlaySpring else chatScrollSpring
 
     val alreadyVisible = layoutInfo.visibleItemsInfo.any { it.index == index }
     if (!alreadyVisible) {
@@ -108,7 +101,7 @@ suspend fun LazyListState.scrollToQuoteTarget(
     val delta = centeringScrollDeltaFor(index) ?: return
     if (kotlin.math.abs(delta) < QUOTE_CENTER_TOLERANCE_PX) return
 
-    animateScrollBy(delta, settleSpring)
+    animateScrollBy(delta, centeringScrollSpec(delta))
 }
 
 @Composable
