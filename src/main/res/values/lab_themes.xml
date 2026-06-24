@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Lab.NoActionBar" parent="TextSecure.LightNoActionBar">
+    <style
+        name="Lab.NoActionBar"
+        parent="TextSecure.LightNoActionBar">
         <item name="android:windowBackground">@color/polli_black</item>
         <item name="android:colorBackground">@color/polli_black</item>
         <item name="android:statusBarColor">@color/polli_black</item>

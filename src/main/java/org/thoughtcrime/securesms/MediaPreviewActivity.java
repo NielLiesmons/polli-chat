@@ -349,11 +349,7 @@ public class MediaPreviewActivity extends PassphraseRequiredActionBarActivity
 
     startActivity(
         AppNav.chatIntent(
-            this,
-            dcMsg.getChatId(),
-            -1,
-            null,
-            DcMsg.getMessagePosition(dcMsg, dcContext)));
+            this, dcMsg.getChatId(), -1, null, DcMsg.getMessagePosition(dcMsg, dcContext)));
   }
 
   @SuppressLint("StaticFieldLeak")

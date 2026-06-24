@@ -526,11 +526,7 @@ public class WebxdcActivity extends WebViewActivity implements DcEventCenter.DcE
   private void showInChat() {
     startActivity(
         AppNav.chatIntent(
-            this,
-            dcAppMsg.getChatId(),
-            -1,
-            null,
-            DcMsg.getMessagePosition(dcAppMsg, dcContext)));
+            this, dcAppMsg.getChatId(), -1, null, DcMsg.getMessagePosition(dcAppMsg, dcContext)));
   }
 
   public static void addToHomeScreen(Activity activity, int msgId) {
