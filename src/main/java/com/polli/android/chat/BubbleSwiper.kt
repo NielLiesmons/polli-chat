@@ -25,7 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
@@ -56,31 +56,27 @@ private const val POP_SCALE = 1.22f
 private val SWIPE_EASING = CubicBezierEasing(0.22f, 1f, 0.36f, 1f)
 private val POP_EASING = CubicBezierEasing(0.34f, 1.56f, 0.64f, 1f)
 
-/** Horizontal swipe on bubbles — port of polli/bubble_swiper.rs */
+/** Swipe right → reply. Tap → actions overlay. No swipe-left. */
 @Composable
 fun BubbleSwiper(
     modifier: Modifier = Modifier,
     alignEnd: Boolean = false,
     replyIconInset: Float = if (alignEnd) 4f else 8f,
-    optionsIconInset: Float = if (alignEnd) 4f else 8f,
     onSwipeReply: () -> Unit,
-    onSwipeOptions: (Rect) -> Unit,
-    onTap: ((Rect) -> Unit)? = null,
-    onDragProgress: ((dragX: Float) -> Unit)? = null,
+    onTap: (Offset) -> Unit,
     content: @Composable () -> Unit,
 ) {
     var dragX by remember { mutableFloatStateOf(0f) }
     var dragging by remember { mutableStateOf(false) }
     var popping by remember { mutableStateOf(false) }
-    var popReply by remember { mutableStateOf<Boolean?>(null) }
     var triggered by remember { mutableStateOf(false) }
     var contentCoords by remember { mutableStateOf<LayoutCoordinates?>(null) }
     val scope = rememberCoroutineScope()
 
-    fun currentBounds(): Rect {
+    fun currentTapInRoot(local: Offset): Offset {
         val coords = contentCoords
-        if (coords == null || !coords.isAttached) return Rect.Zero
-        return coords.boundsInRoot().takeUnless { it.isEmpty } ?: Rect.Zero
+        if (coords == null || !coords.isAttached) return Offset.Zero
+        return coords.localToRoot(local)
     }
 
     val settleTarget = if (dragging || popping) dragX else 0f
@@ -93,44 +89,26 @@ fun BubbleSwiper(
         label = "bubbleDrag",
     )
 
-    val leftOffset = animatedX.coerceIn(-MAX_DRAG, 0f)
-    val rightOffset = animatedX.coerceIn(0f, MAX_DRAG)
-    val rightDrag = rightOffset
-    val leftDrag = (-leftOffset).coerceIn(0f, MAX_DRAG)
-    val rightProg = (rightDrag / TRIGGER_AT).coerceIn(0f, 1f)
-    val leftProg = (leftDrag / TRIGGER_AT).coerceIn(0f, 1f)
-
-    val popMult = if (popping) POP_SCALE else 1f
-    val replyScale = (0.5f + 0.5f * rightProg) * if (popping && popReply == true) popMult else 1f
-    val optionsScale = (0.5f + 0.5f * leftProg) * if (popping && popReply == false) popMult else 1f
-    val replyParallax = (-rightDrag * ICON_PARALLAX).coerceIn(-ICON_MAX_OUTWARD, 0f)
-    val optionsParallax = (leftDrag * ICON_PARALLAX).coerceIn(0f, ICON_MAX_OUTWARD)
-    val replyOpacity = if (popping && popReply == true) 1f else rightProg
-    val optionsOpacity = if (popping && popReply == false) 1f else leftProg
+    val dragOffset = animatedX.coerceIn(0f, MAX_DRAG)
+    val replyProg = (dragOffset / TRIGGER_AT).coerceIn(0f, 1f)
+    val replyScale = (0.5f + 0.5f * replyProg) * if (popping) POP_SCALE else 1f
+    val replyParallax = (-dragOffset * ICON_PARALLAX).coerceIn(-ICON_MAX_OUTWARD, 0f)
+    val replyOpacity = if (popping) 1f else replyProg
 
     fun settle() {
         dragging = false
         popping = false
-        popReply = null
         triggered = false
         dragX = 0f
-        onDragProgress?.invoke(0f)
     }
 
-    /** Never call action callbacks synchronously from [pointerInput] — that crashes Compose. */
-    fun fireSwipe(reply: Boolean) {
+    fun fireReply() {
         if (triggered) return
         triggered = true
         popping = true
-        popReply = reply
-        val bounds = currentBounds()
         scope.launch {
             delay(CALLBACK_DELAY_MS)
-            if (reply) {
-                onSwipeReply()
-            } else {
-                onSwipeOptions(bounds)
-            }
+            onSwipeReply()
             delay(POP_SETTLE_MS)
             settle()
         }
@@ -148,32 +126,24 @@ fun BubbleSwiper(
                     .offset(x = replyIconInset.dp + replyParallax.dp),
                 scale = replyScale,
                 alpha = replyOpacity,
-                popping = popping && popReply == true,
-            )
-        }
-        if (optionsOpacity > 0.01f) {
-            SwipeRevealIcon(
-                icon = LabIconName.Options,
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .offset(x = (-optionsIconInset).dp + optionsParallax.dp),
-                scale = optionsScale,
-                alpha = optionsOpacity,
-                popping = popping && popReply == false,
+                popping = popping,
             )
         }
 
         Box(
             modifier = Modifier
                 .wrapContentWidth()
-                .offset { IntOffset(leftOffset.roundToInt(), 0) }
+                .offset { IntOffset(dragOffset.roundToInt(), 0) }
                 .pointerInput(Unit) {
                     awaitEachGesture {
                         val down = awaitFirstDown(requireUnconsumed = false)
                         val pointerId = down.id
                         val start = down.position
+                        val downUptime = down.uptimeMillis
+                        val longPressTimeout = viewConfiguration.longPressTimeoutMillis
                         var horizontalDrag = false
                         var childHandled = down.isConsumed
+                        var longPress = false
 
                         while (true) {
                             val event = awaitPointerEvent(PointerEventPass.Main)
@@ -186,18 +156,28 @@ fun BubbleSwiper(
                                 if (!triggered && !popping) {
                                     val dx = change.position.x - start.x
                                     val dy = change.position.y - start.y
-                                    if (!horizontalDrag &&
+                                    val pressDuration = change.uptimeMillis - downUptime
+                                    if (
+                                        !horizontalDrag &&
+                                        !longPress &&
                                         !childHandled &&
                                         !change.isConsumed &&
+                                        pressDuration < longPressTimeout &&
                                         abs(dx) < TAP_SLOP_PX &&
                                         abs(dy) < TAP_SLOP_PX
                                     ) {
-                                        val bounds = currentBounds()
-                                        scope.launch { onTap?.invoke(bounds) }
+                                        scope.launch { onTap(currentTapInRoot(change.position)) }
                                     }
                                     scope.launch { settle() }
                                 }
                                 break
+                            }
+
+                            if (
+                                !horizontalDrag &&
+                                change.uptimeMillis - downUptime >= longPressTimeout
+                            ) {
+                                longPress = true
                             }
 
                             val dx = change.position.x - start.x
@@ -205,28 +185,24 @@ fun BubbleSwiper(
 
                             if (!horizontalDrag) {
                                 if (abs(dx) < DRAG_START_PX && abs(dy) < DRAG_START_PX) continue
-                                if (abs(dx) <= abs(dy)) break
+                                if (abs(dx) <= abs(dy) || dx < 0f) break
                                 horizontalDrag = true
                                 dragging = true
                                 triggered = false
                                 popping = false
-                                popReply = null
                             }
 
                             change.consume()
-                            dragX = dx.coerceIn(-MAX_DRAG, MAX_DRAG)
-                            onDragProgress?.invoke(dragX)
-                            if (abs(dragX) >= TRIGGER_AT) {
-                                fireSwipe(dragX > 0f)
+                            dragX = dx.coerceIn(0f, MAX_DRAG)
+                            if (dragX >= TRIGGER_AT) {
+                                fireReply()
                             }
                         }
                     }
                 },
         ) {
             Box(
-                modifier = Modifier
-                    .offset { IntOffset(rightOffset.roundToInt(), 0) }
-                    .onGloballyPositioned { contentCoords = it },
+                modifier = Modifier.onGloballyPositioned { contentCoords = it },
             ) {
                 content()
             }

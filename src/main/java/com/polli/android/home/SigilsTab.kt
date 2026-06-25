@@ -1,7 +1,6 @@
 package com.polli.android.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,14 +11,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -32,12 +29,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.polli.android.sigil.RoundedSigilView
-import com.polli.android.sigil.SquareSigilView
 import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabDimens
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.labPressScale
 import com.polli.core.sigil.MnsSigil
+
+private val SigilDisplaySize = 280.dp
 
 @Composable
 fun SigilsTab() {
@@ -45,7 +43,6 @@ fun SigilsTab() {
         mutableStateListOf(MnsSigil.randomValue())
     }
     var index by remember { mutableIntStateOf(0) }
-    var squareMode by remember { mutableStateOf(false) }
 
     val sigilValue = history[index]
     val name = remember(sigilValue) { MnsSigil.encodeName(sigilValue) }
@@ -58,34 +55,20 @@ fun SigilsTab() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        // Circle frame only — sigil grid is inscribed inside, not clipped.
         Box(
             modifier = Modifier
-                .size(160.dp)
-                .border(3.dp, LabColors.Gray33, CircleShape)
-                .background(LabColors.Black, CircleShape),
+                .size(SigilDisplaySize)
+                .background(LabColors.Black)
+                .padding(12.dp),
             contentAlignment = Alignment.Center,
         ) {
-            if (squareMode) {
-                SquareSigilView(
-                    value = sigilValue,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            } else {
-                RoundedSigilView(
-                    value = sigilValue,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
+            RoundedSigilView(
+                value = sigilValue,
+                modifier = Modifier.fillMaxSize(),
+            )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        NavPill(label = if (squareMode) "Rounded" else "Square") {
-            squareMode = !squareMode
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         Text(
             text = name,

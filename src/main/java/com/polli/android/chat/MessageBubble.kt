@@ -7,28 +7,17 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.boundsInRoot
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -173,8 +162,7 @@ fun OutgoingMessageRow(
     reactionReloadKey: Int,
     pulseEmoji: String?,
     onSwipeReply: () -> Unit,
-    onSwipeOptions: (Rect) -> Unit,
-    onClick: (Rect) -> Unit,
+    onClick: (Offset) -> Unit,
     onQuoteClick: (Int) -> Unit,
 ) {
     val rowTop = if (layout.isFirstInStack) LabDimens.ChatRowTop else LabDimens.ChatRowTopCollapsed
@@ -188,9 +176,7 @@ fun OutgoingMessageRow(
             modifier = Modifier.messageRowHighlight(highlighted),
             alignEnd = true,
             replyIconInset = 4f,
-            optionsIconInset = 4f,
             onSwipeReply = onSwipeReply,
-            onSwipeOptions = onSwipeOptions,
             onTap = onClick,
         ) {
             MessageBubble(
@@ -211,49 +197,16 @@ fun SingleIncomingMessageRow(
     highlighted: Boolean,
     reactionReloadKey: Int,
     pulseEmoji: String?,
-    listState: LazyListState,
     onSwipeReply: () -> Unit,
-    onSwipeOptions: (Rect) -> Unit,
-    onClick: (Rect) -> Unit,
+    onClick: (Offset) -> Unit,
     onQuoteClick: (Int) -> Unit,
 ) {
     val rowTop = if (layout.isFirstInStack) LabDimens.ChatRowTop else LabDimens.ChatRowTopCollapsed
     val showAvatar = layout.isLastInStack
-    val avatarSticky = LocalIncomingAvatarSticky.current
-    var avatarSwipe by remember { mutableFloatStateOf(0f) }
-    val avatarScale = 1f - avatarSwipe * 0.22f
-    val avatarOpacity = 1f - avatarSwipe * 0.92f
-    var rowBounds by remember(message.id) { mutableStateOf<Rect?>(null) }
-    var avatarAnchor by remember(message.id) { mutableStateOf<Rect?>(null) }
-    val displayItems = LocalChatDisplayItems.current
-
-    fun reportGeometry() {
-        val bounds = rowBounds ?: return
-        avatarSticky?.reportRow(
-            IncomingRowGeometry(
-                messageId = message.id,
-                authorKey = message.authorKey,
-                isFirstInStack = layout.isFirstInStack,
-                isLastInStack = layout.isLastInStack,
-                rowBounds = bounds,
-                avatarAnchor = avatarAnchor,
-            ),
-        )
-    }
-
-    DisposableEffect(message.id, avatarSticky) {
-        onDispose { avatarSticky?.clearRow(message.id) }
-    }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .onGloballyPositioned { coords ->
-                if (coords.isAttached) {
-                    rowBounds = coords.boundsInRoot()
-                    reportGeometry()
-                }
-            }
             .padding(
                 start = LabDimens.ChatRowPaddingH,
                 end = LabDimens.ChatRowIncomingRight,
@@ -264,20 +217,27 @@ fun SingleIncomingMessageRow(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.Bottom,
         ) {
-            Spacer(modifier = Modifier.width(LabDimens.ChatIncomingGroupAvatarOffset))
+            if (showAvatar) {
+                LabAvatar(
+                    name = message.authorName,
+                    seed = message.authorKey,
+                    size = LabDimens.ChatAvatarSize,
+                    contactId = message.authorId,
+                )
+                Spacer(
+                    modifier = Modifier.width(
+                        LabDimens.ChatIncomingGroupAvatarOffset - LabDimens.ChatAvatarSize,
+                    ),
+                )
+            } else {
+                Spacer(modifier = Modifier.width(LabDimens.ChatIncomingGroupAvatarOffset))
+            }
             BubbleSwiper(
                 modifier = Modifier.messageRowHighlight(highlighted),
                 alignEnd = false,
                 replyIconInset = 8f,
-                optionsIconInset = 8f,
                 onSwipeReply = onSwipeReply,
-                onSwipeOptions = onSwipeOptions,
                 onTap = onClick,
-                onDragProgress = if (showAvatar) {
-                    { dx: Float -> avatarSwipe = ((-dx).coerceIn(0f, 40f)) / 40f }
-                } else {
-                    null
-                },
             ) {
                 MessageBubble(
                     message = message,
@@ -286,37 +246,6 @@ fun SingleIncomingMessageRow(
                     reactionReloadKey = reactionReloadKey,
                     pulseEmoji = pulseEmoji,
                     onQuoteClick = onQuoteClick,
-                )
-            }
-        }
-        if (showAvatar) {
-            val pinned = avatarSticky?.isPinned(message.id, listState, displayItems) == true
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .size(LabDimens.ChatAvatarSize)
-                    .onGloballyPositioned { coords ->
-                        if (coords.isAttached) {
-                            avatarAnchor = coords.boundsInRoot()
-                            reportGeometry()
-                        }
-                    },
-            ) {
-                LabAvatar(
-                    name = message.authorName,
-                    seed = message.authorKey,
-                    size = LabDimens.ChatAvatarSize,
-                    modifier = Modifier.graphicsLayer {
-                        alpha = if (pinned) 0f else avatarOpacity
-                        scaleX = avatarScale
-                        scaleY = avatarScale
-                        clip = false
-                        transformOrigin = androidx.compose.ui.graphics.TransformOrigin(
-                            pivotFractionX = 0.5f,
-                            pivotFractionY = 1f,
-                        )
-                    },
-                    contactId = message.authorId,
                 )
             }
         }

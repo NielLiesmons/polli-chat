@@ -10,14 +10,15 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.clipRect
 import com.polli.core.sigil.MnsSigil
 import com.polli.core.sigil.SigilCornerRules
 import kotlin.math.min
-import kotlin.math.sqrt
 
 /**
- * Each cell = inscribed circle (filled when ON, empty when OFF)
- * + four corner wedges outside the circle (the leftover square corners).
+ * Each ON cell = inscribed circle + corner wedges outside it.
+ * OFF cells fill nook wedges only.
+ * Convex outer tips: radius = cell, center shifted ½ cell away from the empty corner, clipped to the cell.
  */
 @Composable
 fun RoundedSigilView(
@@ -29,41 +30,76 @@ fun RoundedSigilView(
     val grid = remember(value) { MnsSigil.grid(value) }
 
     Canvas(modifier = modifier.aspectRatio(1f)) {
-        val diameter = min(size.width, size.height)
-        val gridSide = diameter / sqrt(2f)
-        val cell = gridSide / MnsSigil.COLS
-        val ox = (size.width - gridSide) / 2f
-        val oy = (size.height - gridSide) / 2f
+        val side = min(size.width, size.height)
+        val cell = side / MnsSigil.COLS
+        val ox = (size.width - side) / 2f
+        val oy = (size.height - side) / 2f
         val r = cell / 2f
 
-        drawRect(offColor, topLeft = Offset(ox, oy), size = Size(gridSide, gridSide))
+        drawRect(offColor, topLeft = Offset(ox, oy), size = Size(side, side))
 
-        // Pass 1 — circles
         for (row in 0 until MnsSigil.ROWS) {
             for (col in 0 until MnsSigil.COLS) {
                 if (!grid[row][col]) continue
                 val x = ox + col * cell
                 val y = oy + row * cell
-                drawCircle(onColor, radius = r, center = Offset(x + r, y + r))
-            }
-        }
-
-        // Pass 2 — corner wedges (on top)
-        for (row in 0 until MnsSigil.ROWS) {
-            for (col in 0 until MnsSigil.COLS) {
-                val x = ox + col * cell
-                val y = oy + row * cell
-                val on = grid[row][col]
                 val n = cellOn(grid, row - 1, col)
                 val e = cellOn(grid, row, col + 1)
                 val s = cellOn(grid, row + 1, col)
                 val w = cellOn(grid, row, col - 1)
+                val nw = cellOn(grid, row - 1, col - 1)
+                val ne = cellOn(grid, row - 1, col + 1)
+                val sw = cellOn(grid, row + 1, col - 1)
+                val se = cellOn(grid, row + 1, col + 1)
+                val convex = convexCorners(n, e, s, w, nw, ne, sw, se)
+
+                // Pass 1 — small inscribed circle (skipped when this cell uses a large convex circle)
+                if (convex.isEmpty()) {
+                    drawCircle(onColor, radius = r, center = Offset(x + r, y + r))
+                }
+
+                // Pass 2 — small corner wedges (none on exception pixels — large circle only)
+                if (convex.isEmpty()) {
+                    val circle = inscribedCircle(x, y, cell)
+                    drawCornerWedgeIfNeeded(x, y, cell, circle, onColor, true, n, e, s, w, nw, ne, sw, se, SigilCornerRules.Corner.TL)
+                    drawCornerWedgeIfNeeded(x, y, cell, circle, onColor, true, n, e, s, w, nw, ne, sw, se, SigilCornerRules.Corner.TR)
+                    drawCornerWedgeIfNeeded(x, y, cell, circle, onColor, true, n, e, s, w, nw, ne, sw, se, SigilCornerRules.Corner.BR)
+                    drawCornerWedgeIfNeeded(x, y, cell, circle, onColor, true, n, e, s, w, nw, ne, sw, se, SigilCornerRules.Corner.BL)
+                }
+
+                // Pass 3 — large circle clipped to this pixel
+                for (corner in convex) {
+                    clipRect(x, y, x + cell, y + cell) {
+                        drawCircle(
+                            color = onColor,
+                            radius = cell,
+                            center = convexCircleCenter(x, y, cell, corner),
+                        )
+                    }
+                }
+            }
+        }
+
+        // OFF cells — nook wedges only
+        for (row in 0 until MnsSigil.ROWS) {
+            for (col in 0 until MnsSigil.COLS) {
+                if (grid[row][col]) continue
+                val x = ox + col * cell
+                val y = oy + row * cell
+                val n = cellOn(grid, row - 1, col)
+                val e = cellOn(grid, row, col + 1)
+                val s = cellOn(grid, row + 1, col)
+                val w = cellOn(grid, row, col - 1)
+                val nw = cellOn(grid, row - 1, col - 1)
+                val ne = cellOn(grid, row - 1, col + 1)
+                val sw = cellOn(grid, row + 1, col - 1)
+                val se = cellOn(grid, row + 1, col + 1)
                 val circle = inscribedCircle(x, y, cell)
 
-                drawCornerWedgeIfNeeded(x, y, cell, circle, onColor, on, n, w, SigilCornerRules.Corner.TL)
-                drawCornerWedgeIfNeeded(x, y, cell, circle, onColor, on, n, e, SigilCornerRules.Corner.TR)
-                drawCornerWedgeIfNeeded(x, y, cell, circle, onColor, on, s, e, SigilCornerRules.Corner.BR)
-                drawCornerWedgeIfNeeded(x, y, cell, circle, onColor, on, s, w, SigilCornerRules.Corner.BL)
+                drawCornerWedgeIfNeeded(x, y, cell, circle, onColor, false, n, e, s, w, nw, ne, sw, se, SigilCornerRules.Corner.TL)
+                drawCornerWedgeIfNeeded(x, y, cell, circle, onColor, false, n, e, s, w, nw, ne, sw, se, SigilCornerRules.Corner.TR)
+                drawCornerWedgeIfNeeded(x, y, cell, circle, onColor, false, n, e, s, w, nw, ne, sw, se, SigilCornerRules.Corner.BR)
+                drawCornerWedgeIfNeeded(x, y, cell, circle, onColor, false, n, e, s, w, nw, ne, sw, se, SigilCornerRules.Corner.BL)
             }
         }
     }
@@ -72,6 +108,39 @@ fun RoundedSigilView(
 private fun cellOn(grid: Array<BooleanArray>, row: Int, col: Int): Boolean {
     if (row !in 0 until MnsSigil.ROWS || col !in 0 until MnsSigil.COLS) return false
     return grid[row][col]
+}
+
+private fun convexCorners(
+    n: Boolean,
+    e: Boolean,
+    s: Boolean,
+    w: Boolean,
+    nw: Boolean,
+    ne: Boolean,
+    sw: Boolean,
+    se: Boolean,
+): List<SigilCornerRules.Corner> =
+    SigilCornerRules.Corner.entries.filter { corner ->
+        val neighbors = SigilCornerRules.cornerNeighbors(corner, n, e, s, w, nw, ne, sw, se)
+        SigilCornerRules.isConvexOuterCorner(true, corner, neighbors, n, e, s, w)
+    }
+
+/** Cell center shifted ½ cell away from the empty side (e.g. TL empty → shift SE). */
+private fun convexCircleCenter(
+    x: Float,
+    y: Float,
+    cell: Float,
+    corner: SigilCornerRules.Corner,
+): Offset {
+    val mx = x + cell / 2f
+    val my = y + cell / 2f
+    val h = cell / 2f
+    return when (corner) {
+        SigilCornerRules.Corner.TL -> Offset(mx + h, my + h)
+        SigilCornerRules.Corner.TR -> Offset(mx - h, my + h)
+        SigilCornerRules.Corner.BR -> Offset(mx - h, my - h)
+        SigilCornerRules.Corner.BL -> Offset(mx + h, my - h)
+    }
 }
 
 private fun inscribedCircle(x: Float, y: Float, cell: Float): Rect {
@@ -88,18 +157,21 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawCornerWedgeIfNe
     circle: Rect,
     color: Color,
     selfOn: Boolean,
-    neighborA: Boolean,
-    neighborB: Boolean,
+    n: Boolean,
+    e: Boolean,
+    s: Boolean,
+    w: Boolean,
+    nw: Boolean,
+    ne: Boolean,
+    sw: Boolean,
+    se: Boolean,
     corner: SigilCornerRules.Corner,
 ) {
-    if (!SigilCornerRules.fillCornerWedge(selfOn, neighborA, neighborB)) return
+    val neighbors = SigilCornerRules.cornerNeighbors(corner, n, e, s, w, nw, ne, sw, se)
+    if (!SigilCornerRules.fillCornerWedge(selfOn, corner, neighbors, n, e, s, w)) return
     drawPath(cornerWedgePath(x, y, cell, circle, corner), color)
 }
 
-/**
- * Corner wedge outside the inscribed circle.
- * Arc runs clockwise from the first edge midpoint to the second (sweep = +90°).
- */
 private fun cornerWedgePath(
     x: Float,
     y: Float,

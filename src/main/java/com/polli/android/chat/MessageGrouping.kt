@@ -30,3 +30,22 @@ fun layoutsForMessages(messages: List<ChatMessage>): Map<Int, MessageGroupLayout
     }
     return out
 }
+
+/** display index 0 = newest at bottom; range.first = newest in group. */
+fun displayIndexRangeForGroup(displayItems: List<FeedItem>, anchorIndex: Int): IntRange {
+    var first = anchorIndex
+    var last = anchorIndex
+    while (first > 0) {
+        val older = (displayItems[first] as? FeedItem.Message)?.message ?: break
+        val newer = (displayItems[first - 1] as? FeedItem.Message)?.message ?: break
+        if (!continuesGroup(older, newer)) break
+        first--
+    }
+    while (last < displayItems.lastIndex) {
+        val newer = (displayItems[last] as? FeedItem.Message)?.message ?: break
+        val older = (displayItems[last + 1] as? FeedItem.Message)?.message ?: break
+        if (!continuesGroup(older, newer)) break
+        last++
+    }
+    return first..last
+}

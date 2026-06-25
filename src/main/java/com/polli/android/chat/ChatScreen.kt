@@ -19,15 +19,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -36,8 +33,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.zIndex
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
@@ -50,8 +47,6 @@ import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabDimens
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.ChatFeedEdgeGradients
-import androidx.compose.foundation.layout.absoluteOffset
-import com.polli.android.ui.LabAvatar
 import com.polli.android.ui.rememberLazyListShowTopFadeDerived
 import com.polli.android.ui.rememberPolliHazeState
 import dev.chrisbanes.haze.hazeSource
@@ -59,9 +54,6 @@ import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 import org.thoughtcrime.securesms.AllMediaActivity
 import org.thoughtcrime.securesms.R
-
-internal val LocalIncomingAvatarSticky = staticCompositionLocalOf<IncomingAvatarStickyState?> { null }
-internal val LocalChatDisplayItems = staticCompositionLocalOf<List<FeedItem>> { emptyList() }
 
 @Composable
 fun ChatScreen(
@@ -118,18 +110,19 @@ fun ChatScreen(
         )
     }
     val hazeState = rememberPolliHazeState()
+    val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
+    val keyboardVisible = imeBottom > 0.dp
 
-    val scrollToMessage: (Int, (() -> Unit)?) -> Unit = { msgId, onComplete ->
+    val scrollToMessage: (Int) -> Unit = { msgId ->
         viewModel.jumpToMessage(msgId) { displayIndex ->
             scope.launch {
-                listState.scrollToQuoteTarget(displayIndex)
-                onComplete?.invoke()
+                listState.scrollMaybeSmoothToDisplayIndex(displayIndex)
             }
         }
     }
 
-    val openMessageOverlay: (ChatMessage) -> Unit = { message ->
-        scrollToMessage(message.id) { viewModel.showOverlay(message) }
+    val openMessageOverlay: (ChatMessage, androidx.compose.ui.geometry.Offset) -> Unit = { message, tap ->
+        viewModel.showOverlay(message, tap.x, tap.y)
     }
 
     Box(
@@ -152,7 +145,7 @@ fun ChatScreen(
                     composerClearance = composerClearance,
                     hazeState = hazeState,
                     onOpenMessageOverlay = openMessageOverlay,
-                    onScrollToMessage = { msgId -> scrollToMessage(msgId, null) },
+                    onScrollToMessage = scrollToMessage,
                 )
                 ChatDetailTab.Apps,
                 ChatDetailTab.Files,
@@ -258,6 +251,7 @@ fun ChatScreen(
         BubbleOverlayHost(
             anchor = viewModel.overlayAnchor,
             hazeState = hazeState,
+            keyboardVisible = keyboardVisible,
             onDismiss = viewModel::dismissOverlay,
             onReaction = { emoji ->
                 val msgId = viewModel.overlayAnchor?.message?.id ?: return@BubbleOverlayHost
@@ -285,15 +279,12 @@ private fun ChatFeedPage(
     headerClearance: androidx.compose.ui.unit.Dp,
     composerClearance: androidx.compose.ui.unit.Dp,
     hazeState: dev.chrisbanes.haze.HazeState,
-    onOpenMessageOverlay: (ChatMessage) -> Unit,
+    onOpenMessageOverlay: (ChatMessage, androidx.compose.ui.geometry.Offset) -> Unit,
     onScrollToMessage: (Int) -> Unit,
 ) {
     val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
     val displayItems = remember(viewModel.feedItems) { viewModel.feedItems.asReversed() }
     var prevItemCount by remember { mutableIntStateOf(0) }
-    val avatarStickyState = remember { IncomingAvatarStickyState() }
-    val density = LocalDensity.current
-    val bottomPadPx = with(density) { (composerClearance + imeBottom).toPx() }
 
     LaunchedEffect(viewModel.reloadGeneration, displayItems.size) {
         if (displayItems.isEmpty()) {
@@ -326,64 +317,32 @@ private fun ChatFeedPage(
         prevItemCount = displayItems.size
     }
 
-    var feedRootTopLeft by remember { mutableStateOf(androidx.compose.ui.geometry.Offset.Zero) }
-
     Box(modifier = Modifier.fillMaxSize().hazeSource(state = hazeState)) {
-        val stickyOverlay = avatarStickyState.overlay(listState, displayItems)
-        CompositionLocalProvider(
-            LocalIncomingAvatarSticky provides avatarStickyState,
-            LocalChatDisplayItems provides displayItems,
+        LazyColumn(
+            state = listState,
+            reverseLayout = true,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                top = headerClearance,
+                bottom = composerClearance + imeBottom,
+            ),
         ) {
-            LazyColumn(
-                state = listState,
-                reverseLayout = true,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .onGloballyPositioned { coords ->
-                        val root = coords.boundsInRoot()
-                        feedRootTopLeft = androidx.compose.ui.geometry.Offset(root.left, root.top)
-                        avatarStickyState.updateFeedAnchor(
-                            rootLeft = root.left,
-                            stickyBottom = root.bottom - bottomPadPx,
-                        )
-                    },
-                contentPadding = PaddingValues(
-                    top = headerClearance,
-                    bottom = composerClearance + imeBottom,
-                ),
-            ) {
-                itemsIndexed(
-                    items = displayItems,
-                    key = { _, item ->
-                        when (item) {
-                            is FeedItem.DayMarker -> "day-${item.label}"
-                            is FeedItem.Message -> "msg-${item.message.id}"
-                        }
-                    },
-                ) { _, item ->
-                    ChatFeedItem(
-                        item = item,
-                        viewModel = viewModel,
-                        listState = listState,
-                        onQuoteClick = onScrollToMessage,
-                        onOpenMessageOverlay = onOpenMessageOverlay,
-                    )
-                }
+            itemsIndexed(
+                items = displayItems,
+                key = { _, item ->
+                    when (item) {
+                        is FeedItem.DayMarker -> "day-${item.label}"
+                        is FeedItem.Message -> "msg-${item.message.id}"
+                    }
+                },
+            ) { _, item ->
+                ChatFeedItem(
+                    item = item,
+                    viewModel = viewModel,
+                    onQuoteClick = onScrollToMessage,
+                    onOpenMessageOverlay = onOpenMessageOverlay,
+                )
             }
-        }
-        stickyOverlay?.let { overlay ->
-            LabAvatar(
-                name = overlay.authorName,
-                seed = overlay.authorKey,
-                size = LabDimens.ChatAvatarSize,
-                contactId = overlay.authorId,
-                modifier = Modifier
-                    .zIndex(2f)
-                    .absoluteOffset(
-                        x = with(density) { (overlay.rootTopLeftX - feedRootTopLeft.x).toDp() },
-                        y = with(density) { (overlay.rootTopLeftY - feedRootTopLeft.y).toDp() },
-                    ),
-            )
         }
     }
 }
@@ -392,9 +351,8 @@ private fun ChatFeedPage(
 private fun ChatFeedItem(
     item: FeedItem,
     viewModel: ChatViewModel,
-    listState: androidx.compose.foundation.lazy.LazyListState,
     onQuoteClick: (Int) -> Unit,
-    onOpenMessageOverlay: (ChatMessage) -> Unit,
+    onOpenMessageOverlay: (ChatMessage, androidx.compose.ui.geometry.Offset) -> Unit,
 ) {
     when (item) {
         is FeedItem.DayMarker -> {
@@ -417,8 +375,7 @@ private fun ChatFeedItem(
                     reactionReloadKey = viewModel.reloadGeneration,
                     pulseEmoji = pulseEmoji,
                     onSwipeReply = { viewModel.setReply(msg) },
-                    onSwipeOptions = { onOpenMessageOverlay(msg) },
-                    onClick = { onOpenMessageOverlay(msg) },
+                    onClick = { tap -> onOpenMessageOverlay(msg, tap) },
                     onQuoteClick = onQuoteClick,
                 )
             } else {
@@ -428,10 +385,8 @@ private fun ChatFeedItem(
                     highlighted = viewModel.highlightId == msg.id,
                     reactionReloadKey = viewModel.reloadGeneration,
                     pulseEmoji = pulseEmoji,
-                    listState = listState,
                     onSwipeReply = { viewModel.setReply(msg) },
-                    onSwipeOptions = { onOpenMessageOverlay(msg) },
-                    onClick = { onOpenMessageOverlay(msg) },
+                    onClick = { tap -> onOpenMessageOverlay(msg, tap) },
                     onQuoteClick = onQuoteClick,
                 )
             }

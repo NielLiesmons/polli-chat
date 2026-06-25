@@ -6,17 +6,12 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.Easing
-import androidx.compose.animation.core.TweenSpec
-import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -63,53 +58,33 @@ suspend fun LazyListState.scrollToChatBottom(animated: Boolean) {
 fun displayIndexForFeedIndex(feedIndex: Int, feedSize: Int): Int =
     (feedSize - 1 - feedIndex).coerceAtLeast(0)
 
-/** Skip centering when the row is already within this many px of viewport center. */
-private const val QUOTE_CENTER_TOLERANCE_PX = 4f
+/** Mirrors [org.thoughtcrime.securesms.ConversationFragment.scrollMaybeSmoothToMsgId]. */
+private const val SMOOTH_SCROLL_DISTANCE_THRESHOLD = 15
 
-/** Slow start + slow settle, no positional overshoot. */
-private val chatScrollEasing: Easing = CubicBezierEasing(0.42f, 0f, 0.58f, 1f)
-
-private fun centeringScrollSpec(deltaPx: Float): TweenSpec<Float> {
-    val durationMs = (320 + abs(deltaPx) * 0.22f).toInt().coerceIn(320, 500)
-    return tween(durationMillis = durationMs, easing = chatScrollEasing)
+/** Bias quoted rows upward in the viewport — single scroll step, negative offset only. */
+private fun LazyListState.quoteScrollOffsetPx(): Int {
+    val viewport = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
+    if (viewport <= 0) return 0
+    return -(viewport / 3)
 }
 
 /**
- * Pixel delta to move [index] so its vertical center matches the viewport center.
- * Uses live [layoutInfo] — never [scrollOffset] (positive offset breaks reverseLayout).
+ * Scroll to a feed row by display index (newest = 0).
+ * Smooth when the target is within [SMOOTH_SCROLL_DISTANCE_THRESHOLD] visible rows; instant otherwise.
  */
-private fun LazyListState.centeringScrollDeltaFor(index: Int): Float? {
-    val item = layoutInfo.visibleItemsInfo.find { it.index == index } ?: return null
-    val viewportStart = layoutInfo.viewportStartOffset
-    val viewportEnd = layoutInfo.viewportEndOffset
-    if (viewportEnd <= viewportStart) return null
-    val viewportCenter = (viewportStart + viewportEnd) / 2f
-    return item.offset + item.size / 2f - viewportCenter
-}
-
-/**
- * Center the target bubble row — same path that worked for grouped rows.
- * Each bubble is one lazy row, so row center = bubble center.
- */
-suspend fun LazyListState.scrollToQuoteTarget(displayIndex: Int) {
+suspend fun LazyListState.scrollMaybeSmoothToDisplayIndex(displayIndex: Int) {
     if (layoutInfo.totalItemsCount == 0) return
     val index = displayIndex.coerceIn(0, layoutInfo.totalItemsCount - 1)
-
-    val alreadyVisible = layoutInfo.visibleItemsInfo.any { it.index == index }
-    if (!alreadyVisible) {
-        animateScrollToItem(index)
-        withFrameNanos { }
+    val visible = layoutInfo.visibleItemsInfo
+    val first = visible.firstOrNull()?.index ?: firstVisibleItemIndex
+    val last = visible.lastOrNull()?.index ?: first
+    val distance = minOf(abs(index - first), abs(index - last))
+    val scrollOffset = quoteScrollOffsetPx()
+    if (distance < SMOOTH_SCROLL_DISTANCE_THRESHOLD) {
+        animateScrollToItem(index, scrollOffset)
+    } else {
+        scrollToItem(index, scrollOffset)
     }
-
-    var delta = centeringScrollDeltaFor(index)
-    if (delta == null) {
-        withFrameNanos { }
-        delta = centeringScrollDeltaFor(index)
-    }
-    delta ?: return
-    if (abs(delta) < QUOTE_CENTER_TOLERANCE_PX) return
-
-    animateScrollBy(delta, centeringScrollSpec(delta))
 }
 
 @Composable

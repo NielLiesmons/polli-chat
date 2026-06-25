@@ -3,10 +3,11 @@ package com.polli.android.chat
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -66,35 +67,42 @@ fun MessageBubbleText(
 
     var textLayout by remember { mutableStateOf<TextLayoutResult?>(null) }
 
-    Text(
-        text = annotated,
-        modifier = modifier.pointerInput(annotated) {
-            awaitEachGesture {
-                val down = awaitFirstDown(requireUnconsumed = false)
-                val up = waitForUpOrCancellation() ?: return@awaitEachGesture
-                val delta = up.position - down.position
-                if (hypot(delta.x, delta.y) > LINK_TAP_SLOP_PX) return@awaitEachGesture
+    SelectionContainer {
+        Text(
+            text = annotated,
+            modifier = modifier.pointerInput(annotated) {
+                val longPressTimeout = viewConfiguration.longPressTimeoutMillis
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    val downUptime = down.uptimeMillis
+                    val up = waitForUpOrCancellation() ?: return@awaitEachGesture
+                    if (up.isConsumed) return@awaitEachGesture
+                    if (up.uptimeMillis - downUptime >= longPressTimeout) return@awaitEachGesture
 
-                val layout = textLayout ?: return@awaitEachGesture
-                val offset = layout.getOffsetForPosition(up.position)
-                val href = annotated
-                    .getStringAnnotations(tag = "URL", start = offset, end = offset)
-                    .firstOrNull()
-                    ?.item
-                    ?: return@awaitEachGesture
+                    val delta = up.position - down.position
+                    if (hypot(delta.x, delta.y) > LINK_TAP_SLOP_PX) return@awaitEachGesture
 
-                up.consume()
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(href)))
-            }
-        },
-        style = TextStyle(
-            color = bodyColor,
-            fontSize = 14.5.sp,
-            lineHeight = 19.5.sp,
-            fontWeight = FontWeight.Normal,
-        ),
-        onTextLayout = { textLayout = it },
-    )
+                    val layout = textLayout ?: return@awaitEachGesture
+                    val offset = layout.getOffsetForPosition(up.position)
+                    val href = annotated
+                        .getStringAnnotations(tag = "URL", start = offset, end = offset)
+                        .firstOrNull()
+                        ?.item
+                        ?: return@awaitEachGesture
+
+                    up.consume()
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(href)))
+                }
+            },
+            style = TextStyle(
+                color = bodyColor,
+                fontSize = 14.5.sp,
+                lineHeight = 19.5.sp,
+                fontWeight = FontWeight.Normal,
+            ),
+            onTextLayout = { textLayout = it },
+        )
+    }
 }
 
 private fun oneLineUrlLabel(label: String): String {

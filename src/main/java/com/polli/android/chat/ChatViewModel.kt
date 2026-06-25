@@ -184,8 +184,8 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
         persistDraft()
     }
 
-    fun showOverlay(message: ChatMessage) {
-        overlayAnchor = BubbleOverlayAnchor(message)
+    fun showOverlay(message: ChatMessage, tapX: Float, tapY: Float) {
+        overlayAnchor = BubbleOverlayAnchor(message, tapX, tapY)
     }
 
     fun dismissOverlay() {
