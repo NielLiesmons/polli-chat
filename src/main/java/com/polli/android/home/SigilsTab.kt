@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import com.polli.android.sigil.RoundedSigilView
 import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabDimens
+import com.polli.android.theme.ProfileColors
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.labPressScale
 import com.polli.core.sigil.MnsSigil
@@ -47,6 +48,7 @@ fun SigilsTab() {
     val sigilValue = history[index]
     val name = remember(sigilValue) { MnsSigil.encodeName(sigilValue) }
     val hex = remember(sigilValue) { MnsSigil.formatHex(sigilValue) }
+    val sigilColor = remember(name) { ProfileColors.stringToColor(name) }
 
     Column(
         modifier = Modifier
@@ -65,6 +67,7 @@ fun SigilsTab() {
             RoundedSigilView(
                 value = sigilValue,
                 modifier = Modifier.fillMaxSize(),
+                onColor = sigilColor,
             )
         }
 

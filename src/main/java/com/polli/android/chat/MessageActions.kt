@@ -11,6 +11,7 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import com.b44t.messenger.DcContext
 import com.b44t.messenger.DcMsg
+import com.polli.android.navigation.AppNav
 import org.thoughtcrime.securesms.ConversationListRelayingActivity
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.WebxdcActivity
@@ -209,12 +210,7 @@ class MessageActionExecutor(
         val replyMsg = DcMsg(dc, DcMsg.DC_MSG_TEXT)
         replyMsg.setQuote(msg)
         dc.setDraft(privateChatId, replyMsg)
-        context.startActivity(
-            Intent(context, org.thoughtcrime.securesms.ConversationActivity::class.java).apply {
-                putExtra(org.thoughtcrime.securesms.ConversationActivity.CHAT_ID_EXTRA, privateChatId)
-                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            },
-        )
+        AppNav.openChatWithExtras(context, privateChatId)
     }
 
     private fun toggleSave(msg: DcMsg, save: Boolean) {

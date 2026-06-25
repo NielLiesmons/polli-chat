@@ -26,10 +26,11 @@ Branch: `feature/compose-kmp-migration`
 | ContactPicker | Yes | app | — |
 | GroupCreate | Yes | app | GroupCreateActivity |
 | AppSettings | Partial | app | ApplicationPreferencesActivity |
-| Onboarding depth | No | — | InstantOnboardingActivity |
-| Media preview | No | — | MediaPreviewActivity |
-| All media | No | — | AllMediaActivity |
-| QR / backup | No | — | QrActivity, BackupTransferActivity |
+| Onboarding depth | Yes | app | InstantOnboardingActivity (legacy fallback) |
+| Media preview | Yes | app | MediaPreviewActivity |
+| All media | Yes | app | AllMediaActivity |
+| QR hub | Yes | app | QrActivity |
+| Account setup | Yes | app | InstantOnboardingActivity |
 | Settings depth | No | — | preference fragments |
 | Profile detail | No | — | ProfileActivity |
 | Webxdc | No | — | WebxdcActivity |
@@ -39,6 +40,7 @@ Branch: `feature/compose-kmp-migration`
 ## Phase status
 
 - [x] Phase 0: KMP modules scaffolded
+- [x] Phase 1 (partial): Media preview, all media, onboarding, QR hub via AppNav
 - [ ] Phase 1: Move existing screens into `polli-ui`
 - [ ] Phase 2A–F: Remaining Java screens
 - [ ] Phase 3: Single-Activity NavHost

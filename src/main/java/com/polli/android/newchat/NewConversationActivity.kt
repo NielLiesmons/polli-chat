@@ -30,7 +30,6 @@ import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabTheme
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
-import org.thoughtcrime.securesms.qr.QrActivity
 
 class NewConversationActivity : BaseComposeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,7 +52,7 @@ class NewConversationActivity : BaseComposeActivity() {
                         finish()
                     },
                     onScanQr = {
-                        startActivity(Intent(this, QrActivity::class.java))
+                        startActivity(AppNav.qrIntent(this))
                         finish()
                     },
                 )

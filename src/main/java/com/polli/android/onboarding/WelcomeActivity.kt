@@ -27,9 +27,8 @@ import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabTheme
 import com.polli.android.ui.AppInsets
-import org.thoughtcrime.securesms.InstantOnboardingActivity
+import com.polli.android.navigation.AppNav
 import org.thoughtcrime.securesms.WelcomeActivity as DcWelcomeActivity
-import org.thoughtcrime.securesms.qr.QrActivity
 
 class WelcomeActivity : BaseComposeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,12 +37,8 @@ class WelcomeActivity : BaseComposeActivity() {
         setContent {
             LabTheme(prefs = prefs) {
                 WelcomeScreen(
-                    onCreateAccount = {
-                        startActivity(Intent(this, InstantOnboardingActivity::class.java))
-                    },
-                    onImportQr = {
-                        startActivity(Intent(this, QrActivity::class.java))
-                    },
+                    onCreateAccount = { AppNav.openAccountSetup(this) },
+                    onImportQr = { AppNav.openQr(this) },
                     onLegacyWelcome = {
                         startActivity(Intent(this, DcWelcomeActivity::class.java))
                     },

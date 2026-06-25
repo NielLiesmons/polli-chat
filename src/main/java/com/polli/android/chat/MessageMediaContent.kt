@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.b44t.messenger.DcMsg
 import com.polli.android.theme.LabColors
-import org.thoughtcrime.securesms.MediaPreviewActivity
+import com.polli.android.navigation.AppNav
 import org.thoughtcrime.securesms.connect.DcHelper
 import java.io.File
 
@@ -144,9 +144,5 @@ private fun MediaFallbackChip(
 }
 
 private fun openMediaPreview(context: android.content.Context, messageId: Int) {
-    context.startActivity(
-        Intent(context, MediaPreviewActivity::class.java).apply {
-            putExtra(MediaPreviewActivity.DC_MSG_ID, messageId)
-        },
-    )
+    AppNav.openMediaPreview(context, messageId)
 }

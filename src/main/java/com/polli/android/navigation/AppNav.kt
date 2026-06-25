@@ -8,11 +8,24 @@ import com.b44t.messenger.DcMsg
 import com.polli.android.HomeActivity
 import com.polli.android.chat.ChatActivity
 import com.polli.android.home.ArchiveActivity
+import com.polli.android.media.ChatAllMediaActivity
+import com.polli.android.media.MediaPreviewActivity
+import com.polli.android.newchat.NewConversationActivity
+import com.polli.android.onboarding.AccountSetupActivity
+import com.polli.android.onboarding.WelcomeActivity
+import com.polli.android.qr.QrHubActivity
+import com.polli.android.settings.AppSettingsActivity
 import org.thoughtcrime.securesms.BuildConfig
 import org.thoughtcrime.securesms.ConversationActivity
 import org.thoughtcrime.securesms.ConversationListActivity
 import org.thoughtcrime.securesms.ConversationListArchiveActivity
-import com.polli.android.newchat.NewConversationActivity
+import org.thoughtcrime.securesms.ApplicationPreferencesActivity
+import org.thoughtcrime.securesms.ProfileActivity
+import org.thoughtcrime.securesms.WebxdcActivity
+import org.thoughtcrime.securesms.MediaPreviewActivity as LegacyMediaPreviewActivity
+import org.thoughtcrime.securesms.AllMediaActivity as LegacyAllMediaActivity
+import org.thoughtcrime.securesms.InstantOnboardingActivity
+import org.thoughtcrime.securesms.qr.QrActivity
 
 /** Sole routing API — all user-facing navigation goes through here. */
 object AppNav {
@@ -118,6 +131,90 @@ object AppNav {
     @JvmStatic
     fun openArchive(context: Context) {
         context.startActivity(archiveIntent(context))
+    }
+
+    @JvmStatic
+    fun welcomeIntent(context: Context): Intent =
+        if (useLabUi()) WelcomeActivity.intent(context) else Intent(context, org.thoughtcrime.securesms.WelcomeActivity::class.java)
+
+    @JvmStatic
+    fun openWelcome(context: Context) {
+        context.startActivity(welcomeIntent(context))
+    }
+
+    @JvmStatic
+    fun accountSetupIntent(context: Context): Intent =
+        if (useLabUi()) AccountSetupActivity.intent(context) else Intent(context, InstantOnboardingActivity::class.java)
+
+    @JvmStatic
+    fun openAccountSetup(context: Context) {
+        context.startActivity(accountSetupIntent(context))
+    }
+
+    @JvmStatic
+    fun qrIntent(context: Context): Intent =
+        if (useLabUi()) QrHubActivity.intent(context) else Intent(context, QrActivity::class.java)
+
+    @JvmStatic
+    fun openQr(context: Context) {
+        context.startActivity(qrIntent(context))
+    }
+
+    @JvmStatic
+    fun mediaPreviewIntent(context: Context, messageId: Int): Intent =
+        if (useLabUi()) {
+            MediaPreviewActivity.intent(context, messageId)
+        } else {
+            Intent(context, LegacyMediaPreviewActivity::class.java).apply {
+                putExtra(LegacyMediaPreviewActivity.DC_MSG_ID, messageId)
+            }
+        }
+
+    @JvmStatic
+    fun openMediaPreview(context: Context, messageId: Int) {
+        context.startActivity(mediaPreviewIntent(context, messageId))
+    }
+
+    @JvmStatic
+    fun allMediaIntent(context: Context, chatId: Int): Intent =
+        if (useLabUi()) {
+            ChatAllMediaActivity.intent(context, chatId)
+        } else {
+            Intent(context, LegacyAllMediaActivity::class.java).apply {
+                putExtra(LegacyAllMediaActivity.CHAT_ID_EXTRA, chatId)
+            }
+        }
+
+    @JvmStatic
+    fun openAllMedia(context: Context, chatId: Int) {
+        context.startActivity(allMediaIntent(context, chatId))
+    }
+
+    @JvmStatic
+    fun settingsIntent(context: Context): Intent =
+        if (useLabUi()) AppSettingsActivity.intent(context) else Intent(context, ApplicationPreferencesActivity::class.java)
+
+    @JvmStatic
+    fun openSettings(context: Context) {
+        context.startActivity(settingsIntent(context))
+    }
+
+    @JvmStatic
+    fun profileIntent(context: Context, contactId: Int): Intent =
+        Intent(context, ProfileActivity::class.java).apply {
+            putExtra(ProfileActivity.CONTACT_ID_EXTRA, contactId)
+        }
+
+    @JvmStatic
+    fun webxdcIntent(context: Context, msgId: Int): Intent {
+        val dc = org.thoughtcrime.securesms.connect.DcHelper.getContext(context)
+        return Intent(context, WebxdcActivity::class.java).apply {
+            action = Intent.ACTION_VIEW
+            putExtra("accountId", dc.accountId)
+            putExtra("appMessageId", msgId)
+            putExtra("hideActionBar", false)
+            putExtra("href", "")
+        }
     }
 
     @JvmStatic

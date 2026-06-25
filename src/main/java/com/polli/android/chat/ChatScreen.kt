@@ -52,7 +52,6 @@ import com.polli.android.ui.rememberPolliHazeState
 import dev.chrisbanes.haze.hazeSource
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
-import org.thoughtcrime.securesms.AllMediaActivity
 import org.thoughtcrime.securesms.R
 
 @Composable
@@ -150,11 +149,7 @@ fun ChatScreen(
                 ChatDetailTab.Apps,
                 ChatDetailTab.Files,
                 -> ChatTabPlaceholder("Media tab") {
-                    context.startActivity(
-                        Intent(context, AllMediaActivity::class.java).apply {
-                            putExtra(AllMediaActivity.CHAT_ID_EXTRA, chatId)
-                        },
-                    )
+                    AppNav.openAllMedia(context, chatId)
                 }
                 ChatDetailTab.Tasks -> ChatTabPlaceholder("Tasks — coming soon")
                 ChatDetailTab.Docs -> ChatTabPlaceholder("Docs — coming soon")

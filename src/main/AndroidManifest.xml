@@ -237,6 +237,26 @@
             android:theme="@style/Lab.NoActionBar"
             android:exported="false" />
 
+        <activity
+            android:name="com.polli.android.onboarding.AccountSetupActivity"
+            android:theme="@style/Lab.NoActionBar"
+            android:exported="false" />
+
+        <activity
+            android:name="com.polli.android.qr.QrHubActivity"
+            android:theme="@style/Lab.NoActionBar"
+            android:exported="false" />
+
+        <activity
+            android:name="com.polli.android.media.MediaPreviewActivity"
+            android:theme="@style/Lab.NoActionBar"
+            android:exported="false" />
+
+        <activity
+            android:name="com.polli.android.media.ChatAllMediaActivity"
+            android:theme="@style/Lab.NoActionBar"
+            android:exported="false" />
+
         <activity-alias
             android:name=".RoutingActivity"
             android:targetActivity="com.polli.android.LauncherActivity"
