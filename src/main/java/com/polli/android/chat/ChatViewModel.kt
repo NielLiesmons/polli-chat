@@ -61,6 +61,30 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
     var pendingFirstLoadScroll by mutableStateOf(true)
         private set
 
+    var unreadBelowCount by mutableIntStateOf(0)
+        private set
+
+    /** Set before [reload] when the user sends — feed should stick to bottom after reload. */
+    private var scrollToBottomOnReload = false
+
+    fun consumeScrollToBottomOnReload(): Boolean {
+        if (!scrollToBottomOnReload) return false
+        scrollToBottomOnReload = false
+        return true
+    }
+
+    fun addUnreadBelow(delta: Int) {
+        if (delta > 0) unreadBelowCount += delta
+    }
+
+    fun clearUnreadBelow() {
+        unreadBelowCount = 0
+    }
+
+    fun onScrolledToBottom() {
+        clearUnreadBelow()
+    }
+
     private var dcContext: DcContext? = null
     private var registered = false
 
@@ -253,6 +277,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
         draft = ""
         replyTo = null
         dc.setDraft(chatId, null)
+        scrollToBottomOnReload = true
         reload()
     }
 

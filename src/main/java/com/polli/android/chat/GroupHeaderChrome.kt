@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.polli.android.theme.LabColors
+import com.polli.android.theme.accent
 import com.polli.android.theme.LabDimens
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.FrostedChromeSurface
@@ -323,12 +324,7 @@ private fun ChatHeaderTabPill(
     val corner = TAB_BASE_CORNER.scaledBy(scale)
     val fontSize = TAB_BASE_FONT_SIZE.scaledBy(scale)
     val shape = RoundedCornerShape(corner)
-    val selectedGradient = Brush.linearGradient(
-        listOf(
-            LabColors.BlurpleGradientStart.copy(0.66f),
-            LabColors.BlurpleGradientEnd.copy(0.66f),
-        ),
-    )
+    val selectedGradient = accent().gradientBrush(0.66f)
     FrostedChromeSurface(
         modifier = modifier
             .height(height)

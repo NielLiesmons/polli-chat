@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -87,31 +86,6 @@ fun AppSettingsScreen(onBack: () -> Unit) {
             },
         )
         Spacer(modifier = Modifier.padding(8.dp))
-        SettingsLink(
-            title = "All Delta Chat settings",
-            onClick = {
-                context.startActivity(
-                    android.content.Intent(context, org.thoughtcrime.securesms.ApplicationPreferencesActivity::class.java),
-                )
-            },
-        )
-    }
-}
-
-@Composable
-private fun SettingsLink(title: String, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(LabColors.Gray33)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(title, color = LabColors.White85, modifier = Modifier.weight(1f))
-        LabIcon(LabIconName.ChevronLeft, 16.dp, LabColors.White33)
     }
 }
 

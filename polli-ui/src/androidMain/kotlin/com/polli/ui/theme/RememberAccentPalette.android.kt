@@ -6,16 +6,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Density
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.polli.domain.prefs.UiPreferences
 
 @Composable
-actual fun rememberScaledDensity(prefs: UiPreferences, uiScaleRevision: Int): Density {
-    val base = LocalDensity.current
+actual fun rememberAccentPalette(prefs: UiPreferences, prefsRevision: Int): AccentPalette {
     val lifecycleOwner = LocalLifecycleOwner.current
     var resumeTick by mutableIntStateOf(0)
     DisposableEffect(lifecycleOwner) {
@@ -25,8 +22,7 @@ actual fun rememberScaledDensity(prefs: UiPreferences, uiScaleRevision: Int): De
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
-    val factor = remember(uiScaleRevision, resumeTick, prefs.uiScalePreset) {
-        prefs.effectiveScale(1f)
+    return remember(prefs.accentPreset, prefsRevision, resumeTick) {
+        AccentThemes.palette(prefs.accentPreset)
     }
-    return Density(base.density * factor, base.fontScale * factor)
 }

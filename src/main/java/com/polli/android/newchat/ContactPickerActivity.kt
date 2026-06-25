@@ -35,6 +35,7 @@ import com.polli.android.BaseComposeActivity
 import com.polli.android.navigation.AppNav
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.LabColors
+import com.polli.android.theme.accent
 import com.polli.android.theme.LabTheme
 import com.polli.android.ui.LabAvatar
 import com.polli.android.ui.AppInsets
@@ -84,7 +85,7 @@ private fun ContactPickerScreen(onBack: () -> Unit) {
                     .background(LabColors.Gray33)
                     .padding(horizontal = 14.dp, vertical = 10.dp),
                 textStyle = MaterialTheme.typography.bodyMedium.copy(color = LabColors.White85),
-                cursorBrush = SolidColor(LabColors.Blurple),
+                cursorBrush = SolidColor(LabColors.White),
                 decorationBox = { inner ->
                     if (query.isEmpty()) {
                         Text("Search contacts", color = LabColors.White33)

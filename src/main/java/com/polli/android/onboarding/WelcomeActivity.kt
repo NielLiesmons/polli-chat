@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,15 +23,28 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.google.zxing.integration.android.IntentIntegrator
 import com.polli.android.BaseComposeActivity
+import com.polli.android.qr.QrResultHandler
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.LabColors
+import com.polli.android.theme.accent
 import com.polli.android.theme.LabTheme
 import com.polli.android.ui.AppInsets
 import com.polli.android.navigation.AppNav
 import org.thoughtcrime.securesms.WelcomeActivity as DcWelcomeActivity
+import org.thoughtcrime.securesms.qr.RegistrationQrActivity
 
 class WelcomeActivity : BaseComposeActivity() {
+    private val scanQr = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val data = result.data ?: return@registerForActivityResult
+        val raw = data.getStringExtra(RegistrationQrActivity.QRDATA_EXTRA)
+            ?: IntentIntegrator.parseActivityResult(result.resultCode, data)?.contents
+        if (!raw.isNullOrBlank()) {
+            QrResultHandler.handle(this, raw)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val prefs = AppPrefs(this)
@@ -39,6 +53,13 @@ class WelcomeActivity : BaseComposeActivity() {
                 WelcomeScreen(
                     onCreateAccount = { AppNav.openAccountSetup(this) },
                     onImportQr = { AppNav.openQr(this) },
+                    onLinkSecondDevice = {
+                        scanQr.launch(
+                            Intent(this, RegistrationQrActivity::class.java).apply {
+                                putExtra(RegistrationQrActivity.ADD_AS_SECOND_DEVICE_EXTRA, true)
+                            },
+                        )
+                    },
                     onLegacyWelcome = {
                         startActivity(Intent(this, DcWelcomeActivity::class.java))
                     },
@@ -57,6 +78,7 @@ class WelcomeActivity : BaseComposeActivity() {
 fun WelcomeScreen(
     onCreateAccount: () -> Unit,
     onImportQr: () -> Unit,
+    onLinkSecondDevice: () -> Unit,
     onLegacyWelcome: () -> Unit,
 ) {
     Column(
@@ -87,6 +109,8 @@ fun WelcomeScreen(
         Spacer(modifier = Modifier.padding(8.dp))
         WelcomeButton("Scan QR / import", onImportQr)
         Spacer(modifier = Modifier.padding(8.dp))
+        WelcomeButton("Link second device", onLinkSecondDevice)
+        Spacer(modifier = Modifier.padding(8.dp))
         TextButton(onClick = onLegacyWelcome) {
             Text("Advanced setup", color = LabColors.White33)
         }
@@ -100,7 +124,7 @@ private fun WelcomeButton(label: String, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(999.dp))
-            .background(LabColors.Blurple),
+            .background(accent().solid),
     ) {
         Text(label, color = LabColors.White)
     }

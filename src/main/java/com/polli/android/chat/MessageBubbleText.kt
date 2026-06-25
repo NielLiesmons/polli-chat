@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import com.polli.android.theme.LabColors
+import com.polli.android.theme.accent
 import kotlin.math.hypot
 
 private const val LINK_TAP_SLOP_PX = 12f
@@ -40,7 +41,7 @@ fun MessageBubbleText(
 ) {
     val context = LocalContext.current
     val bodyColor = if (isOutgoing) LabColors.White else LabColors.White85
-    val linkColor = if (isOutgoing) Color.White.copy(alpha = 0.92f) else LabColors.BlurpleLight
+    val linkColor = if (isOutgoing) Color.White.copy(alpha = 0.92f) else accent().light
     val parts = remember(text) { MessageLinkify.splitMessageParts(text) }
 
     val annotated = remember(parts, isOutgoing) {
@@ -119,7 +120,7 @@ fun MessageLinkLine(
     onClick: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
-    val linkColor = if (isOutgoing) Color.White.copy(alpha = 0.92f) else LabColors.BlurpleLight
+    val linkColor = if (isOutgoing) Color.White.copy(alpha = 0.92f) else accent().light
     Text(
         text = oneLineUrlLabel(url),
         color = linkColor,

@@ -61,6 +61,7 @@ object LabDimens {
     val ChatQuoteMarginBottom: Dp get() = com.polli.ui.theme.LabDimens.ChatQuoteMarginBottom
     val ChatReactionRowTop: Dp get() = com.polli.ui.theme.LabDimens.ChatReactionRowTop
     val ChatRowPaddingH: Dp get() = com.polli.ui.theme.LabDimens.ChatRowPaddingH
+    val ChatRowOutgoingExtraStart: Dp get() = com.polli.ui.theme.LabDimens.ChatRowOutgoingExtraStart
     val ChatRowIncomingRight: Dp get() = com.polli.ui.theme.LabDimens.ChatRowIncomingRight
     val ChatRowTop: Dp get() = com.polli.ui.theme.LabDimens.ChatRowTop
     val ChatRowTopCollapsed: Dp get() = com.polli.ui.theme.LabDimens.ChatRowTopCollapsed
@@ -70,9 +71,11 @@ object LabDimens {
     val ChatBubbleImageMaxHeight: Dp get() = com.polli.ui.theme.LabDimens.ChatBubbleImageMaxHeight
     val ChatIncomingGroupAvatarOffset: Dp get() = com.polli.ui.theme.LabDimens.ChatIncomingGroupAvatarOffset
     val ChatIncomingGroupBubbleGap: Dp get() = com.polli.ui.theme.LabDimens.ChatIncomingGroupBubbleGap
+    val ChatFloatingChromeSize: Dp get() = com.polli.ui.theme.LabDimens.ChatFloatingChromeSize
     val ChatComposerMinHeight: Dp get() = com.polli.ui.theme.LabDimens.ChatComposerMinHeight
     val ChatComposerDockHPadding: Dp get() = com.polli.ui.theme.LabDimens.ChatComposerDockHPadding
     val ChatComposerDockBottomMin: Dp get() = com.polli.ui.theme.LabDimens.ChatComposerDockBottomMin
+    val ChatComposerKeyboardGap: Dp get() = com.polli.ui.theme.LabDimens.ChatComposerKeyboardGap
     val ChatComposerDockClearanceExtra: Dp get() = com.polli.ui.theme.LabDimens.ChatComposerDockClearanceExtra
     val ChatScrollFabGapAboveComposer: Dp get() = com.polli.ui.theme.LabDimens.ChatScrollFabGapAboveComposer
     val ChatComposerPlusSize: Dp get() = com.polli.ui.theme.LabDimens.ChatComposerPlusSize

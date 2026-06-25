@@ -7,22 +7,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import com.polli.domain.prefs.UiPreferences
-
-private val LabColorScheme = darkColorScheme(
-    primary = LabColors.Blurple,
-    onPrimary = LabColors.White,
-    secondary = LabColors.BlurpleLight,
-    background = LabColors.Black,
-    surface = LabColors.Black,
-    surfaceVariant = LabColors.Gray,
-    onBackground = LabColors.White85,
-    onSurface = LabColors.White85,
-    outline = LabColors.ShellBorder,
-)
 
 val LocalUiPreferences = staticCompositionLocalOf<UiPreferences> {
     error("UiPreferences not provided")
@@ -34,13 +23,26 @@ fun LabTheme(
     uiScaleRevision: Int = 0,
     content: @Composable () -> Unit,
 ) {
+    val accentPalette = rememberAccentPalette(prefs, prefsRevision = uiScaleRevision)
     val scaledDensity = rememberScaledDensity(prefs, uiScaleRevision)
+    val colorScheme = darkColorScheme(
+        primary = accentPalette.solid,
+        onPrimary = LabColors.White,
+        secondary = accentPalette.light,
+        background = LabColors.Black,
+        surface = LabColors.Black,
+        surfaceVariant = LabColors.Gray,
+        onBackground = LabColors.White85,
+        onSurface = LabColors.White85,
+        outline = LabColors.ShellBorder,
+    )
     CompositionLocalProvider(
         LocalUiPreferences provides prefs,
+        LocalAccentPalette provides accentPalette,
         LocalDensity provides scaledDensity,
     ) {
         MaterialTheme(
-            colorScheme = LabColorScheme,
+            colorScheme = colorScheme,
             typography = LabTypography,
         ) {
             Box(

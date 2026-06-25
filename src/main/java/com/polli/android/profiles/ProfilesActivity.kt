@@ -1,5 +1,6 @@
 package com.polli.android.profiles
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -15,8 +16,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -35,9 +38,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.b44t.messenger.DcContact
 import com.polli.android.BaseComposeActivity
+import com.polli.android.settings.AccentPreset
 import com.polli.android.settings.AppPrefs
-import com.polli.android.settings.AppSettingsActivity
-import com.polli.android.settings.UiScalePreset
+import com.polli.android.ui.UiScaleSlider
 import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabDimens
 import com.polli.android.theme.LabTheme
@@ -47,6 +50,7 @@ import com.polli.android.ui.AppModal
 import com.polli.android.ui.ModalSectionLabel
 import com.polli.android.ui.RoundBackButton
 import com.polli.android.ui.ShellDivider
+import com.polli.ui.theme.AccentThemes
 import org.thoughtcrime.securesms.connect.DcHelper
 
 class ProfilesActivity : BaseComposeActivity() {
@@ -54,31 +58,31 @@ class ProfilesActivity : BaseComposeActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val prefs = remember { AppPrefs(this@ProfilesActivity) }
-            var uiScaleRevision by remember { mutableIntStateOf(0) }
-            LabTheme(prefs = prefs, uiScaleRevision = uiScaleRevision) {
+            var themeRevision by remember { mutableIntStateOf(0) }
+            LabTheme(prefs = prefs, uiScaleRevision = themeRevision) {
                 ProfilesScreen(
                     prefs = prefs,
-                    onScaleChanged = { uiScaleRevision++ },
+                    onThemeChanged = { themeRevision++ },
                     onBack = { finish() },
                     onEditProfile = {
                         startActivity(ProfileEditActivity.intent(this@ProfilesActivity))
                     },
-                    onOpenDcSettings = {
-                        startActivity(AppSettingsActivity.intent(this@ProfilesActivity))
-                    },
                 )
             }
         }
+    }
+
+    companion object {
+        fun intent(context: Context): Intent = Intent(context, ProfilesActivity::class.java)
     }
 }
 
 @Composable
 fun ProfilesScreen(
     prefs: AppPrefs,
-    onScaleChanged: () -> Unit = {},
+    onThemeChanged: () -> Unit = {},
     onBack: () -> Unit,
     onEditProfile: () -> Unit,
-    onOpenDcSettings: () -> Unit,
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val dc = remember { DcHelper.getContext(context) }
@@ -110,7 +114,7 @@ fun ProfilesScreen(
 
             SettingsRowItem(
                 title = "Appearance",
-                description = "${prefs.uiScalePreset.label} · ${if (prefs.respectSystemScale) "System text size" else "Fixed text size"}",
+                description = "${prefs.accentPreset.label} · ${prefs.uiScalePreset.displayLabel}",
                 onClick = { showAppearanceModal = true },
             )
             ShellDivider(screenPad = 0.dp)
@@ -174,20 +178,13 @@ fun ProfilesScreen(
         AppearanceSettingsModal(
             prefs = prefs,
             onDismiss = { showAppearanceModal = false },
-            onChanged = onScaleChanged,
+            onChanged = onThemeChanged,
         )
     }
     if (showChatSettingsModal) {
-        AppModal(
+        ChatSettingsModal(
             onDismiss = { showChatSettingsModal = false },
-            title = "Chat & notifications",
-            description = "Open Polli settings for notifications, media, and privacy options.",
-        ) {
-            SettingsLinkButton(title = "Open settings", onClick = {
-                showChatSettingsModal = false
-                onOpenDcSettings()
-            })
-        }
+        )
     }
 }
 
@@ -198,49 +195,121 @@ private fun AppearanceSettingsModal(
     onChanged: () -> Unit = {},
 ) {
     var scale by remember { mutableStateOf(prefs.uiScalePreset) }
-    var respectSystem by remember { mutableStateOf(prefs.respectSystemScale) }
+    var accentPreset by remember { mutableStateOf(prefs.accentPreset) }
     AppModal(
         onDismiss = onDismiss,
         title = "Appearance",
-        description = "Text size and display preferences for this device.",
+        description = "Accent color and UI scale for this device.",
     ) {
-        ModalSectionLabel("Text size")
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            UiScalePreset.entries.forEach { preset ->
-                ScalePill(
-                    label = preset.label,
-                    selected = scale == preset,
+        ModalSectionLabel("Accent color")
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            AccentPreset.entries.forEach { preset ->
+                AccentSwatch(
+                    preset = preset,
+                    selected = accentPreset == preset,
                     onClick = {
-                        scale = preset
-                        prefs.uiScalePreset = preset
+                        accentPreset = preset
+                        prefs.accentPreset = preset
                         onChanged()
                     },
                 )
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
-        ModalSectionLabel("System")
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        ModalSectionLabel("UI scale")
+        UiScaleSlider(
+            value = scale,
+            onValueChange = {
+                scale = it
+                prefs.uiScalePreset = it
+                onChanged()
+            },
+        )
+    }
+}
+
+@Composable
+private fun ChatSettingsModal(onDismiss: () -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val dc = remember { DcHelper.getContext(context) }
+    var bccSelf by remember {
+        mutableStateOf(dc.getConfigInt(DcHelper.CONFIG_BCC_SELF) != 0)
+    }
+    var readReceipts by remember {
+        mutableStateOf(dc.getConfigInt("mdns_enabled") != 0)
+    }
+    AppModal(
+        onDismiss = onDismiss,
+        title = "Chat & notifications",
+        description = "Messaging and delivery preferences for this account.",
+    ) {
+        SettingsToggleRow(
+            title = "Read receipts",
+            subtitle = "If disabled, you won't see when others read your messages.",
+            checked = readReceipts,
+            onCheckedChange = {
+                readReceipts = it
+                dc.setConfigInt("mdns_enabled", if (it) 1 else 0)
+            },
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        SettingsToggleRow(
+            title = "Send copy to self",
+            subtitle = "BCC outgoing messages to your saved-messages chat.",
+            checked = bccSelf,
+            onCheckedChange = {
+                bccSelf = it
+                dc.setConfigInt(DcHelper.CONFIG_BCC_SELF, if (it) 1 else 0)
+            },
+        )
+    }
+}
+
+@Composable
+private fun AccentSwatch(
+    preset: AccentPreset,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    val palette = remember(preset) { AccentThemes.palette(preset) }
+    val borderColor = if (selected) LabColors.White else LabColors.White16
+    val borderWidth = if (selected) 2.dp else 1.dp
+    Box(
+        modifier = Modifier
+            .size(36.dp)
+            .clip(CircleShape)
+            .border(borderWidth, borderColor, CircleShape)
+            .padding(3.dp)
+            .clip(CircleShape)
+            .background(palette.gradientBrush())
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {}
+}
+
+@Composable
+private fun SettingsToggleRow(
+    title: String,
+    subtitle: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, color = LabColors.White85, style = MaterialTheme.typography.bodyMedium)
             Text(
-                "Match device text size",
-                color = LabColors.White85,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(1f),
-            )
-            Switch(
-                checked = respectSystem,
-                onCheckedChange = {
-                    respectSystem = it
-                    prefs.respectSystemScale = it
-                    onChanged()
-                },
+                subtitle,
+                color = LabColors.White33,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(top = 4.dp),
             )
         }
+        Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
 
@@ -259,20 +328,6 @@ private fun SettingsRowItem(
         Text(title, color = LabColors.White85, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyLarge)
         Text(description, color = LabColors.White33, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
     }
-}
-
-@Composable
-private fun SettingsLinkButton(title: String, onClick: () -> Unit) {
-    Text(
-        text = title,
-        color = LabColors.BlurpleLight,
-        style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick)
-            .padding(vertical = 12.dp),
-    )
 }
 
 @Composable
@@ -305,17 +360,3 @@ private fun ActiveProfileCard(
     }
 }
 
-@Composable
-private fun ScalePill(label: String, selected: Boolean, onClick: () -> Unit) {
-    val bg = if (selected) LabColors.Blurple else LabColors.White8
-    Text(
-        text = label,
-        color = if (selected) LabColors.White else LabColors.White66,
-        style = MaterialTheme.typography.labelMedium,
-        modifier = Modifier
-            .clip(RoundedCornerShape(17.dp))
-            .background(bg)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 8.dp),
-    )
-}

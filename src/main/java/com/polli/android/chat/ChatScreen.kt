@@ -20,12 +20,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -86,6 +88,7 @@ fun ChatScreen(
     val showTopFade by rememberLazyListShowTopFadeDerived(listState)
     val showScrollToBottom by rememberShowChatScrollToBottom(listState)
     val composerClearance = AppInsets.chatComposerClearance()
+    val navBottom = AppInsets.navigationBarBottom()
     val headerClearance = if (isGroup && !isBroadcast) {
         LabDimens.GroupHeaderClearance + AppInsets.statusBarTop()
     } else {
@@ -157,10 +160,79 @@ fun ChatScreen(
         }
 
         if (selectedTab == ChatDetailTab.Chat) {
+            val density = LocalDensity.current
+            var composerDockHeight by remember { mutableStateOf(0.dp) }
+            var voiceLockVisible by remember { mutableStateOf(false) }
+            var voiceLockDragY by remember { mutableFloatStateOf(0f) }
+            val bottomChromeInset = composerDockHeight + if (keyboardVisible) {
+                imeBottom
+            } else {
+                maxOf(LabDimens.ChatComposerDockBottomMin, navBottom)
+            }
+
             ChatFeedEdgeGradients(
                 modifier = Modifier.fillMaxSize(),
                 showTopFade = showTopFade,
                 hasGroupHeader = isGroup && !isBroadcast,
+                bottomChromeInset = bottomChromeInset,
+            )
+
+            ChatComposerDock(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .imePadding()
+                    .onGloballyPositioned { coords ->
+                        composerDockHeight = with(density) { coords.size.height.toDp() }
+                    },
+                value = viewModel.draft,
+                onValueChange = viewModel::updateDraft,
+                onSend = viewModel::send,
+                replyQuote = viewModel.replyTo?.toReplyQuote(),
+                onClearQuote = { viewModel.setReply(null) },
+                onAttachClick = onAttachClick,
+                onVoiceSent = onVoiceSent,
+                onVoiceLockOverlayChange = { visible, dragUpPx ->
+                    voiceLockVisible = visible
+                    voiceLockDragY = dragUpPx
+                },
+                hazeState = hazeState,
+            )
+
+            if (voiceLockVisible) {
+                VoiceLockPill(
+                    visible = true,
+                    dragUpPx = voiceLockDragY,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .imePadding()
+                        .padding(
+                            end = LabDimens.HomeBarPadding - 2.dp,
+                            bottom = composerDockHeight + LabDimens.ChatScrollFabGapAboveComposer,
+                        ),
+                )
+            }
+
+            ChatScrollToBottomButton(
+                visible = showScrollToBottom && !voiceLockVisible,
+                unreadCount = viewModel.unreadBelowCount,
+                contentDescription = stringResource(R.string.menu_scroll_to_bottom),
+                hazeState = hazeState,
+                onClick = {
+                    scope.launch {
+                        listState.scrollToChatBottom(
+                            animated = listState.firstVisibleItemIndex < 50,
+                        )
+                        viewModel.onScrolledToBottom()
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .imePadding()
+                    .padding(
+                        end = LabDimens.HomeBarPadding - 2.dp,
+                        bottom = composerDockHeight + LabDimens.ChatScrollFabGapAboveComposer,
+                    ),
             )
         }
 
@@ -184,49 +256,6 @@ fun ChatScreen(
                 onBack = onBack,
                 hazeState = hazeState,
                 modifier = Modifier.align(Alignment.TopCenter),
-            )
-        }
-
-        if (selectedTab == ChatDetailTab.Chat) {
-            val density = LocalDensity.current
-            var composerDockHeight by remember { mutableStateOf(0.dp) }
-
-            ChatComposerDock(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .imePadding()
-                    .onGloballyPositioned { coords ->
-                        composerDockHeight = with(density) { coords.size.height.toDp() }
-                    },
-                value = viewModel.draft,
-                onValueChange = viewModel::updateDraft,
-                onSend = viewModel::send,
-                replyQuote = viewModel.replyTo?.toReplyQuote(),
-                onClearQuote = { viewModel.setReply(null) },
-                onAttachClick = onAttachClick,
-                onVoiceSent = onVoiceSent,
-                hazeState = hazeState,
-            )
-
-            ChatScrollToBottomButton(
-                visible = showScrollToBottom,
-                contentDescription = stringResource(R.string.menu_scroll_to_bottom),
-                hazeState = hazeState,
-                onClick = {
-                    scope.launch {
-                        listState.scrollToChatBottom(
-                            animated = listState.firstVisibleItemIndex < 50,
-                        )
-                    }
-                },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .imePadding()
-                    .padding(
-                        end = LabDimens.HomeBarPadding - 2.dp,
-                        bottom = composerDockHeight + LabDimens.ChatScrollFabGapAboveComposer,
-                    ),
             )
         }
 
@@ -279,13 +308,22 @@ private fun ChatFeedPage(
 ) {
     val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
     val displayItems = remember(viewModel.feedItems) { viewModel.feedItems.asReversed() }
-    var prevItemCount by remember { mutableIntStateOf(0) }
+    var prevMsgCount by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.isAtChatBottom() }.collect { atBottom ->
+            if (atBottom) viewModel.onScrolledToBottom()
+        }
+    }
 
     LaunchedEffect(viewModel.reloadGeneration, displayItems.size) {
         if (displayItems.isEmpty()) {
-            prevItemCount = 0
+            prevMsgCount = 0
             return@LaunchedEffect
         }
+
+        val msgCount = displayItems.count { it is FeedItem.Message }
+        val msgDelta = msgCount - prevMsgCount
 
         when {
             viewModel.pendingFirstLoadScroll -> {
@@ -297,19 +335,27 @@ private fun ChatFeedPage(
                     }
                 }
                 viewModel.clearFirstLoadScroll()
+                viewModel.onScrolledToBottom()
+            }
+            viewModel.consumeScrollToBottomOnReload() -> {
+                listState.scrollToChatBottom(
+                    animated = listState.firstVisibleItemIndex < 50,
+                )
+                viewModel.onScrolledToBottom()
             }
             listState.isAtChatBottom() -> {
-                listState.scrollToItem(0)
+                if (msgDelta > 0) {
+                    listState.scrollToChatBottom(
+                        animated = listState.firstVisibleItemIndex < 50,
+                    )
+                }
+                viewModel.onScrolledToBottom()
             }
-            listState.firstVisibleItemIndex > 0 -> {
-                val delta = displayItems.size - prevItemCount
-                var newIndex = listState.firstVisibleItemIndex + delta
-                if (newIndex < 0) newIndex = 0
-                if (newIndex > displayItems.lastIndex) newIndex = displayItems.lastIndex
-                listState.scrollToItem(newIndex, scrollOffset = listState.firstVisibleItemScrollOffset)
+            msgDelta > 0 -> {
+                viewModel.addUnreadBelow(msgDelta)
             }
         }
-        prevItemCount = displayItems.size
+        prevMsgCount = msgCount
     }
 
     Box(modifier = Modifier.fillMaxSize().hazeSource(state = hazeState)) {

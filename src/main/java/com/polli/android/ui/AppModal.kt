@@ -244,9 +244,9 @@ private fun Modifier.modalScrollFadeMask(
 
         val topFadePx = 40.dp.toPx()
         val bottomFadePx = LabDimens.ModalBottomFade.toPx()
-        val topStop = (topFadePx / h).coerceIn(0f, 0.5f)
+        val topStop = (topFadePx / h).coerceIn(0f, 0.48f)
         val bottomStart = if (showBottomFade) {
-            ((h - bottomFadePx) / h).coerceIn(0.5f, 1f)
+            ((h - bottomFadePx) / h).coerceIn(topStop + 0.01f, 0.99f)
         } else {
             1f
         }

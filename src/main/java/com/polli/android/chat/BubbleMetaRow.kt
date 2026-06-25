@@ -1,10 +1,12 @@
 package com.polli.android.chat
 
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -29,6 +31,7 @@ fun IncomingBubbleHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .width(IntrinsicSize.Max)
             .padding(horizontal = LabDimens.ChatBubbleInsetH)
             .padding(bottom = 2.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -80,6 +83,7 @@ fun OutgoingBubbleMetaRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .width(IntrinsicSize.Max)
             .padding(
                 horizontal = LabDimens.ChatBubbleInsetH,
                 vertical = LabDimens.ChatBubbleMetaRowPaddingV,
@@ -92,39 +96,39 @@ fun OutgoingBubbleMetaRow(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-        if (isEdited) {
-            Text("Edited", color = LabColors.White33, fontSize = 11.sp, lineHeight = 11.sp)
-        }
-        Text(timestamp, color = LabColors.White66, fontSize = 11.sp, lineHeight = 11.sp)
-        when (state) {
-            OutgoingState.Sending -> Text(
-                "…",
-                color = LabColors.White66.copy(alpha = 0.8f),
-                fontSize = 11.sp,
-                lineHeight = 11.sp,
-            )
-            OutgoingState.Sent -> LabIcon(
-                LabIconName.Check,
-                11.dp,
-                LabColors.White66,
-            )
-            OutgoingState.Read -> Row {
-                LabIcon(LabIconName.Check, 11.dp, LabColors.White66)
-                LabIcon(
+            if (isEdited) {
+                Text("Edited", color = LabColors.White33, fontSize = 11.sp, lineHeight = 11.sp)
+            }
+            Text(timestamp, color = LabColors.White66, fontSize = 11.sp, lineHeight = 11.sp)
+            when (state) {
+                OutgoingState.Sending -> Text(
+                    "…",
+                    color = LabColors.White66.copy(alpha = 0.8f),
+                    fontSize = 11.sp,
+                    lineHeight = 11.sp,
+                )
+                OutgoingState.Sent -> LabIcon(
                     LabIconName.Check,
                     11.dp,
                     LabColors.White66,
-                    modifier = Modifier.offset(x = (-3).dp),
                 )
+                OutgoingState.Read -> Row {
+                    LabIcon(LabIconName.Check, 11.dp, LabColors.White66)
+                    LabIcon(
+                        LabIconName.Check,
+                        11.dp,
+                        LabColors.White66,
+                        modifier = Modifier.offset(x = (-3).dp),
+                    )
+                }
+                OutgoingState.Failed -> Text(
+                    "!",
+                    color = LabColors.Destructive,
+                    fontSize = 11.sp,
+                    lineHeight = 11.sp,
+                )
+                null -> Unit
             }
-            OutgoingState.Failed -> Text(
-                "!",
-                color = LabColors.Destructive,
-                fontSize = 11.sp,
-                lineHeight = 11.sp,
-            )
-            null -> Unit
-        }
         }
     }
 }

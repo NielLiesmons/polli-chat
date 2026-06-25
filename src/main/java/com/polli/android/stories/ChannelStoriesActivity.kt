@@ -50,6 +50,7 @@ import com.polli.android.chat.DcMsgMediaContent
 import com.polli.android.chat.ChatComposerDock
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.LabColors
+import com.polli.android.theme.accent
 import com.polli.android.theme.LabDimens
 import com.polli.android.theme.LabTheme
 import com.polli.android.ui.LabAvatar
@@ -323,7 +324,7 @@ private fun StoryContentSlide(post: DcMsg?) {
             .background(
                 Brush.verticalGradient(
                     listOf(
-                        LabColors.Blurple.copy(alpha = 0.2f),
+                        accent().solid.copy(alpha = 0.2f),
                         LabColors.Black.copy(alpha = 0.75f),
                         LabColors.Black,
                     ),

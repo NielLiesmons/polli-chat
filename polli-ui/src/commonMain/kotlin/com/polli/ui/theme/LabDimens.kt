@@ -41,8 +41,8 @@ object LabDimens {
     val UnreadBadgeMinSize = 22.dp
     val UnreadBadgeHPadding = 7.dp
 
-    val ChatAvatarSize = 36.dp
-    val ChatAvatarGap = 6.dp
+    val ChatAvatarSize = 40.dp
+    val ChatAvatarGap = 5.dp
     val ChatBubbleRadius = 16.dp
     val ChatBubbleTailRadius = 4.dp
     val ChatBubbleInsetH = 11.dp
@@ -57,20 +57,27 @@ object LabDimens {
     val ChatQuoteBubblePadH = 6.dp
     val ChatQuoteMarginBottom = 6.dp
     val ChatReactionRowTop = 5.dp
-    val ChatRowPaddingH = 10.dp
-    val ChatRowIncomingRight = 40.dp
+    val ChatRowPaddingH = 8.dp
+    val ChatRowOutgoingExtraStart = 8.dp
+    /** In-row reserve beside incoming bubbles — matches [ChatAvatarSize] + [ChatAvatarGap] on the left. */
+    val ChatRowIncomingRight = ChatAvatarSize + ChatAvatarGap
     val ChatRowTop = 8.dp
     val ChatRowTopCollapsed = 2.dp
     val ChatBubbleMaxWidthFraction = 0.85f
     val ChatBubbleImageMinWidth = 180.dp
     val ChatBubbleImageMinHeight = 120.dp
     val ChatBubbleImageMaxHeight = 280.dp
-    val ChatIncomingGroupAvatarOffset = 42.dp // avatar + gap
+    val ChatIncomingGroupAvatarOffset = ChatAvatarSize + ChatAvatarGap
     val ChatIncomingGroupBubbleGap = 2.dp
+
+    /** Scroll-to-bottom FAB + voice lock pill — matches header chrome circles at UI scale. */
+    val ChatFloatingChromeSize = 40.dp
 
     val ChatComposerMinHeight = 47.dp
     val ChatComposerDockHPadding = 10.dp
     val ChatComposerDockBottomMin = 10.dp
+    /** Slightly tighter than [ChatComposerDockBottomMin] when the IME is open (imePadding handles lift). */
+    val ChatComposerKeyboardGap = 8.dp
     val ChatComposerDockClearanceExtra = 16.dp
     /** Gap between scroll-to-bottom FAB and the top of the composer dock. */
     val ChatScrollFabGapAboveComposer = 10.dp

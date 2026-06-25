@@ -32,6 +32,7 @@ import com.polli.android.BaseComposeActivity
 import com.polli.android.navigation.AppNav
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.LabColors
+import com.polli.android.theme.accent
 import com.polli.android.theme.LabTheme
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
@@ -103,7 +104,7 @@ fun GroupCreateScreen(
                 .background(LabColors.Gray33)
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = LabColors.White85),
-            cursorBrush = SolidColor(LabColors.Blurple),
+            cursorBrush = SolidColor(LabColors.White),
             decorationBox = { inner ->
                 if (name.isEmpty()) Text("Name", color = LabColors.White33)
                 inner()
@@ -128,7 +129,7 @@ fun GroupCreateScreen(
             },
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text("Create", color = LabColors.BlurpleLight, modifier = Modifier.fillMaxWidth())
+            Text("Create", color = accent().light, modifier = Modifier.fillMaxWidth())
         }
     }
 }

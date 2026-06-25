@@ -1,5 +1,6 @@
 package com.polli.android.navigation
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -14,8 +15,9 @@ import com.polli.android.newchat.NewConversationActivity
 import com.polli.android.onboarding.AccountSetupActivity
 import com.polli.android.onboarding.WelcomeActivity
 import com.polli.android.qr.QrHubActivity
-import com.polli.android.settings.AppSettingsActivity
+import com.polli.android.profiles.ProfilesActivity
 import org.thoughtcrime.securesms.BuildConfig
+import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.ConversationActivity
 import org.thoughtcrime.securesms.ConversationListActivity
 import org.thoughtcrime.securesms.ConversationListArchiveActivity
@@ -93,6 +95,7 @@ object AppNav {
     @JvmStatic
     fun openChat(context: Context, chatId: Int) {
         context.startActivity(chatIntent(context, chatId))
+        context.applyChatOpenTransitionIfLab()
     }
 
     @JvmStatic
@@ -108,6 +111,13 @@ object AppNav {
         context.startActivity(
             chatIntent(context, chatId, accountId, draftText, startingPosition, fromArchived),
         )
+        context.applyChatOpenTransitionIfLab()
+    }
+
+    private fun Context.applyChatOpenTransitionIfLab() {
+        if (useLabUi() && this is Activity) {
+            overridePendingTransition(R.anim.slide_from_right, R.anim.fade_scale_out)
+        }
     }
 
     @JvmStatic
@@ -192,7 +202,7 @@ object AppNav {
 
     @JvmStatic
     fun settingsIntent(context: Context): Intent =
-        if (useLabUi()) AppSettingsActivity.intent(context) else Intent(context, ApplicationPreferencesActivity::class.java)
+        if (useLabUi()) ProfilesActivity.intent(context) else Intent(context, ApplicationPreferencesActivity::class.java)
 
     @JvmStatic
     fun openSettings(context: Context) {

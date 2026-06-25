@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.polli.android.sigil.RoundedSigilView
 import com.polli.android.theme.LabColors
+import com.polli.android.theme.accent
 import com.polli.android.theme.LabDimens
 import com.polli.android.theme.ProfileColors
 import com.polli.android.ui.AppInsets
@@ -128,12 +129,7 @@ private fun NavPill(label: String, enabled: Boolean = true, onClick: () -> Unit)
             .clip(RoundedCornerShape(999.dp))
             .labPressScale(enabled = enabled, onClick = onClick)
             .background(
-                Brush.linearGradient(
-                    listOf(
-                        LabColors.BlurpleGradientStart.copy(alpha = alpha),
-                        LabColors.BlurpleGradientEnd.copy(alpha = alpha),
-                    ),
-                ),
+                accent().gradientBrush(alpha),
             )
             .padding(horizontal = 28.dp),
         contentAlignment = Alignment.Center,

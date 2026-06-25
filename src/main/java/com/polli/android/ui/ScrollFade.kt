@@ -50,11 +50,14 @@ fun ChatFeedEdgeGradients(
     modifier: Modifier = Modifier,
     showTopFade: Boolean,
     hasGroupHeader: Boolean,
+    bottomChromeInset: Dp = 0.dp,
 ) {
     val density = LocalDensity.current
     val statusTop = AppInsets.statusBarTop()
     val navBottom = AppInsets.navigationBarBottom()
-    val bottomFadeHeight = navBottom + LabDimens.ChatComposerMinHeight + 8.dp + LabDimens.ChatFeedBottomFadeExtend
+    val bottomFadeHeight = bottomChromeInset.coerceAtLeast(
+        navBottom + LabDimens.ChatComposerMinHeight + 8.dp,
+    ) + LabDimens.ChatFeedBottomFadeExtend
     val topFadeHeight = when {
         hasGroupHeader -> LabDimens.GroupHeaderClearance + statusTop + LabDimens.ChatFeedTopFadeExtend
         showTopFade -> LabDimens.ScrollFadeTop + LabDimens.ChatFeedTopFadeExtend

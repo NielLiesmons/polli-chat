@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import com.polli.android.bridge.InboxItem
 import com.polli.core.chat.ChatCategory
 import com.polli.android.theme.LabColors
+import com.polli.android.theme.accent
 import com.polli.android.theme.LabDimens
 import com.polli.android.ui.LabAvatar
 import com.polli.android.ui.SelfAvatar
@@ -227,7 +228,7 @@ private fun HomeTopBar(
                         .background(LabColors.Gray33)
                         .padding(horizontal = 14.dp),
                     textStyle = MaterialTheme.typography.labelMedium.copy(color = LabColors.White85),
-                    cursorBrush = SolidColor(LabColors.Blurple),
+                    cursorBrush = SolidColor(LabColors.White),
                     singleLine = true,
                     decorationBox = { inner ->
                         Box(contentAlignment = Alignment.CenterStart) {
@@ -261,7 +262,7 @@ private fun HomeTopBar(
                     modifier = Modifier
                         .size(LabDimens.HomePillActionSize)
                         .clip(CircleShape)
-                        .background(LabColors.Gray66)
+                        .background(LabColors.White16)
                         .clickable(onClick = onPlusClick),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -293,7 +294,7 @@ private fun StoryRing(channel: InboxItem, onClick: () -> Unit) {
         modifier = Modifier
             .size(LabDimens.StoryRingOuter)
             .clip(CircleShape)
-            .background(LabColors.Blurple)
+            .background(accent().solid)
             .padding(LabDimens.StoryRingStroke)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
@@ -333,7 +334,7 @@ private fun TabRow(active: HomeTab, onSelect: (HomeTab) -> Unit) {
 @Composable
 private fun TabPill(label: String, selected: Boolean, onClick: () -> Unit) {
     val bg = if (selected) {
-        Brush.linearGradient(listOf(LabColors.BlurpleGradientStart.copy(0.66f), LabColors.BlurpleGradientEnd.copy(0.66f)))
+        accent().gradientBrush(0.66f)
     } else {
         Brush.linearGradient(listOf(LabColors.White8, LabColors.White8))
     }
@@ -389,7 +390,7 @@ private fun ArchiveRow(unreadCount: Int, onClick: () -> Unit) {
                 modifier = Modifier
                     .height(LabDimens.UnreadBadgeMinSize)
                     .clip(RoundedCornerShape(999.dp))
-                    .background(Brush.linearGradient(listOf(LabColors.BlurpleGradientStart, LabColors.BlurpleGradientEnd)))
+                    .background(accent().gradientBrush())
                     .padding(horizontal = LabDimens.UnreadBadgeHPadding),
                 contentAlignment = Alignment.Center,
             ) {
@@ -471,7 +472,7 @@ fun ChatInboxCard(item: InboxItem, onClick: () -> Unit) {
                                 .padding(start = 8.dp)
                                 .height(LabDimens.UnreadBadgeMinSize)
                                 .clip(RoundedCornerShape(999.dp))
-                                .background(Brush.linearGradient(listOf(LabColors.BlurpleGradientStart, LabColors.BlurpleGradientEnd)))
+                                .background(accent().gradientBrush())
                                 .padding(horizontal = LabDimens.UnreadBadgeHPadding),
                             contentAlignment = Alignment.Center,
                         ) {

@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -64,7 +63,7 @@ fun QuotedMessageBlock(
     }
     val bodyPad = when (style) {
         QuotedMessageStyle.Composer ->
-            PaddingValues(top = 4.dp, end = 10.dp, bottom = 5.dp, start = 8.dp)
+            PaddingValues(top = 4.dp, end = 28.dp, bottom = 5.dp, start = 8.dp)
         else ->
             PaddingValues(top = 5.dp, end = 10.dp, bottom = 6.dp, start = 8.dp)
     }
@@ -73,22 +72,43 @@ fun QuotedMessageBlock(
         else -> LabDimens.ChatQuoteMarginBottom
     }
 
+    val shell = Modifier
+        .fillMaxWidth()
+        .height(IntrinsicSize.Min)
+        .padding(bottom = marginBottom)
+        .clip(RoundedCornerShape(8.dp))
+        .background(bg)
+        .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+
+    if (style == QuotedMessageStyle.Composer && onClear != null) {
+        Box(modifier = modifier.then(shell)) {
+            QuoteBodyRow(
+                accent = accent,
+                nameColor = nameColor,
+                quote = quote,
+                preview = preview,
+                previewColor = previewColor,
+                bodyPad = bodyPad,
+            )
+            Text(
+                text = "×",
+                color = LabColors.White33,
+                fontSize = 22.sp,
+                lineHeight = 22.sp,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 4.dp, end = 4.dp)
+                    .clickable(onClick = onClear),
+            )
+        }
+        return
+    }
+
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Min)
-            .padding(bottom = marginBottom)
-            .clip(RoundedCornerShape(8.dp))
-            .background(bg)
-            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
+        modifier = modifier.then(shell),
         verticalAlignment = Alignment.Top,
     ) {
-        Box(
-            modifier = Modifier
-                .width(LabDimens.ChatQuoteAccentWidth)
-                .fillMaxHeight()
-                .background(accent),
-        )
+        QuoteAccentBar(accent = accent)
         Row(
             modifier = Modifier
                 .weight(1f)
@@ -97,48 +117,95 @@ fun QuotedMessageBlock(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.Top,
         ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .widthIn(min = 0.dp),
-            ) {
-                if (quote.authorName.isNotEmpty()) {
-                    Text(
-                        text = quote.authorName,
-                        color = nameColor,
-                        style = QuoteTextStyle.copy(fontWeight = FontWeight.Bold),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        softWrap = false,
-                        modifier = Modifier.padding(bottom = 1.dp),
-                    )
-                }
-                if (preview.isNotEmpty()) {
-                    Text(
-                        text = preview,
-                        color = previewColor,
-                        style = QuoteTextStyle.copy(fontWeight = FontWeight.Normal),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        softWrap = false,
-                    )
-                }
-            }
+            QuoteTextColumn(
+                quote = quote,
+                preview = preview,
+                nameColor = nameColor,
+                previewColor = previewColor,
+            )
             if (onClear != null) {
                 Text(
                     text = "×",
                     color = LabColors.White33,
-                    fontSize = if (style == QuotedMessageStyle.Composer) 22.sp else 20.sp,
-                    lineHeight = if (style == QuotedMessageStyle.Composer) 22.sp else 20.sp,
+                    fontSize = 20.sp,
+                    lineHeight = 20.sp,
                     modifier = Modifier
                         .padding(start = 4.dp)
-                        .offset(
-                            y = if (style == QuotedMessageStyle.Composer) (-3).dp else 0.dp,
-                            x = if (style == QuotedMessageStyle.Composer) (-2).dp else 0.dp,
-                        )
                         .clickable(onClick = onClear),
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun QuoteBodyRow(
+    accent: Color,
+    nameColor: Color,
+    quote: MessageQuote,
+    preview: String,
+    previewColor: Color,
+    bodyPad: PaddingValues,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min),
+        verticalAlignment = Alignment.Top,
+    ) {
+        QuoteAccentBar(accent = accent)
+        QuoteTextColumn(
+            quote = quote,
+            preview = preview,
+            nameColor = nameColor,
+            previewColor = previewColor,
+            modifier = Modifier
+                .weight(1f)
+                .widthIn(min = 0.dp)
+                .padding(bodyPad),
+        )
+    }
+}
+
+@Composable
+private fun QuoteAccentBar(accent: Color) {
+    Box(
+        modifier = Modifier
+            .width(LabDimens.ChatQuoteAccentWidth)
+            .fillMaxHeight()
+            .background(accent),
+    )
+}
+
+@Composable
+private fun QuoteTextColumn(
+    quote: MessageQuote,
+    preview: String,
+    nameColor: Color,
+    previewColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        if (quote.authorName.isNotEmpty()) {
+            Text(
+                text = quote.authorName,
+                color = nameColor,
+                style = QuoteTextStyle.copy(fontWeight = FontWeight.Bold),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                softWrap = false,
+                modifier = Modifier.padding(bottom = 1.dp),
+            )
+        }
+        if (preview.isNotEmpty()) {
+            Text(
+                text = preview,
+                color = previewColor,
+                style = QuoteTextStyle.copy(fontWeight = FontWeight.Normal),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                softWrap = false,
+            )
         }
     }
 }

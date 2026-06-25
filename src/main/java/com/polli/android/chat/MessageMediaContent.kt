@@ -32,6 +32,7 @@ fun DcMsgMediaContent(
         viewType = msg.type,
         fileName = msg.filename,
         contentWidth = contentWidth,
+        isOutgoing = msg.isOutgoing,
         modifier = modifier,
     )
 }
@@ -40,6 +41,7 @@ fun DcMsgMediaContent(
 fun MessageMediaContent(
     message: ChatMessage,
     contentWidth: Dp,
+    isOutgoing: Boolean,
     modifier: Modifier = Modifier,
 ) {
     MessageMediaContent(
@@ -47,6 +49,7 @@ fun MessageMediaContent(
         viewType = message.viewType,
         fileName = message.fileName,
         contentWidth = contentWidth,
+        isOutgoing = isOutgoing,
         modifier = modifier,
     )
 }
@@ -57,8 +60,10 @@ private fun MessageMediaContent(
     viewType: Int,
     fileName: String?,
     contentWidth: Dp,
+    isOutgoing: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val playbackViewModel = LocalChatAudioPlayback.current
     val context = LocalContext.current
     val dcMsg = remember(messageId) {
         DcHelper.getContext(context).getMsg(messageId).takeIf { it.isOk }
@@ -110,10 +115,14 @@ private fun MessageMediaContent(
                 )
             }
         }
-        DcMsg.DC_MSG_AUDIO,
-        DcMsg.DC_MSG_VOICE,
-        -> MediaFallbackChip(
-            label = if (viewType == DcMsg.DC_MSG_VOICE) "Voice message" else (fileName ?: "Audio"),
+        DcMsg.DC_MSG_VOICE -> BubbleVoicePlayer(
+            messageId = messageId,
+            isOutgoing = isOutgoing,
+            playbackViewModel = playbackViewModel,
+            modifier = modifier,
+        )
+        DcMsg.DC_MSG_AUDIO -> MediaFallbackChip(
+            label = fileName ?: "Audio",
             modifier = modifier.width(contentWidth.coerceAtLeast(180.dp)),
             onClick = { openMediaPreview(context, messageId) },
         )

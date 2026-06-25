@@ -1,5 +1,7 @@
 package com.polli.android.qr
 
+import android.content.ClipDescription
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -60,6 +62,7 @@ class QrHubActivity : BaseAppCompatComposeActivity() {
                 QrHubScreen(
                     onBack = { finish() },
                     onScan = { launchScan() },
+                    onPaste = { pasteFromClipboard() },
                 )
             }
         }
@@ -69,13 +72,32 @@ class QrHubActivity : BaseAppCompatComposeActivity() {
         scanQr.launch(Intent(this, RegistrationQrActivity::class.java))
     }
 
+    private fun pasteFromClipboard() {
+        val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = clipboard.primaryClip
+        if (clip == null || clip.itemCount == 0 ||
+            !clipboard.primaryClipDescription?.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN).orFalse()
+        ) {
+            Toast.makeText(this, R.string.paste_from_clipboard, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val raw = clip.getItemAt(0).text?.toString()?.trim().orEmpty()
+        if (raw.isEmpty()) {
+            Toast.makeText(this, R.string.paste_from_clipboard, Toast.LENGTH_SHORT).show()
+            return
+        }
+        QrResultHandler.handle(this, raw)
+    }
+
+    private fun Boolean?.orFalse() = this == true
+
     companion object {
         fun intent(context: Context): Intent = Intent(context, QrHubActivity::class.java)
     }
 }
 
 @Composable
-fun QrHubScreen(onBack: () -> Unit, onScan: () -> Unit) {
+fun QrHubScreen(onBack: () -> Unit, onScan: () -> Unit, onPaste: () -> Unit) {
     var tab by remember { mutableIntStateOf(0) }
     val context = LocalContext.current
     val dc = remember { DcHelper.getContext(context) }
@@ -136,12 +158,16 @@ fun QrHubScreen(onBack: () -> Unit, onScan: () -> Unit) {
                 }
             }
             1 -> {
-                Box(
+                Column(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
                 ) {
                     TextButton(onClick = onScan) {
                         Text("Open scanner", color = LabColors.White)
+                    }
+                    TextButton(onClick = onPaste) {
+                        Text("Paste from clipboard", color = LabColors.White66)
                     }
                 }
             }

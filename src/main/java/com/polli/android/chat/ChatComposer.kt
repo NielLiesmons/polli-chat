@@ -13,7 +13,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
@@ -48,11 +52,13 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.polli.android.icons.LabIcon
 import com.polli.android.icons.LabIconName
 import com.polli.android.theme.LabColors
+import com.polli.android.theme.accent
 import com.polli.android.theme.LabDimens
 import com.polli.android.ui.FrostedChromeSurface
 import com.polli.android.ui.AppInsets
@@ -62,9 +68,21 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.positionChange
+import android.Manifest
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import org.thoughtcrime.securesms.R
+import androidx.core.content.ContextCompat
+import android.view.HapticFeedbackConstants
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.delay
+import kotlin.math.roundToInt
 
-private const val VOICE_CANCEL_DRAG_PX = 72f
+private const val VOICE_CANCEL_DRAG_PX = 80f
+private const val VOICE_LOCK_DRAG_PX = 120f
+private const val VOICE_MIN_MS = 1000L
 private const val VOICE_MIN_BYTES = 800L
 private val ComposerShellBg = LabColors.Gray66
 private val ComposerShellBorder = LabColors.ShellBorder
@@ -80,13 +98,23 @@ fun ChatComposerDock(
     hasPendingAttachment: Boolean = false,
     onAttachClick: (() -> Unit)? = null,
     onVoiceSent: ((android.net.Uri, Long) -> Unit)? = null,
+    onVoiceLockOverlayChange: (visible: Boolean, dragUpPx: Float) -> Unit = { _, _ -> },
     hazeState: dev.chrisbanes.haze.HazeState? = null,
 ) {
     val context = LocalContext.current
     val bottomInset = AppInsets.navigationBarBottom()
+    val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
+    val keyboardVisible = imeBottom > 0.dp
     val keyboard = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
     var isFocused by remember { mutableStateOf(false) }
+
+    LaunchedEffect(replyQuote?.msgId) {
+        if (replyQuote != null) {
+            focusRequester.requestFocus()
+            keyboard?.show()
+        }
+    }
 
     var textFieldHeightPx by remember { mutableFloatStateOf(0f) }
     val density = androidx.compose.ui.platform.LocalDensity.current
@@ -107,81 +135,155 @@ fun ChatComposerDock(
         RoundedCornerShape(pillRadius)
     }
 
-    var recording by remember { mutableStateOf(false) }
+    val view = LocalView.current
+    val recordExplain = stringResource(R.string.chat_record_explain)
+    var voiceMode by remember { mutableStateOf(VoiceRecordMode.Idle) }
     var recordCancelled by remember { mutableStateOf(false) }
     var recordMs by remember { mutableLongStateOf(0L) }
     var dragX by remember { mutableFloatStateOf(0f) }
+    var dragY by remember { mutableFloatStateOf(0f) }
     val voiceBridge = remember { VoiceRecorderBridge(context) }
+    val recording = voiceMode != VoiceRecordMode.Idle
+    val recordLocked = voiceMode == VoiceRecordMode.Locked
+
+    val micPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) {
+            view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+            voiceBridge.start()
+            voiceMode = VoiceRecordMode.Holding
+            recordCancelled = false
+            dragX = 0f
+            dragY = 0f
+        }
+    }
+
+    fun cancelVoiceRecording() {
+        voiceMode = VoiceRecordMode.Idle
+        recordCancelled = false
+        dragX = 0f
+        dragY = 0f
+        voiceBridge.cancel()
+    }
+
+    fun finishVoiceRecording(send: Boolean) {
+        val elapsed = recordMs
+        voiceMode = VoiceRecordMode.Idle
+        recordCancelled = false
+        dragX = 0f
+        dragY = 0f
+        if (!send) {
+            voiceBridge.cancel()
+            return
+        }
+        if (elapsed < VOICE_MIN_MS) {
+            voiceBridge.cancel()
+            Toast.makeText(context, recordExplain, Toast.LENGTH_LONG).show()
+            return
+        }
+        voiceBridge.stop { uri, size ->
+            if (uri != null && size >= VOICE_MIN_BYTES) {
+                onVoiceSent?.invoke(uri, size)
+            }
+        }
+    }
+
+    fun beginVoiceRecording() {
+        if (onVoiceSent == null) return
+        val granted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.RECORD_AUDIO,
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        if (!granted) {
+            micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+            return
+        }
+        view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+        voiceBridge.start()
+        voiceMode = VoiceRecordMode.Holding
+        recordCancelled = false
+        dragX = 0f
+        dragY = 0f
+    }
     val scrollState = rememberScrollState()
     val showTextFade = scrollState.maxValue > 0
 
-    LaunchedEffect(recording) {
-        if (!recording) return@LaunchedEffect
+    LaunchedEffect(voiceMode) {
+        if (voiceMode == VoiceRecordMode.Idle) return@LaunchedEffect
         recordMs = 0L
-        while (recording) {
+        while (voiceMode != VoiceRecordMode.Idle) {
             delay(100)
             recordMs += 100
         }
     }
 
+    LaunchedEffect(voiceMode, dragY) {
+        onVoiceLockOverlayChange(voiceMode == VoiceRecordMode.Holding, dragY)
+    }
+
+    val dockBottomPad = if (keyboardVisible) {
+        LabDimens.ChatComposerKeyboardGap
+    } else {
+        maxOf(LabDimens.ChatComposerDockBottomMin, bottomInset)
+    }
+
     // Blinking caret when unfocused — do NOT auto-open keyboard on launch.
-    Row(
+    FrostedChromeSurface(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = LabDimens.ChatComposerDockHPadding)
-            .padding(bottom = maxOf(LabDimens.ChatComposerDockBottomMin, bottomInset)),
-        verticalAlignment = Alignment.Bottom,
+            .padding(bottom = dockBottomPad)
+            .wrapContentHeight()
+            .heightIn(min = LabDimens.ChatComposerMinHeight),
+        shape = shellShape,
+        tint = ComposerShellBg,
+        borderColor = ComposerShellBorder,
+        hazeState = hazeState,
     ) {
-        if (recording) {
-            VoiceRecordingRow(
-                ms = recordMs,
-                cancelled = recordCancelled,
-                dragX = dragX,
-                modifier = Modifier
-                    .weight(1f)
-                    .heightIn(min = 41.dp),
-            )
-        } else {
-            FrostedChromeSurface(
-                modifier = Modifier
-                    .weight(1f, fill = false)
-                    .wrapContentHeight()
-                    .heightIn(min = LabDimens.ChatComposerMinHeight),
-                shape = shellShape,
-                tint = ComposerShellBg,
-                borderColor = ComposerShellBorder,
-                hazeState = hazeState,
-            ) {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                replyQuote?.let { quote ->
-                    Box(
-                        modifier = Modifier.padding(
-                            start = 7.dp,
-                            end = 7.dp,
-                            top = 7.dp,
-                            bottom = 4.dp,
-                        ),
-                    ) {
-                        QuotedMessageBlock(
-                            quote = quote,
-                            style = QuotedMessageStyle.Composer,
-                            onClear = onClearQuote,
-                        )
-                    }
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = LabDimens.ChatComposerMinHeight - 14.dp)
-                        .padding(
-                            start = 7.dp,
-                            end = 7.dp,
-                            bottom = 7.dp,
-                            top = if (hasQuote) 0.dp else 7.dp,
-                        ),
-                    verticalAlignment = composerRowAlign,
-                    horizontalArrangement = Arrangement.spacedBy(7.dp),
+        Column(modifier = Modifier.fillMaxWidth()) {
+            replyQuote?.let { quote ->
+                Box(
+                    modifier = Modifier.padding(
+                        start = 7.dp,
+                        end = 7.dp,
+                        top = 7.dp,
+                        bottom = 8.dp,
+                    ),
                 ) {
+                    QuotedMessageBlock(
+                        quote = quote,
+                        style = QuotedMessageStyle.Composer,
+                        onClear = onClearQuote,
+                    )
+                }
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = LabDimens.ChatComposerMinHeight - 14.dp)
+                    .padding(
+                        start = 7.dp,
+                        end = 7.dp,
+                        bottom = 7.dp,
+                        top = if (hasQuote) 0.dp else 7.dp,
+                    ),
+                verticalAlignment = composerRowAlign,
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+            ) {
+                if (recording) {
+                    VoiceRecordingInline(
+                        ms = recordMs,
+                        cancelled = recordCancelled,
+                        locked = recordLocked,
+                        dragX = dragX,
+                        onCancel = { cancelVoiceRecording() },
+                        modifier = Modifier
+                            .weight(1f)
+                            .heightIn(min = 20.dp)
+                            .padding(end = 24.dp),
+                    )
+                } else {
                     Box(
                         modifier = Modifier
                             .size(LabDimens.ChatComposerPlusSize)
@@ -250,67 +352,102 @@ fun ChatComposerDock(
                             maxLines = Int.MAX_VALUE,
                         )
                     }
-                    if (showSend) {
+                }
+                when {
+                    recordLocked -> {
                         Box(
                             modifier = Modifier
-                                .size(LabDimens.ChatComposerSendSize)
+                                .size(LabDimens.ChatComposerPlusSize)
                                 .clip(CircleShape)
                                 .background(
-                                    Brush.linearGradient(listOf(LabColors.Blurple, LabColors.BlurpleLight)),
+                                    Brush.linearGradient(listOf(accent().solid, accent().light)),
+                                )
+                                .clickable { finishVoiceRecording(send = true) },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            LabIcon(LabIconName.Send, 16.dp, LabColors.White)
+                        }
+                    }
+                    showSend && !recording -> {
+                        Box(
+                            modifier = Modifier
+                                .size(LabDimens.ChatComposerPlusSize)
+                                .clip(CircleShape)
+                                .background(
+                                    Brush.linearGradient(listOf(accent().solid, accent().light)),
                                 )
                                 .clickable(onClick = onSend),
                             contentAlignment = Alignment.Center,
                         ) {
                             LabIcon(LabIconName.Send, 16.dp, LabColors.White)
                         }
-                    } else {
+                    }
+                    onVoiceSent != null -> {
+                        val voiceActive = voiceMode == VoiceRecordMode.Holding
                         Box(
                             modifier = Modifier
-                                .offset(x = (-6).dp)
-                                .padding(end = 2.dp)
-                                .size(LabDimens.ChatComposerSendSize)
+                                .offset { IntOffset(0, if (voiceActive) dragY.roundToInt() else 0) }
+                                .offset(x = (-2).dp)
+                                .offset { IntOffset(if (voiceActive) dragX.roundToInt() else 0, 0) }
+                                .size(LabDimens.ChatComposerPlusSize)
                                 .clip(CircleShape)
                                 .then(
-                                    if (onVoiceSent != null) {
-                                        Modifier.pointerInput(onVoiceSent) {
-                                            awaitEachGesture {
-                                                awaitFirstDown(requireUnconsumed = false)
-                                                recording = true
-                                                recordCancelled = false
-                                                dragX = 0f
-                                                voiceBridge.start()
-                                                do {
-                                                    val event = awaitPointerEvent(PointerEventPass.Main)
-                                                    val change = event.changes.firstOrNull { it.pressed }
-                                                    if (change == null) break
-                                                    val delta = change.positionChange()
-                                                    if (delta != Offset.Zero) {
-                                                        dragX += delta.x
-                                                        recordCancelled = dragX < -VOICE_CANCEL_DRAG_PX
-                                                        change.consume()
-                                                    }
-                                                } while (true)
-                                                recording = false
-                                                if (recordCancelled) {
-                                                    voiceBridge.cancel()
+                                    if (voiceActive) {
+                                        Modifier.background(accent().solid)
+                                    } else {
+                                        Modifier
+                                    },
+                                )
+                                .pointerInput(onVoiceSent) {
+                                    awaitEachGesture {
+                                        val down = awaitFirstDown(requireUnconsumed = false)
+                                        beginVoiceRecording()
+                                        if (voiceMode != VoiceRecordMode.Holding) return@awaitEachGesture
+
+                                        val pointerId = down.id
+                                        while (voiceMode == VoiceRecordMode.Holding) {
+                                            val event = awaitPointerEvent(PointerEventPass.Main)
+                                            val change = event.changes.firstOrNull { it.id == pointerId }
+                                                ?: break
+                                            if (!change.pressed) break
+
+                                            val delta = change.positionChange()
+                                            if (delta != Offset.Zero) {
+                                                if (kotlin.math.abs(delta.x) > kotlin.math.abs(delta.y)) {
+                                                    dragX = (dragX + delta.x).coerceAtMost(0f)
+                                                    dragY = 0f
                                                 } else {
-                                                    voiceBridge.stop { uri, size ->
-                                                        if (uri != null && size >= VOICE_MIN_BYTES) {
-                                                            onVoiceSent(uri, size)
-                                                        }
-                                                    }
+                                                    dragY = (dragY + delta.y).coerceAtMost(0f)
+                                                    dragX = 0f
                                                 }
+                                                if (dragX < -VOICE_CANCEL_DRAG_PX) {
+                                                    recordCancelled = true
+                                                }
+                                                if (dragY < -VOICE_LOCK_DRAG_PX) {
+                                                    voiceMode = VoiceRecordMode.Locked
+                                                    recordCancelled = false
+                                                    dragX = 0f
+                                                    dragY = 0f
+                                                    view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+                                                }
+                                                change.consume()
                                             }
                                         }
-                                    } else Modifier,
-                                ),
+                                        if (voiceMode == VoiceRecordMode.Holding) {
+                                            finishVoiceRecording(send = !recordCancelled)
+                                        }
+                                    }
+                                },
                             contentAlignment = Alignment.Center,
                         ) {
-                            LabIcon(LabIconName.Voice, 24.dp, LabColors.White33)
+                            LabIcon(
+                                LabIconName.Voice,
+                                22.dp,
+                                if (voiceActive) LabColors.White else LabColors.White33,
+                            )
                         }
                     }
                 }
-            }
             }
         }
     }
@@ -332,40 +469,4 @@ private fun ComposerCaret() {
             .height(20.dp)
             .background(LabColors.White.copy(alpha = alpha)),
     )
-}
-
-@Composable
-private fun VoiceRecordingRow(
-    ms: Long,
-    cancelled: Boolean,
-    dragX: Float,
-    modifier: Modifier = Modifier,
-) {
-    val secs = (ms / 1000).toInt()
-    val label = "%d:%02d".format(secs / 60, secs % 60)
-    Row(
-        modifier = modifier
-            .clip(RoundedCornerShape(999.dp))
-            .background(ComposerShellBg)
-            .border(LabDimens.ShellBorderWidth, ComposerShellBorder, RoundedCornerShape(999.dp))
-            .padding(horizontal = 14.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .clip(CircleShape)
-                .background(if (cancelled) LabColors.Destructive else LabColors.Blurple),
-        )
-        Text(
-            text = if (cancelled) "Release to cancel" else "Recording… $label",
-            color = if (cancelled) LabColors.Destructive else LabColors.White85,
-            fontSize = 15.sp,
-            modifier = Modifier.weight(1f),
-        )
-        if (dragX < -20f) {
-            Text("← slide to cancel", color = LabColors.White33, fontSize = 12.sp)
-        }
-    }
 }

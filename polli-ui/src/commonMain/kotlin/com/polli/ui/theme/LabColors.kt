@@ -2,7 +2,7 @@ package com.polli.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-/** Lab design tokens — ported from polli/src/design_system/colors.rs */
+/** Neutral Lab design tokens — accent colors live in [AccentPalette] / [accent]. */
 object LabColors {
     val Black = Color(0xFF121212)
     val White = Color(0xFFFFFFFF)
@@ -20,9 +20,9 @@ object LabColors {
     val Black33 = Color(0x54000000)
     val Black16 = Color(0x29000000)
     val Black8 = Color(0x14000000)
-    val Blurple = Color(0xFF5A58FE)
-    val BlurpleLight = Color(0xFF8280FF)
-    val BlurpleGradientStart = Color(0xFF5C5FFF)
-    val BlurpleGradientEnd = Color(0xFF4542FF)
-    val Destructive = Color(0xFFFF6B6B)
+    /** Zapstore rouge — destructive actions (theme-independent). */
+    val Rouge = Color(0xFFFF4778)
+    val RougeEnd = Color(0xFFFF005E)
+    val Rouge66 = Color(0xA8FF4778)
+    val Destructive = Rouge
 }

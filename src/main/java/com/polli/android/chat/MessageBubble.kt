@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -18,10 +20,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.polli.android.theme.LabColors
+import com.polli.android.theme.accent
 import com.polli.android.theme.LabDimens
 import com.polli.android.theme.ProfileColors
 import com.polli.android.ui.LabAvatar
@@ -29,21 +32,32 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/** Max bubble width — 85% of the lane inside row gutters (matches polli web `max-width: 85%`). */
+fun chatBubbleLaneMaxWidth(
+    screenWidth: Dp,
+    startGutter: Dp,
+    endGutter: Dp,
+    leadingReserved: Dp = 0.dp,
+    trailingReserved: Dp = 0.dp,
+): Dp {
+    val available = screenWidth - startGutter - endGutter - leadingReserved - trailingReserved
+    return (available * LabDimens.ChatBubbleMaxWidthFraction).coerceAtLeast(0.dp)
+}
+
 @Composable
 fun MessageBubble(
     message: ChatMessage,
     layout: MessageGroupLayout,
+    maxBubbleWidth: Dp,
     incomingInGroup: Boolean = false,
     reactionReloadKey: Int = 0,
     pulseEmoji: String? = null,
     onQuoteClick: ((Int) -> Unit)? = null,
 ) {
     val context = LocalContext.current
-    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
-    val maxBubbleWidth = screenWidth * LabDimens.ChatBubbleMaxWidthFraction
     val shape = bubbleShape(message.isOutgoing, layout.isLastInStack)
     val bg = if (message.isOutgoing) {
-        Brush.linearGradient(listOf(LabColors.BlurpleGradientStart, LabColors.BlurpleGradientEnd))
+        accent().gradientBrush()
     } else {
         Brush.linearGradient(listOf(LabColors.Gray66, LabColors.Gray66))
     }
@@ -91,16 +105,24 @@ fun MessageBubble(
         else -> QuotedMessageStyle.InIncomingBubble
     }
 
+    val textOnlyBubble = !hasQuote && !hasAttachment && bodyHasText
+
     Box(
         modifier = Modifier
             .widthIn(max = maxBubbleWidth)
+            .wrapContentWidth(if (message.isOutgoing) Alignment.End else Alignment.Start)
             .clip(shape)
             .background(bg, shape),
     ) {
         Column(
             modifier = Modifier
                 .padding(shellPadding)
-                .fillMaxWidth(),
+                .then(
+                    when {
+                        textOnlyBubble -> Modifier.width(IntrinsicSize.Max)
+                        else -> Modifier.fillMaxWidth()
+                    },
+                ),
         ) {
             if (!message.isOutgoing && layout.isFirstInStack) {
                 IncomingBubbleHeader(
@@ -122,6 +144,7 @@ fun MessageBubble(
                 MessageMediaContent(
                     message = message,
                     contentWidth = richContentWidth,
+                    isOutgoing = message.isOutgoing,
                     modifier = Modifier
                         .padding(horizontal = richContentPadH)
                         .padding(bottom = 4.dp),
@@ -131,7 +154,15 @@ fun MessageBubble(
                 MessageBubbleText(
                     text = message.text,
                     isOutgoing = message.isOutgoing,
-                    modifier = Modifier.padding(horizontal = insetH),
+                    modifier = Modifier
+                        .padding(horizontal = insetH)
+                        .then(
+                            if (textOnlyBubble) {
+                                Modifier.width(IntrinsicSize.Max)
+                            } else {
+                                Modifier.fillMaxWidth()
+                            },
+                        ),
                 )
             }
             if (reactions.isNotEmpty()) {
@@ -165,15 +196,30 @@ fun OutgoingMessageRow(
     onClick: (Offset) -> Unit,
     onQuoteClick: (Int) -> Unit,
 ) {
+    val screenWidth = com.polli.ui.theme.layoutScreenWidthDp()
+    val rowStart = LabDimens.ChatRowPaddingH + LabDimens.ChatRowOutgoingExtraStart
+    val rowEnd = LabDimens.ChatRowPaddingH
+    val maxBubbleWidth = chatBubbleLaneMaxWidth(
+        screenWidth = screenWidth,
+        startGutter = rowStart,
+        endGutter = rowEnd,
+    )
     val rowTop = if (layout.isFirstInStack) LabDimens.ChatRowTop else LabDimens.ChatRowTopCollapsed
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = rowTop, start = LabDimens.ChatRowPaddingH, end = LabDimens.ChatRowPaddingH),
+            .padding(
+                top = rowTop,
+                start = rowStart,
+                end = rowEnd,
+            ),
         contentAlignment = Alignment.CenterEnd,
     ) {
         BubbleSwiper(
-            modifier = Modifier.messageRowHighlight(highlighted),
+            modifier = Modifier
+                .widthIn(max = maxBubbleWidth)
+                .wrapContentWidth(Alignment.End)
+                .messageRowHighlight(highlighted),
             alignEnd = true,
             replyIconInset = 4f,
             onSwipeReply = onSwipeReply,
@@ -182,6 +228,7 @@ fun OutgoingMessageRow(
             MessageBubble(
                 message = message,
                 layout = layout,
+                maxBubbleWidth = maxBubbleWidth,
                 reactionReloadKey = reactionReloadKey,
                 pulseEmoji = pulseEmoji,
                 onQuoteClick = onQuoteClick,
@@ -201,20 +248,28 @@ fun SingleIncomingMessageRow(
     onClick: (Offset) -> Unit,
     onQuoteClick: (Int) -> Unit,
 ) {
+    val screenWidth = com.polli.ui.theme.layoutScreenWidthDp()
+    val rowPad = LabDimens.ChatRowPaddingH
+    val incomingRight = LabDimens.ChatRowIncomingRight
     val rowTop = if (layout.isFirstInStack) LabDimens.ChatRowTop else LabDimens.ChatRowTopCollapsed
     val showAvatar = layout.isLastInStack
+    val maxBubbleWidth = chatBubbleLaneMaxWidth(
+        screenWidth = screenWidth,
+        startGutter = rowPad,
+        endGutter = incomingRight,
+    )
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(
-                start = LabDimens.ChatRowPaddingH,
-                end = LabDimens.ChatRowIncomingRight,
+                start = rowPad,
+                end = incomingRight,
                 top = rowTop,
             ),
+        contentAlignment = Alignment.BottomStart,
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.Bottom,
         ) {
             if (showAvatar) {
@@ -224,16 +279,15 @@ fun SingleIncomingMessageRow(
                     size = LabDimens.ChatAvatarSize,
                     contactId = message.authorId,
                 )
-                Spacer(
-                    modifier = Modifier.width(
-                        LabDimens.ChatIncomingGroupAvatarOffset - LabDimens.ChatAvatarSize,
-                    ),
-                )
+                Spacer(modifier = Modifier.width(LabDimens.ChatAvatarGap))
             } else {
                 Spacer(modifier = Modifier.width(LabDimens.ChatIncomingGroupAvatarOffset))
             }
             BubbleSwiper(
-                modifier = Modifier.messageRowHighlight(highlighted),
+                modifier = Modifier
+                    .widthIn(max = maxBubbleWidth)
+                    .wrapContentWidth(Alignment.Start)
+                    .messageRowHighlight(highlighted),
                 alignEnd = false,
                 replyIconInset = 8f,
                 onSwipeReply = onSwipeReply,
@@ -242,6 +296,7 @@ fun SingleIncomingMessageRow(
                 MessageBubble(
                     message = message,
                     layout = layout,
+                    maxBubbleWidth = maxBubbleWidth,
                     incomingInGroup = !layout.isFirstInStack,
                     reactionReloadKey = reactionReloadKey,
                     pulseEmoji = pulseEmoji,

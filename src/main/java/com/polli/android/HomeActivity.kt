@@ -3,6 +3,10 @@ package com.polli.android
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.polli.android.home.HomeScreen
 import com.polli.android.navigation.AppNav
 import com.polli.android.onboarding.WelcomeActivity
@@ -14,6 +18,8 @@ import org.thoughtcrime.securesms.connect.DcHelper
 
 class HomeActivity : BaseComposeActivity() {
 
+    private var themeRevision by mutableIntStateOf(0)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (!DcHelper.isConfigured(this)) {
@@ -21,9 +27,10 @@ class HomeActivity : BaseComposeActivity() {
             finish()
             return
         }
-        val prefs = AppPrefs(this)
         setContent {
-            LabTheme(prefs = prefs) {
+            val prefs = remember { AppPrefs(this@HomeActivity) }
+            val revision = themeRevision
+            LabTheme(prefs = prefs, uiScaleRevision = revision) {
                 val dc = DcHelper.getContext(this)
                 HomeScreen(
                     profileName = dc.getConfig(DcHelper.CONFIG_DISPLAY_NAME).ifBlank { "Profile" },
@@ -46,5 +53,10 @@ class HomeActivity : BaseComposeActivity() {
                 )
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        themeRevision++
     }
 }

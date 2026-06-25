@@ -37,6 +37,7 @@ import com.polli.android.BaseAppCompatComposeActivity
 import com.polli.android.navigation.AppNav
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.LabColors
+import com.polli.android.theme.accent
 import com.polli.android.theme.LabTheme
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.LabAvatar
@@ -186,7 +187,7 @@ fun AccountSetupScreen(
         )
         Spacer(modifier = Modifier.padding(24.dp))
         if (busy) {
-            CircularProgressIndicator(color = LabColors.Blurple, modifier = Modifier.size(32.dp))
+            CircularProgressIndicator(color = accent().solid, modifier = Modifier.size(32.dp))
         } else {
             TextButton(
                 onClick = {
@@ -196,7 +197,7 @@ fun AccountSetupScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(999.dp))
-                    .background(LabColors.Blurple),
+                    .background(accent().solid),
             ) {
                 Text("Create", color = LabColors.White)
             }

@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.polli.android.BaseComposeActivity
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.LabColors
+import com.polli.android.theme.accent
 import com.polli.android.theme.LabTheme
 import com.polli.android.ui.LabAvatar
 import com.polli.android.ui.AppInsets
@@ -86,7 +87,7 @@ fun ProfileEditScreen(onBack: () -> Unit) {
                 .background(LabColors.Gray33)
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = LabColors.White85),
-            cursorBrush = SolidColor(LabColors.Blurple),
+            cursorBrush = SolidColor(LabColors.White),
             decorationBox = { inner ->
                 if (displayName.isEmpty()) Text("Display name", color = LabColors.White33)
                 inner()
@@ -101,7 +102,7 @@ fun ProfileEditScreen(onBack: () -> Unit) {
             },
             modifier = Modifier.align(Alignment.End),
         ) {
-            Text("Save", color = LabColors.BlurpleLight)
+            Text("Save", color = accent().light)
         }
     }
 }
