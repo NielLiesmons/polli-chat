@@ -22,6 +22,10 @@ object LabDimens {
     val HomeSearchGapAfterGlyph: Dp get() = com.polli.ui.theme.LabDimens.HomeSearchGapAfterGlyph
     val HomePillActionSize: Dp get() = com.polli.ui.theme.LabDimens.HomePillActionSize
     val HomeBarVerticalPad: Dp get() = com.polli.ui.theme.LabDimens.HomeBarVerticalPad
+    val IconStrokeWidth: Dp get() = com.polli.ui.theme.LabDimens.IconStrokeWidth
+    val HomeSearchPanelExpandedHeight: Dp get() = com.polli.ui.theme.LabDimens.HomeSearchPanelExpandedHeight
+    val HomeSearchExpandDragDistance: Dp get() = com.polli.ui.theme.LabDimens.HomeSearchExpandDragDistance
+    val HomeSearchExpandSnapThreshold: Float get() = com.polli.ui.theme.LabDimens.HomeSearchExpandSnapThreshold
     val TabButtonHeight: Dp get() = com.polli.ui.theme.LabDimens.TabButtonHeight
     val TabButtonHPadding: Dp get() = com.polli.ui.theme.LabDimens.TabButtonHPadding
     val TabGap: Dp get() = com.polli.ui.theme.LabDimens.TabGap

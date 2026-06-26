@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -35,10 +36,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -49,6 +48,7 @@ import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabDimens
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.ChatFeedEdgeGradients
+import com.polli.android.ui.rememberComposerChromeLayout
 import com.polli.android.ui.rememberLazyListShowTopFadeDerived
 import com.polli.android.ui.rememberPolliHazeState
 import dev.chrisbanes.haze.hazeSource
@@ -87,8 +87,6 @@ fun ChatScreen(
     val listState = rememberLazyListState()
     val showTopFade by rememberLazyListShowTopFadeDerived(listState)
     val showScrollToBottom by rememberShowChatScrollToBottom(listState)
-    val composerClearance = AppInsets.chatComposerClearance()
-    val navBottom = AppInsets.navigationBarBottom()
     val headerClearance = if (isGroup && !isBroadcast) {
         LabDimens.GroupHeaderClearance + AppInsets.statusBarTop()
     } else {
@@ -127,10 +125,13 @@ fun ChatScreen(
         viewModel.showOverlay(message, tap.x, tap.y)
     }
 
-    Box(
+    val composerChrome = rememberComposerChromeLayout()
+
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(LabColors.Black),
+            .background(LabColors.Black)
+            .onGloballyPositioned { composerChrome.onRootPositioned(it) },
     ) {
         HorizontalPager(
             state = pagerState,
@@ -144,7 +145,7 @@ fun ChatScreen(
                     viewModel = viewModel,
                     listState = listState,
                     headerClearance = headerClearance,
-                    composerClearance = composerClearance,
+                    feedBottomPadding = composerChrome.feedBottomPadding,
                     hazeState = hazeState,
                     onOpenMessageOverlay = openMessageOverlay,
                     onScrollToMessage = scrollToMessage,
@@ -160,21 +161,15 @@ fun ChatScreen(
         }
 
         if (selectedTab == ChatDetailTab.Chat) {
-            val density = LocalDensity.current
-            var composerDockHeight by remember { mutableStateOf(0.dp) }
             var voiceLockVisible by remember { mutableStateOf(false) }
             var voiceLockDragY by remember { mutableFloatStateOf(0f) }
-            val bottomChromeInset = composerDockHeight + if (keyboardVisible) {
-                imeBottom
-            } else {
-                maxOf(LabDimens.ChatComposerDockBottomMin, navBottom)
-            }
+            val composerDockHeight = composerChrome.dockHeight
 
             ChatFeedEdgeGradients(
                 modifier = Modifier.fillMaxSize(),
                 showTopFade = showTopFade,
                 hasGroupHeader = isGroup && !isBroadcast,
-                bottomChromeInset = bottomChromeInset,
+                bottomChromeInset = composerChrome.bottomChromeInset,
             )
 
             ChatComposerDock(
@@ -182,9 +177,7 @@ fun ChatScreen(
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .imePadding()
-                    .onGloballyPositioned { coords ->
-                        composerDockHeight = with(density) { coords.size.height.toDp() }
-                    },
+                    .onGloballyPositioned { composerChrome.onComposerPositioned(it) },
                 value = viewModel.draft,
                 onValueChange = viewModel::updateDraft,
                 onSend = viewModel::send,
@@ -301,12 +294,11 @@ private fun ChatFeedPage(
     viewModel: ChatViewModel,
     listState: androidx.compose.foundation.lazy.LazyListState,
     headerClearance: androidx.compose.ui.unit.Dp,
-    composerClearance: androidx.compose.ui.unit.Dp,
+    feedBottomPadding: androidx.compose.ui.unit.Dp,
     hazeState: dev.chrisbanes.haze.HazeState,
     onOpenMessageOverlay: (ChatMessage, androidx.compose.ui.geometry.Offset) -> Unit,
     onScrollToMessage: (Int) -> Unit,
 ) {
-    val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
     val displayItems = remember(viewModel.feedItems) { viewModel.feedItems.asReversed() }
     var prevMsgCount by remember { mutableIntStateOf(0) }
 
@@ -365,7 +357,7 @@ private fun ChatFeedPage(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 top = headerClearance,
-                bottom = composerClearance + imeBottom,
+                bottom = feedBottomPadding,
             ),
         ) {
             itemsIndexed(

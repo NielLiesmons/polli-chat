@@ -100,6 +100,7 @@ fun ChatComposerDock(
     onVoiceSent: ((android.net.Uri, Long) -> Unit)? = null,
     onVoiceLockOverlayChange: (visible: Boolean, dragUpPx: Float) -> Unit = { _, _ -> },
     hazeState: dev.chrisbanes.haze.HazeState? = null,
+    onFocusChanged: (Boolean) -> Unit = {},
 ) {
     val context = LocalContext.current
     val bottomInset = AppInsets.navigationBarBottom()
@@ -313,7 +314,10 @@ fun ChatComposerDock(
                                 .heightIn(min = 20.dp, max = 180.dp)
                                 .verticalScroll(scrollState)
                                 .focusRequester(focusRequester)
-                                .onFocusChanged { isFocused = it.isFocused }
+                                .onFocusChanged {
+                                    isFocused = it.isFocused
+                                    onFocusChanged(it.isFocused)
+                                }
                                 .padding(horizontal = 4.dp)
                                 .padding(
                                     top = if (composerRowExpanded) 2.dp else 0.dp,
@@ -416,12 +420,11 @@ fun ChatComposerDock(
                                                 if (kotlin.math.abs(delta.x) > kotlin.math.abs(delta.y)) {
                                                     dragX = (dragX + delta.x).coerceAtMost(0f)
                                                     dragY = 0f
+                                                    recordCancelled = dragX < -VOICE_CANCEL_DRAG_PX
                                                 } else {
                                                     dragY = (dragY + delta.y).coerceAtMost(0f)
                                                     dragX = 0f
-                                                }
-                                                if (dragX < -VOICE_CANCEL_DRAG_PX) {
-                                                    recordCancelled = true
+                                                    recordCancelled = false
                                                 }
                                                 if (dragY < -VOICE_LOCK_DRAG_PX) {
                                                     voiceMode = VoiceRecordMode.Locked

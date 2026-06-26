@@ -1,15 +1,20 @@
 package com.polli.android.home
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,13 +29,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import com.polli.android.icons.LabIcon
-import com.polli.android.icons.LabIconName
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -38,26 +42,42 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import com.polli.android.bridge.InboxItem
-import com.polli.core.chat.ChatCategory
+import com.polli.android.icons.LabIcon
+import com.polli.android.icons.LabIconName
 import com.polli.android.theme.LabColors
-import com.polli.android.theme.accent
 import com.polli.android.theme.LabDimens
+import com.polli.android.theme.accent
+import com.polli.android.ui.AppInsets
 import com.polli.android.ui.LabAvatar
 import com.polli.android.ui.SelfAvatar
-import com.polli.android.ui.AppInsets
-import com.polli.android.ui.scrollFadeMask
 import com.polli.android.ui.rememberLazyListShowTopFadeDerived
+import com.polli.android.ui.rememberPolliHazeState
+import com.polli.android.ui.scrollFadeMask
+import com.polli.core.chat.ChatCategory
+import dev.chrisbanes.haze.hazeSource
 import org.thoughtcrime.securesms.R
+
+private val SearchExpandEasing = CubicBezierEasing(0.22f, 1f, 0.36f, 1f)
+private const val SearchExpandDurationMs = 380
 
 enum class HomeTab { Spaces, Mail, Sigils }
 
@@ -76,199 +96,376 @@ fun HomeScreen(
     onSearch: (String) -> Unit,
     onArchiveClick: () -> Unit = {},
 ) {
-    var isSearching by remember { mutableStateOf(false) }
+    var searchPanelOpen by remember { mutableStateOf(false) }
+    var dragExpandProgress by remember { mutableFloatStateOf(0f) }
+    var isDraggingExpand by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
     var tab by remember { mutableStateOf(HomeTab.Spaces) }
     val listState = rememberLazyListState()
     val showTopFade by rememberLazyListShowTopFadeDerived(listState)
+    val focusRequester = remember { FocusRequester() }
+    val hazeState = rememberPolliHazeState()
+
+    val expandTarget = when {
+        isDraggingExpand -> dragExpandProgress
+        searchPanelOpen -> 1f
+        else -> 0f
+    }
+    val expandProgress by animateFloatAsState(
+        targetValue = expandTarget,
+        animationSpec = if (isDraggingExpand) {
+            snap()
+        } else {
+            tween(durationMillis = SearchExpandDurationMs, easing = SearchExpandEasing)
+        },
+        label = "searchExpand",
+    )
 
     val loadedItems = items ?: rememberInboxItems(query)
     val loadedChannels = channels ?: rememberChannels(loadedItems)
     val archiveLink = rememberArchiveLinkState()
 
-    Column(
+    fun openSearchPanel() {
+        isDraggingExpand = false
+        searchPanelOpen = true
+    }
+
+    fun closeSearchPanel() {
+        isDraggingExpand = false
+        searchPanelOpen = false
+        dragExpandProgress = 0f
+        query = ""
+        onSearch("")
+    }
+
+    fun snapSearchPanelOpen() {
+        isDraggingExpand = false
+        searchPanelOpen = true
+    }
+
+    LaunchedEffect(searchPanelOpen) {
+        if (searchPanelOpen) {
+            focusRequester.requestFocus()
+        }
+    }
+
+    BackHandler(enabled = searchPanelOpen || expandProgress > 0.05f) {
+        closeSearchPanel()
+    }
+
+    val density = LocalDensity.current
+    val expandDragDistancePx = with(density) { LabDimens.HomeSearchExpandDragDistance.toPx() }
+    val snapThreshold = LabDimens.HomeSearchExpandSnapThreshold
+    val expandNestedScroll = remember(listState, searchPanelOpen, snapThreshold) {
+        object : NestedScrollConnection {
+            override fun onPostScroll(
+                consumed: Offset,
+                available: Offset,
+                source: NestedScrollSource,
+            ): Offset {
+                if (searchPanelOpen) return Offset.Zero
+                val atTop = listState.firstVisibleItemIndex == 0 &&
+                    listState.firstVisibleItemScrollOffset == 0
+                if (!atTop || available.y <= 0f) return Offset.Zero
+
+                isDraggingExpand = true
+                val damped = 1f - dragExpandProgress * 0.45f
+                val delta = (available.y / expandDragDistancePx) * damped
+                dragExpandProgress = (dragExpandProgress + delta).coerceIn(0f, 1f)
+
+                if (dragExpandProgress >= snapThreshold) {
+                    snapSearchPanelOpen()
+                }
+                return Offset(0f, available.y)
+            }
+
+            override suspend fun onPreFling(available: Velocity): Velocity {
+                if (!isDraggingExpand) return Velocity.Zero
+                isDraggingExpand = false
+                if (dragExpandProgress >= snapThreshold) {
+                    snapSearchPanelOpen()
+                } else {
+                    searchPanelOpen = false
+                    dragExpandProgress = 0f
+                }
+                return Velocity.Zero
+            }
+        }
+    }
+
+    val feedAlpha = (1f - expandProgress * 0.92f).coerceIn(0f, 1f)
+    val chromeAlpha = (1f - expandProgress * 0.88f).coerceIn(0f, 1f)
+    val panelHeight = lerp(LabDimens.HomeBarHeight, LabDimens.HomeSearchPanelExpandedHeight, expandProgress)
+    val barTopInset = (LabDimens.HomeProfileSize - LabDimens.HomeBarHeight) / 2
+    val headerBlockHeight = LabDimens.HomeBarVerticalPad + maxOf(
+        LabDimens.HomeProfileSize,
+        barTopInset + panelHeight,
+    )
+    val searchExpanded = searchPanelOpen || expandProgress > 0.05f
+    val dismissOverlayInteraction = remember { MutableInteractionSource() }
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(LabColors.Black)
             .padding(top = AppInsets.statusBarTop()),
-        verticalArrangement = Arrangement.spacedBy(LabDimens.TabSectionGap),
     ) {
-        HomeTopBar(
-            profileName = profileName,
-            profileSeed = profileSeed,
-            isSearching = isSearching,
-            query = query,
-            onProfileClick = onProfileClick,
-            onActivateSearch = { isSearching = true },
-            onCancelSearch = { isSearching = false; query = ""; onSearch("") },
-            onQueryChange = { query = it; onSearch(it) },
-            onPlusClick = onPlusClick,
-        )
-
-        if (!isSearching) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(LabDimens.TabSectionGap),
-            ) {
-                if (loadedChannels.isNotEmpty()) {
-                    ChannelStoriesRow(channels = loadedChannels, onSelect = onChannelClick)
-                }
-                TabRow(active = tab, onSelect = { tab = it })
-            }
-        }
-
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .background(LabColors.Black),
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(LabDimens.TabSectionGap),
         ) {
-            if (tab == HomeTab.Sigils) {
-                SigilsTab()
-            } else {
-            val filtered = loadedItems.filter {
-                when (tab) {
-                    HomeTab.Spaces -> it.category == ChatCategory.Space
-                    HomeTab.Mail -> it.category == ChatCategory.Mail
-                    HomeTab.Sigils -> false
+            Spacer(modifier = Modifier.height(headerBlockHeight))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .alpha(chromeAlpha),
+            ) {
+                if (expandProgress < 0.92f) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(LabDimens.TabSectionGap),
+                    ) {
+                        if (loadedChannels.isNotEmpty()) {
+                            ChannelStoriesRow(channels = loadedChannels, onSelect = onChannelClick)
+                        }
+                        TabRow(active = tab, onSelect = { tab = it })
+                    }
                 }
             }
-            val showArchiveRow = tab == HomeTab.Mail && archiveLink.visible
-            val showFeed = filtered.isNotEmpty() || showArchiveRow
 
-            if (!showFeed) {
-                val spaceCount = loadedItems.count { it.category == ChatCategory.Space }
-                val mailCount = loadedItems.count { it.category == ChatCategory.Mail }
-                val channelCount = loadedItems.count { it.category == ChatCategory.Channel }
-                val hint = when {
-                    loadedItems.isEmpty() ->
-                        if (tab == HomeTab.Spaces) spacesEmptyHint else mailEmptyHint
-                    tab == HomeTab.Spaces && spaceCount == 0 ->
-                        "No group chats in this tab. ($mailCount direct, $channelCount channel chats in your inbox.)"
-                    tab == HomeTab.Mail && mailCount == 0 ->
-                        "No 1:1 chats in this tab. ($spaceCount groups, $channelCount channel chats in your inbox.)"
-                    else -> if (tab == HomeTab.Spaces) spacesEmptyHint else mailEmptyHint
-                }
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = hint,
-                        color = LabColors.White33,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        textAlign = TextAlign.Center,
-                    )
-                }
-            } else {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .scrollFadeMask(showTopFade),
-                    contentPadding = PaddingValues(
-                        start = LabDimens.HomeBarPadding,
-                        end = LabDimens.HomeBarPadding,
-                        bottom = AppInsets.navigationBarBottom() + LabDimens.TabContentBottomPad,
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(LabDimens.TabSectionGap),
-                ) {
-                    if (showArchiveRow) {
-                        item(key = "archive-link") {
-                            ArchiveRow(
-                                unreadCount = archiveLink.unreadCount,
-                                onClick = onArchiveClick,
-                            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .hazeSource(state = hazeState)
+                    .background(LabColors.Black)
+                    .alpha(feedAlpha),
+            ) {
+                if (tab == HomeTab.Sigils) {
+                    SigilsTab()
+                } else {
+                    val filtered = loadedItems.filter {
+                        when (tab) {
+                            HomeTab.Spaces -> it.category == ChatCategory.Space
+                            HomeTab.Mail -> it.category == ChatCategory.Mail
+                            HomeTab.Sigils -> false
                         }
                     }
-                    items(filtered, key = { it.chatId }) { item ->
-                        ChatInboxCard(item = item, onClick = { onChatClick(item.chatId) })
+                    val showArchiveRow = tab == HomeTab.Mail && archiveLink.visible
+                    val showFeed = filtered.isNotEmpty() || showArchiveRow
+
+                    if (!showFeed) {
+                        val spaceCount = loadedItems.count { it.category == ChatCategory.Space }
+                        val mailCount = loadedItems.count { it.category == ChatCategory.Mail }
+                        val channelCount = loadedItems.count { it.category == ChatCategory.Channel }
+                        val hint = when {
+                            loadedItems.isEmpty() ->
+                                if (tab == HomeTab.Spaces) spacesEmptyHint else mailEmptyHint
+                            tab == HomeTab.Spaces && spaceCount == 0 ->
+                                "No group chats in this tab. ($mailCount direct, $channelCount channel chats in your inbox.)"
+                            tab == HomeTab.Mail && mailCount == 0 ->
+                                "No 1:1 chats in this tab. ($spaceCount groups, $channelCount channel chats in your inbox.)"
+                            else -> if (tab == HomeTab.Spaces) spacesEmptyHint else mailEmptyHint
+                        }
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(
+                                text = hint,
+                                color = LabColors.White33,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(horizontal = 24.dp),
+                                textAlign = TextAlign.Center,
+                            )
+                        }
+                    } else {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .nestedScroll(expandNestedScroll)
+                                .scrollFadeMask(showTopFade),
+                            contentPadding = PaddingValues(
+                                start = LabDimens.HomeBarPadding,
+                                end = LabDimens.HomeBarPadding,
+                                bottom = AppInsets.navigationBarBottom() + LabDimens.TabContentBottomPad,
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(LabDimens.TabSectionGap),
+                        ) {
+                            if (showArchiveRow) {
+                                item(key = "archive-link") {
+                                    ArchiveRow(
+                                        unreadCount = archiveLink.unreadCount,
+                                        onClick = onArchiveClick,
+                                    )
+                                }
+                            }
+                            items(filtered, key = { it.chatId }) { item ->
+                                ChatInboxCard(item = item, onClick = { onChatClick(item.chatId) })
+                            }
+                        }
                     }
                 }
             }
-            }
         }
+
+        if (searchExpanded) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clickable(
+                        interactionSource = dismissOverlayInteraction,
+                        indication = null,
+                        onClick = { closeSearchPanel() },
+                    ),
+            )
+        }
+
+        HomeExpandableSearchHeader(
+            expandProgress = expandProgress,
+            profileName = profileName,
+            query = query,
+            searchPanelOpen = searchPanelOpen,
+            hazeState = hazeState,
+            onProfileClick = onProfileClick,
+            onOpenSearch = { openSearchPanel() },
+            onCloseSearch = { closeSearchPanel() },
+            onQueryChange = { query = it; onSearch(it) },
+            onPlusClick = onPlusClick,
+            focusRequester = focusRequester,
+        )
     }
 }
 
 @Composable
-private fun HomeTopBar(
+private fun HomeExpandableSearchHeader(
+    expandProgress: Float,
     profileName: String,
-    profileSeed: String,
-    isSearching: Boolean,
     query: String,
+    searchPanelOpen: Boolean,
+    hazeState: dev.chrisbanes.haze.HazeState,
     onProfileClick: () -> Unit,
-    onActivateSearch: () -> Unit,
-    onCancelSearch: () -> Unit,
+    onOpenSearch: () -> Unit,
+    onCloseSearch: () -> Unit,
     onQueryChange: (String) -> Unit,
     onPlusClick: () -> Unit,
+    focusRequester: FocusRequester,
 ) {
-    val profileAlpha by animateFloatAsState(if (isSearching) 0f else 1f, label = "profileAlpha")
-    Row(
+    val panelHeight = lerp(LabDimens.HomeBarHeight, LabDimens.HomeSearchPanelExpandedHeight, expandProgress)
+    val cornerRadius = lerp(LabDimens.HomeBarHeight / 2, 20.dp, expandProgress)
+    val profileSlotWidth = lerp(
+        LabDimens.HomeProfileSize + LabDimens.HomeProfileGap,
+        0.dp,
+        expandProgress,
+    )
+    val profileAlpha = (1f - expandProgress).coerceIn(0f, 1f)
+    val barTopInset = (LabDimens.HomeProfileSize - LabDimens.HomeBarHeight) / 2
+    val showField = searchPanelOpen || expandProgress > 0.08f
+
+    Column(
         modifier = Modifier
             .padding(horizontal = LabDimens.HomeBarPadding)
-            .padding(vertical = LabDimens.HomeBarVerticalPad),
-        verticalAlignment = Alignment.CenterVertically,
+            .padding(top = LabDimens.HomeBarVerticalPad),
     ) {
-            if (!isSearching) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(profileSlotWidth)
+                    .height(LabDimens.HomeProfileSize)
+                    .clipToBounds(),
+                contentAlignment = Alignment.CenterStart,
+            ) {
                 SelfAvatar(
                     name = profileName,
                     size = LabDimens.HomeProfileSize,
                     onClick = onProfileClick,
                     modifier = Modifier.alpha(profileAlpha),
                 )
-                Spacer(modifier = Modifier.width(LabDimens.HomeProfileGap))
             }
-            if (isSearching) {
-                BasicTextField(
-                    value = query,
-                    onValueChange = onQueryChange,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(LabDimens.HomeBarHeight)
-                        .clip(RoundedCornerShape(LabDimens.HomeBarHeight / 2))
-                        .background(LabColors.Gray33)
-                        .padding(horizontal = 14.dp),
-                    textStyle = MaterialTheme.typography.labelMedium.copy(color = LabColors.White85),
-                    cursorBrush = SolidColor(LabColors.White),
-                    singleLine = true,
-                    decorationBox = { inner ->
-                        Box(contentAlignment = Alignment.CenterStart) {
-                            if (query.isEmpty()) Text("Search", color = LabColors.White33)
-                            inner()
-                        }
-                    },
-                )
-                IconButton(onClick = onCancelSearch, modifier = Modifier.size(LabDimens.HomePillActionSize)) {
-                    LabIcon(LabIconName.Cross, 12.dp, LabColors.White33)
-                }
-            } else {
-                Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(LabDimens.HomeBarHeight)
-                        .clip(RoundedCornerShape(LabDimens.HomeBarHeight / 2))
-                        .background(
-                            Brush.horizontalGradient(listOf(LabColors.Gray33, Color.Transparent)),
+
+            HomeSearchPillSurface(
+                cornerRadius = cornerRadius,
+                hazeState = hazeState,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(top = barTopInset)
+                    .height(panelHeight),
+            ) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(LabDimens.HomeBarHeight)
+                            .then(
+                                if (!showField) {
+                                    Modifier.clickable(onClick = onOpenSearch)
+                                } else {
+                                    Modifier
+                                },
+                            )
+                            .padding(
+                                start = LabDimens.HomePillInsetBeforeSearch,
+                                end = 6.dp,
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        LabIcon(
+                            LabIconName.Search,
+                            LabDimens.HomeSearchGlyphSize,
+                            LabColors.White33,
                         )
-                        .clickable(onClick = onActivateSearch)
-                        .padding(start = LabDimens.HomePillInsetBeforeSearch),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    LabIcon(LabIconName.Search, LabDimens.HomeSearchGlyphSize, LabColors.White33)
-                    Spacer(modifier = Modifier.width(LabDimens.HomeSearchGapAfterGlyph))
-                    Text("Search", color = LabColors.White33, style = MaterialTheme.typography.labelMedium)
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Box(
-                    modifier = Modifier
-                        .size(LabDimens.HomePillActionSize)
-                        .clip(CircleShape)
-                        .background(LabColors.White16)
-                        .clickable(onClick = onPlusClick),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    LabIcon(LabIconName.Plus, 14.dp, LabColors.White66)
+                        if (showField) {
+                            BasicTextField(
+                                value = query,
+                                onValueChange = onQueryChange,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(horizontal = LabDimens.HomeSearchGapAfterGlyph)
+                                    .focusRequester(focusRequester),
+                                textStyle = MaterialTheme.typography.labelMedium.copy(
+                                    color = LabColors.White85,
+                                ),
+                                cursorBrush = SolidColor(LabColors.White),
+                                singleLine = true,
+                                decorationBox = { inner ->
+                                    Box(contentAlignment = Alignment.CenterStart) {
+                                        if (query.isEmpty()) {
+                                            Text("Search", color = LabColors.White16)
+                                        }
+                                        inner()
+                                    }
+                                },
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.width(LabDimens.HomeSearchGapAfterGlyph))
+                            Text(
+                                "Search",
+                                color = LabColors.White16,
+                                style = MaterialTheme.typography.labelMedium,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                        HomeSearchActionButton(
+                            expandProgress = expandProgress,
+                            searchPanelOpen = searchPanelOpen,
+                            onPlusClick = onPlusClick,
+                            onCloseClick = onCloseSearch,
+                            modifier = Modifier.size(LabDimens.HomePillActionSize),
+                        )
+                    }
+
+                    HomeSearchPanelBody(
+                        expandProgress = expandProgress,
+                        onRecentSelect = { term ->
+                            onQueryChange(term)
+                            onOpenSearch()
+                        },
+                    )
                 }
             }
+        }
     }
 }
 
@@ -361,8 +558,7 @@ private fun ArchiveRow(unreadCount: Int, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = LabDimens.ListRowPadding),
+            .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
@@ -410,8 +606,7 @@ fun ChatInboxCard(item: InboxItem, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = LabDimens.ListRowPadding),
+            .clickable(onClick = onClick),
     ) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
             Box(modifier = Modifier.width(LabDimens.AvatarSize).padding(top = 2.dp)) {

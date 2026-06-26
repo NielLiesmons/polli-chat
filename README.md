@@ -18,17 +18,16 @@ For Polli UI parity notes, see [docs/POLLI_PARITY.md](./docs/POLLI_PARITY.md).
 
 ### Launcher icon
 
-Place branding assets in `assets/branding/`:
+Drop your **1024×1024** app icon here (your file is never modified):
 
-| File | Purpose |
-|------|---------|
-| `icon-full.png` | 1024×1024 composite (purple background + white logo) |
-| `icon-foreground.png` | 1024×1024 logo on transparent **or solid black** background |
+```
+assets/branding/icon-full.png
+```
 
-Then run:
+Then regenerate launcher assets:
 
 ```bash
 ./scripts/generate-launcher-icons.sh
 ```
 
-This generates all `mipmap-*` densities, sets the adaptive icon background color, and updates the Play Store `fastlane` icon. Reinstall the app after changing icons (launcher caches aggressively).
+The script writes legacy mipmaps and adaptive-icon layers from that file exactly as provided (density resize only). Reinstall the app after changing icons (launchers cache aggressively).

@@ -75,16 +75,21 @@ internal fun VoiceRecordingInline(
                     .background(rougeGradient()),
                 contentAlignment = Alignment.Center,
             ) {
-                LabIcon(LabIconName.Delete, 16.dp, LabColors.White)
+                LabIcon(LabIconName.Cross, 16.dp, LabColors.White66)
             }
         } else {
-            RecordingBlinkDot()
-            Spacer(modifier = Modifier.width(10.dp))
-            Text(
-                text = formatVoiceRecordTime(ms),
-                color = LabColors.White85,
-                fontSize = 15.sp,
-            )
+            Row(
+                modifier = Modifier.padding(start = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                RecordingBlinkDot()
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = formatVoiceRecordTime(ms),
+                    color = LabColors.White85,
+                    fontSize = 15.sp,
+                )
+            }
         }
         Spacer(modifier = Modifier.weight(1f))
         if (locked) {

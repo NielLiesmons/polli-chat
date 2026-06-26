@@ -15,6 +15,11 @@ object LabDimens {
     val HomeSearchGapAfterGlyph = 8.dp
     val HomePillActionSize = 30.dp
     val HomeBarVerticalPad = 10.dp
+    /** Standard stroke icon weight — chevrons, arrows, etc. */
+    val IconStrokeWidth = 1.6.dp
+    val HomeSearchPanelExpandedHeight = 320.dp
+    val HomeSearchExpandDragDistance = 200.dp
+    val HomeSearchExpandSnapThreshold = 0.32f
 
     val TabButtonHeight = 34.dp
     val TabButtonHPadding = 15.dp
@@ -34,7 +39,7 @@ object LabDimens {
     val StoryProgressHeight = 2.dp
 
     val ShellBorderWidth = 0.33.dp
-    val ListRowPadding = 12.dp
+    val ListRowPadding = 0.dp
     val GroupNameNotifGap = 6.dp
     val InboxPreviewRowMinHeight = 22.dp
     val InboxTitleRowMinHeight = 20.dp

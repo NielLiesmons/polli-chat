@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -36,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -44,6 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.widget.Toast
 import com.b44t.messenger.DcMsg
 import com.polli.android.BaseComposeActivity
 import com.polli.android.chat.DcMsgMediaContent
@@ -55,7 +58,12 @@ import com.polli.android.theme.LabDimens
 import com.polli.android.theme.LabTheme
 import com.polli.android.ui.LabAvatar
 import com.polli.android.ui.AppInsets
+import com.polli.android.ui.ChatFeedEdgeGradients
+import com.polli.android.ui.rememberComposerChromeLayout
+import com.polli.android.ui.rememberPolliHazeState
+import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.delay
+import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.connect.DcHelper
 import kotlin.math.roundToInt
 
@@ -112,10 +120,10 @@ private fun ChannelStoriesScreen(
     val dc = remember { DcHelper.getContext(context) }
     var channelIdx by remember { mutableIntStateOf(startIndex.coerceIn(0, (channelIds.size - 1).coerceAtLeast(0))) }
     var postIdx by remember { mutableIntStateOf(0) }
-    var paused by remember { mutableStateOf(false) }
     var segmentStart by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var dragY by remember { mutableFloatStateOf(0f) }
     var replyDraft by remember { mutableStateOf("") }
+    var composerFocused by remember { mutableStateOf(false) }
     var animTick by remember { mutableIntStateOf(0) }
 
     val chatId = channelIds.getOrNull(channelIdx) ?: return
@@ -125,12 +133,18 @@ private fun ChannelStoriesScreen(
         storiesViewModel.bind(chatId)
         postIdx = 0
         segmentStart = System.currentTimeMillis()
+        replyDraft = ""
+        composerFocused = false
     }
 
     val posts = storiesViewModel.posts
     val postCount = posts.size.coerceAtLeast(1)
     val safePostIdx = if (posts.isEmpty()) 0 else postIdx.coerceIn(0, posts.lastIndex)
     val post: DcMsg? = posts.getOrNull(safePostIdx)
+    val canReplyPrivately = ChannelStoryReply.canReply(dc, chat, post)
+    val paused = composerFocused || replyDraft.isNotEmpty()
+    val hazeState = rememberPolliHazeState()
+    val composerChrome = rememberComposerChromeLayout()
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -167,6 +181,7 @@ private fun ChannelStoriesScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(LabColors.Black)
+            .onGloballyPositioned { composerChrome.onRootPositioned(it) }
             .offset { IntOffset(0, dragY.coerceAtLeast(0f).roundToInt()) }
             .pointerInput(Unit) {
                 detectVerticalDragGestures(
@@ -182,7 +197,11 @@ private fun ChannelStoriesScreen(
                 )
             },
     ) {
-        StoryContentSlide(post = post)
+        StoryContentSlide(
+            post = post,
+            bottomPadding = if (canReplyPrivately) composerChrome.feedBottomPadding else 0.dp,
+            modifier = Modifier.hazeSource(state = hazeState),
+        )
 
         // Tap zones — isolated from pause; left = previous, right = next
         Box(
@@ -276,21 +295,38 @@ private fun ChannelStoriesScreen(
             }
         }
 
-        Column(modifier = Modifier.align(Alignment.BottomCenter)) {
+        if (canReplyPrivately) {
+            ChatFeedEdgeGradients(
+                modifier = Modifier.fillMaxSize(),
+                showTopFade = false,
+                hasGroupHeader = false,
+                bottomChromeInset = composerChrome.bottomChromeInset,
+            )
+
             ChatComposerDock(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .imePadding()
+                    .onGloballyPositioned { composerChrome.onComposerPositioned(it) },
                 value = replyDraft,
                 onValueChange = { replyDraft = it },
+                onFocusChanged = { composerFocused = it },
+                hazeState = hazeState,
                 onSend = {
                     val text = replyDraft.trim()
                     if (text.isEmpty()) return@ChatComposerDock
-                    val msg = DcMsg(dc, DcMsg.DC_MSG_TEXT)
-                    msg.setText(text)
-                    post?.let { quoted ->
-                        if (quoted.isOk) msg.setQuote(quoted)
+                    val sent = ChannelStoryReply.sendPrivateReply(dc, chat, post, text)
+                    if (sent) {
+                        replyDraft = ""
+                        Toast.makeText(
+                            context,
+                            R.string.last_msg_sent_successfully,
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                    } else {
+                        Toast.makeText(context, R.string.error, Toast.LENGTH_SHORT).show()
                     }
-                    dc.sendMsg(chatId, msg)
-                    replyDraft = ""
-                    storiesViewModel.reload()
                 },
             )
         }
@@ -317,9 +353,13 @@ private fun StoryProgressSegment(fraction: Float, modifier: Modifier = Modifier)
 }
 
 @Composable
-private fun StoryContentSlide(post: DcMsg?) {
+private fun StoryContentSlide(
+    post: DcMsg?,
+    bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
+    modifier: Modifier = Modifier,
+) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
@@ -343,7 +383,8 @@ private fun StoryContentSlide(post: DcMsg?) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 96.dp),
+                .padding(horizontal = 20.dp)
+                .padding(top = 96.dp, bottom = 96.dp + bottomPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {

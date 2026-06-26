@@ -52,6 +52,17 @@ fun polliOverlayHazeStyle(tint: Color = LabColors.Gray66): HazeStyle = HazeStyle
     noiseFactor = HazeDefaults.noiseFactor,
 )
 
+/** Home search panel — darker and more transparent than chat composer (≈ gray33 @ 33%). */
+fun polliSearchPanelHazeStyle(): HazeStyle = HazeStyle(
+    backgroundColor = LabColors.Gray33.copy(alpha = 0.33f),
+    tints = listOf(
+        HazeTint(Color.Black.copy(alpha = 0.62f)),
+        HazeTint(LabColors.Gray33.copy(alpha = 0.42f)),
+    ),
+    blurRadius = 44.dp,
+    noiseFactor = HazeDefaults.noiseFactor,
+)
+
 @Composable
 fun rememberPolliHazeState(): HazeState = remember { HazeState() }
 
