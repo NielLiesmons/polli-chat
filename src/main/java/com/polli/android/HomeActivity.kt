@@ -7,17 +7,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.activity.viewModels
 import com.polli.android.home.HomeScreen
 import com.polli.android.navigation.AppNav
 import com.polli.android.onboarding.WelcomeActivity
 import com.polli.android.profiles.ProfilesActivity
 import com.polli.android.settings.AppPrefs
-import com.polli.android.stories.ChannelStoriesActivity
+import com.polli.android.stories.StoriesViewModel
 import com.polli.android.theme.LabTheme
 import org.thoughtcrime.securesms.connect.DcHelper
 
 class HomeActivity : BaseComposeActivity() {
 
+    private val storiesViewModel: StoriesViewModel by viewModels()
     private var themeRevision by mutableIntStateOf(0)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,19 +37,12 @@ class HomeActivity : BaseComposeActivity() {
                 HomeScreen(
                     profileName = dc.getConfig(DcHelper.CONFIG_DISPLAY_NAME).ifBlank { "Profile" },
                     profileSeed = dc.getConfig(DcHelper.CONFIG_CONFIGURED_ADDRESS).ifBlank { "me" },
+                    storiesViewModel = storiesViewModel,
                     onProfileClick = {
                         startActivity(Intent(this, ProfilesActivity::class.java))
                     },
                     onPlusClick = { AppNav.openNewConversation(this) },
                     onChatClick = { chatId -> AppNav.openChat(this, chatId) },
-                    onChannelClick = { chatId ->
-                        val channelIds = com.polli.android.bridge.ChatListMapper
-                            .loadChannels(this)
-                            .map { it.chatId }
-                        startActivity(
-                            ChannelStoriesActivity.intent(this, chatId, channelIds),
-                        )
-                    },
                     onSearch = { /* query applied inside HomeScreen local state */ },
                     onArchiveClick = { AppNav.openArchive(this) },
                 )

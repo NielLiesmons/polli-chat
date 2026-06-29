@@ -39,6 +39,15 @@ fun Modifier.scrollFadeMask(
     alphaMaskModifier(showTopFade, topPx, bottomPx * 2.5f, groupHeaderPx = 0f)
 }
 
+/** DstIn dissolve for home search panel — fades under the fixed search input row only. */
+fun Modifier.homeSearchPanelScrollFade(
+    showTopFade: Boolean = true,
+): Modifier = composed {
+    val density = LocalDensity.current
+    val topPx = with(density) { LabDimens.HomeSearchPanelTopFade.toPx() }
+    alphaMaskModifier(showTopFade, topPx, bottomFadePx = 0f, groupHeaderPx = 0f)
+}
+
 /**
  * Three-stop edge gradients over the chat feed (pass-through touches).
  *
@@ -48,19 +57,20 @@ fun Modifier.scrollFadeMask(
 @Composable
 fun ChatFeedEdgeGradients(
     modifier: Modifier = Modifier,
-    showTopFade: Boolean,
-    hasGroupHeader: Boolean,
+    topChromeClearance: Dp = 0.dp,
+    showTopFade: Boolean = false,
     bottomChromeInset: Dp = 0.dp,
 ) {
     val density = LocalDensity.current
-    val statusTop = AppInsets.statusBarTop()
     val navBottom = AppInsets.navigationBarBottom()
     val bottomFadeHeight = bottomChromeInset.coerceAtLeast(
         navBottom + LabDimens.ChatComposerMinHeight + 8.dp,
     ) + LabDimens.ChatFeedBottomFadeExtend
     val topFadeHeight = when {
-        hasGroupHeader -> LabDimens.GroupHeaderClearance + statusTop + LabDimens.ChatFeedTopFadeExtend
-        showTopFade -> LabDimens.ScrollFadeTop + LabDimens.ChatFeedTopFadeExtend
+        topChromeClearance > 0.dp ->
+            topChromeClearance + LabDimens.ChatFeedTopFadeExtend
+        showTopFade ->
+            LabDimens.ScrollFadeTop + LabDimens.ChatFeedTopFadeExtend
         else -> 0.dp
     }
 
@@ -134,11 +144,15 @@ private fun Modifier.alphaMaskModifier(
             } else {
                 add(0f to Color.Black)
             }
-            val bottomStart = ((h - bottomFadePx) / h).coerceIn(0f, 1f)
-            val bottomMid = ((h - bottomFadePx / 2f) / h).coerceIn(0f, 1f)
-            add(bottomStart to Color.Black)
-            add(bottomMid to Color.Black.copy(alpha = 0.8f))
-            add(1f to Color.Transparent)
+            if (bottomFadePx > 0f) {
+                val bottomStart = ((h - bottomFadePx) / h).coerceIn(0f, 1f)
+                val bottomMid = ((h - bottomFadePx / 2f) / h).coerceIn(0f, 1f)
+                add(bottomStart to Color.Black)
+                add(bottomMid to Color.Black.copy(alpha = 0.8f))
+                add(1f to Color.Transparent)
+            } else {
+                add(1f to Color.Black)
+            }
         }
 
         drawRect(

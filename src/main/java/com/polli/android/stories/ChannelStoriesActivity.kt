@@ -8,7 +8,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,7 +41,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.widget.Toast
@@ -65,10 +62,8 @@ import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.delay
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.connect.DcHelper
-import kotlin.math.roundToInt
 
 private const val STORY_SEGMENT_MS = 5_500L
-private const val SWIPE_CLOSE_THRESHOLD_PX = 120f
 
 class ChannelStoriesActivity : BaseComposeActivity() {
     private val storiesViewModel: StoriesViewModel by viewModels()
@@ -81,9 +76,12 @@ class ChannelStoriesActivity : BaseComposeActivity() {
         val prefs = AppPrefs(this)
         setContent {
             LabTheme(prefs = prefs) {
-                ChannelStoriesScreen(
-                    channelIds = channelIds,
-                    startIndex = startIdx,
+                ChannelStoriesOverlay(
+                    session = StorySession(
+                        channelId = startId,
+                        channelIds = channelIds,
+                        launchBounds = StoryLaunchBounds(0f, 0f, 0f),
+                    ),
                     storiesViewModel = storiesViewModel,
                     onClose = { finish() },
                 )
@@ -110,7 +108,7 @@ class ChannelStoriesActivity : BaseComposeActivity() {
 }
 
 @Composable
-private fun ChannelStoriesScreen(
+fun ChannelStoriesScreen(
     channelIds: List<Int>,
     startIndex: Int,
     storiesViewModel: StoriesViewModel,
@@ -121,7 +119,6 @@ private fun ChannelStoriesScreen(
     var channelIdx by remember { mutableIntStateOf(startIndex.coerceIn(0, (channelIds.size - 1).coerceAtLeast(0))) }
     var postIdx by remember { mutableIntStateOf(0) }
     var segmentStart by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    var dragY by remember { mutableFloatStateOf(0f) }
     var replyDraft by remember { mutableStateOf("") }
     var composerFocused by remember { mutableStateOf(false) }
     var animTick by remember { mutableIntStateOf(0) }
@@ -181,21 +178,7 @@ private fun ChannelStoriesScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(LabColors.Black)
-            .onGloballyPositioned { composerChrome.onRootPositioned(it) }
-            .offset { IntOffset(0, dragY.coerceAtLeast(0f).roundToInt()) }
-            .pointerInput(Unit) {
-                detectVerticalDragGestures(
-                    onDragEnd = {
-                        if (dragY > SWIPE_CLOSE_THRESHOLD_PX) {
-                            onClose()
-                        }
-                        dragY = 0f
-                    },
-                    onVerticalDrag = { _, delta ->
-                        dragY = (dragY + delta).coerceAtLeast(0f)
-                    },
-                )
-            },
+            .onGloballyPositioned { composerChrome.onRootPositioned(it) },
     ) {
         StoryContentSlide(
             post = post,
@@ -298,8 +281,6 @@ private fun ChannelStoriesScreen(
         if (canReplyPrivately) {
             ChatFeedEdgeGradients(
                 modifier = Modifier.fillMaxSize(),
-                showTopFade = false,
-                hasGroupHeader = false,
                 bottomChromeInset = composerChrome.bottomChromeInset,
             )
 

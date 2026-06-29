@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -12,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.polli.android.icons.LabIcon
 import com.polli.android.icons.LabIconName
 import com.polli.android.theme.LabColors
@@ -20,7 +22,7 @@ import com.polli.android.ui.FrostedChromeSurface
 import com.polli.android.ui.polliSearchPanelHazeStyle
 import dev.chrisbanes.haze.HazeState
 
-/** Dark frosted glass + shell border — matches chat composer chrome. */
+/** Frosted glass + shell border — darker than composer chrome. */
 @Composable
 fun HomeSearchPillSurface(
     cornerRadius: Dp,
@@ -28,30 +30,18 @@ fun HomeSearchPillSurface(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    val shape = RoundedCornerShape(cornerRadius)
-    if (hazeState != null) {
-        FrostedChromeSurface(
-            modifier = modifier,
-            shape = shape,
-            tint = LabColors.Gray33,
-            borderColor = LabColors.ShellBorder,
-            hazeState = hazeState,
-            hazeStyle = polliSearchPanelHazeStyle(),
-            content = content,
-        )
-    } else {
-        FrostedChromeSurface(
-            modifier = modifier,
-            shape = shape,
-            tint = LabColors.Gray33.copy(alpha = 0.33f),
-            borderColor = LabColors.ShellBorder,
-            hazeState = null,
-            content = content,
-        )
-    }
+    FrostedChromeSurface(
+        modifier = modifier,
+        shape = RoundedCornerShape(cornerRadius),
+        tint = LabColors.Gray,
+        borderColor = LabColors.ShellBorder,
+        hazeState = hazeState,
+        hazeStyle = polliSearchPanelHazeStyle(),
+        content = content,
+    )
 }
 
-/** In-pill + button — matches chat composer; rotates with panel expand (45° = ×). */
+/** In-pill + button — fixed size; icon rotates (45° = ×) and fades as the panel expands. */
 @Composable
 fun HomeSearchActionButton(
     expandProgress: Float,
@@ -61,11 +51,15 @@ fun HomeSearchActionButton(
     modifier: Modifier = Modifier,
 ) {
     val expanded = searchPanelOpen || expandProgress > 0.5f
+    val fade = expandProgress.coerceIn(0f, 1f)
+    val bgAlpha = 0.08f + (0.05f - 0.08f) * fade
+    val iconAlpha = 0.33f + (0.22f - 0.33f) * fade
     val rotation = expandProgress * 45f
     Box(
         modifier = modifier
+            .size(LabDimens.HomePillActionSize)
             .clip(CircleShape)
-            .background(LabColors.White8)
+            .background(LabColors.White.copy(alpha = bgAlpha))
             .clickable {
                 if (expanded) onCloseClick() else onPlusClick()
             },
@@ -73,8 +67,8 @@ fun HomeSearchActionButton(
     ) {
         LabIcon(
             LabIconName.Plus,
-            LabDimens.HomeSearchGlyphSize,
-            LabColors.White33,
+            LabDimens.HomeSearchPlusGlyphSize,
+            LabColors.White.copy(alpha = iconAlpha),
             modifier = Modifier.graphicsLayer { rotationZ = rotation },
         )
     }

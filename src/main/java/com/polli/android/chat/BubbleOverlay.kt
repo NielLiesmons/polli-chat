@@ -1,6 +1,7 @@
 package com.polli.android.chat
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -37,6 +38,7 @@ import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabDimens
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.FrostedChromeSurface
+import com.polli.android.ui.PolliModalBarrier
 import com.polli.android.ui.polliOverlayHazeStyle
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
@@ -95,6 +97,7 @@ fun BubbleOverlayHost(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(PolliModalBarrier)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,

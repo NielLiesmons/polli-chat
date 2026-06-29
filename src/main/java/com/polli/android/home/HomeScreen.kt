@@ -43,6 +43,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
@@ -70,7 +72,12 @@ import com.polli.android.ui.AppInsets
 import com.polli.android.ui.LabAvatar
 import com.polli.android.ui.SelfAvatar
 import com.polli.android.ui.rememberLazyListShowTopFadeDerived
+import com.polli.android.ui.PolliScreenScrim
 import com.polli.android.ui.rememberPolliHazeState
+import com.polli.android.stories.ChannelStoriesOverlay
+import com.polli.android.stories.StoriesViewModel
+import com.polli.android.stories.StoryLaunchBounds
+import com.polli.android.stories.StorySession
 import com.polli.android.ui.scrollFadeMask
 import com.polli.core.chat.ChatCategory
 import dev.chrisbanes.haze.hazeSource
@@ -87,16 +94,18 @@ fun HomeScreen(
     profileSeed: String,
     items: List<InboxItem>? = null,
     channels: List<InboxItem>? = null,
+    storiesViewModel: StoriesViewModel? = null,
     spacesEmptyHint: String = "No spaces yet. Your group chats appear here.",
     mailEmptyHint: String = "No mail chats yet.",
     onProfileClick: () -> Unit,
     onPlusClick: () -> Unit,
     onChatClick: (Int) -> Unit,
-    onChannelClick: (Int) -> Unit,
+    onChannelClick: (Int) -> Unit = {},
     onSearch: (String) -> Unit,
     onArchiveClick: () -> Unit = {},
 ) {
     var searchPanelOpen by remember { mutableStateOf(false) }
+    var storySession by remember { mutableStateOf<StorySession?>(null) }
     var dragExpandProgress by remember { mutableFloatStateOf(0f) }
     var isDraggingExpand by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
@@ -195,14 +204,8 @@ fun HomeScreen(
 
     val feedAlpha = (1f - expandProgress * 0.92f).coerceIn(0f, 1f)
     val chromeAlpha = (1f - expandProgress * 0.88f).coerceIn(0f, 1f)
-    val panelHeight = lerp(LabDimens.HomeBarHeight, LabDimens.HomeSearchPanelExpandedHeight, expandProgress)
     val barTopInset = (LabDimens.HomeProfileSize - LabDimens.HomeBarHeight) / 2
-    val headerBlockHeight = LabDimens.HomeBarVerticalPad + maxOf(
-        LabDimens.HomeProfileSize,
-        barTopInset + panelHeight,
-    )
     val searchExpanded = searchPanelOpen || expandProgress > 0.05f
-    val dismissOverlayInteraction = remember { MutableInteractionSource() }
 
     Box(
         modifier = Modifier
@@ -210,8 +213,19 @@ fun HomeScreen(
             .background(LabColors.Black)
             .padding(top = AppInsets.statusBarTop()),
     ) {
+        var searchPanelBodyHeight by remember {
+            mutableStateOf(LabDimens.HomeSearchPanelExpandedHeight - LabDimens.HomeBarHeight)
+        }
+        val expandedPanelHeight = LabDimens.HomeBarHeight + searchPanelBodyHeight
+        val panelHeight = lerp(LabDimens.HomeBarHeight, expandedPanelHeight, expandProgress)
+        val headerBlockHeight = LabDimens.HomeBarVerticalPad + maxOf(
+            LabDimens.HomeProfileSize,
+            barTopInset + panelHeight,
+        )
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .hazeSource(state = hazeState),
             verticalArrangement = Arrangement.spacedBy(LabDimens.TabSectionGap),
         ) {
             Spacer(modifier = Modifier.height(headerBlockHeight))
@@ -227,7 +241,17 @@ fun HomeScreen(
                         verticalArrangement = Arrangement.spacedBy(LabDimens.TabSectionGap),
                     ) {
                         if (loadedChannels.isNotEmpty()) {
-                            ChannelStoriesRow(channels = loadedChannels, onSelect = onChannelClick)
+                            ChannelStoriesRow(
+                                channels = loadedChannels,
+                                onSelect = { chatId, bounds ->
+                                    val ids = loadedChannels.map { it.chatId }
+                                    if (storiesViewModel != null) {
+                                        storySession = StorySession(chatId, ids, bounds)
+                                    } else {
+                                        onChannelClick(chatId)
+                                    }
+                                },
+                            )
                         }
                         TabRow(active = tab, onSelect = { tab = it })
                     }
@@ -238,7 +262,6 @@ fun HomeScreen(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .hazeSource(state = hazeState)
                     .background(LabColors.Black)
                     .alpha(feedAlpha),
             ) {
@@ -309,19 +332,16 @@ fun HomeScreen(
         }
 
         if (searchExpanded) {
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .clickable(
-                        interactionSource = dismissOverlayInteraction,
-                        indication = null,
-                        onClick = { closeSearchPanel() },
-                    ),
+            PolliScreenScrim(
+                onDismiss = { closeSearchPanel() },
+                hazeState = hazeState,
             )
         }
 
         HomeExpandableSearchHeader(
             expandProgress = expandProgress,
+            panelHeight = panelHeight,
+            onPanelBodyHeightChanged = { searchPanelBodyHeight = it },
             profileName = profileName,
             query = query,
             searchPanelOpen = searchPanelOpen,
@@ -333,12 +353,24 @@ fun HomeScreen(
             onPlusClick = onPlusClick,
             focusRequester = focusRequester,
         )
+
+        storySession?.let { session ->
+            storiesViewModel?.let { vm ->
+                ChannelStoriesOverlay(
+                    session = session,
+                    storiesViewModel = vm,
+                    onClose = { storySession = null },
+                )
+            }
+        }
     }
 }
 
 @Composable
 private fun HomeExpandableSearchHeader(
     expandProgress: Float,
+    panelHeight: androidx.compose.ui.unit.Dp,
+    onPanelBodyHeightChanged: (androidx.compose.ui.unit.Dp) -> Unit,
     profileName: String,
     query: String,
     searchPanelOpen: Boolean,
@@ -350,7 +382,6 @@ private fun HomeExpandableSearchHeader(
     onPlusClick: () -> Unit,
     focusRequester: FocusRequester,
 ) {
-    val panelHeight = lerp(LabDimens.HomeBarHeight, LabDimens.HomeSearchPanelExpandedHeight, expandProgress)
     val cornerRadius = lerp(LabDimens.HomeBarHeight / 2, 20.dp, expandProgress)
     val profileSlotWidth = lerp(
         LabDimens.HomeProfileSize + LabDimens.HomeProfileGap,
@@ -393,7 +424,7 @@ private fun HomeExpandableSearchHeader(
                     .padding(top = barTopInset)
                     .height(panelHeight),
             ) {
-                Column(modifier = Modifier.fillMaxSize()) {
+                Column(modifier = Modifier.fillMaxWidth()) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -452,7 +483,6 @@ private fun HomeExpandableSearchHeader(
                             searchPanelOpen = searchPanelOpen,
                             onPlusClick = onPlusClick,
                             onCloseClick = onCloseSearch,
-                            modifier = Modifier.size(LabDimens.HomePillActionSize),
                         )
                     }
 
@@ -462,6 +492,7 @@ private fun HomeExpandableSearchHeader(
                             onQueryChange(term)
                             onOpenSearch()
                         },
+                        onHeightMeasured = onPanelBodyHeightChanged,
                     )
                 }
             }
@@ -470,7 +501,10 @@ private fun HomeExpandableSearchHeader(
 }
 
 @Composable
-private fun ChannelStoriesRow(channels: List<InboxItem>, onSelect: (Int) -> Unit) {
+private fun ChannelStoriesRow(
+    channels: List<InboxItem>,
+    onSelect: (chatId: Int, bounds: StoryLaunchBounds) -> Unit,
+) {
     if (channels.isEmpty()) return
     Row(
         modifier = Modifier
@@ -480,20 +514,34 @@ private fun ChannelStoriesRow(channels: List<InboxItem>, onSelect: (Int) -> Unit
         horizontalArrangement = Arrangement.spacedBy(LabDimens.StoryRingSpacing),
     ) {
         channels.forEach { channel ->
-            StoryRing(channel = channel, onClick = { onSelect(channel.chatId) })
+            StoryRing(
+                channel = channel,
+                onClick = { bounds -> onSelect(channel.chatId, bounds) },
+            )
         }
     }
 }
 
 @Composable
-private fun StoryRing(channel: InboxItem, onClick: () -> Unit) {
+private fun StoryRing(channel: InboxItem, onClick: (StoryLaunchBounds) -> Unit) {
+    var launchBounds by remember(channel.chatId) { mutableStateOf<StoryLaunchBounds?>(null) }
     Box(
         modifier = Modifier
             .size(LabDimens.StoryRingOuter)
+            .onGloballyPositioned { coords ->
+                val rect = coords.boundsInRoot()
+                launchBounds = StoryLaunchBounds(
+                    centerX = rect.left + rect.width / 2f,
+                    centerY = rect.top + rect.height / 2f,
+                    size = minOf(rect.width, rect.height),
+                )
+            }
             .clip(CircleShape)
             .background(accent().solid)
             .padding(LabDimens.StoryRingStroke)
-            .clickable(onClick = onClick),
+            .clickable {
+                launchBounds?.let(onClick)
+            },
         contentAlignment = Alignment.Center,
     ) {
         Box(

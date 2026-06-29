@@ -1,6 +1,7 @@
 package com.polli.android.chat
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -26,17 +27,9 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
@@ -45,36 +38,29 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.polli.android.icons.LabIcon
+import com.polli.android.icons.LabIconName
 import com.polli.android.theme.LabColors
 import com.polli.android.theme.accent
 import com.polli.android.theme.LabDimens
 import com.polli.android.ui.AppInsets
-import com.polli.android.ui.FrostedChromeSurface
 import com.polli.android.ui.FrostedCircleButton
 import com.polli.android.ui.LabAvatar
 import com.polli.android.ui.RoundBackButton
 import com.polli.core.chat.ChatDetailTab
 import com.polli.core.chat.tabsForChat
 import dev.chrisbanes.haze.HazeState
-import kotlin.math.abs
-import kotlin.math.min
 
-/** Mirrors polli `group_header_chrome.rs` tab carousel scale curve. */
-private const val HEADER_TAB_SCALE_MIN = 0.76f
-private const val HEADER_TAB_EDGE_MASK_PX = 32f
-
-private val TAB_BASE_HEIGHT = LabDimens.TabButtonHeight
-private val TAB_BASE_H_PADDING = LabDimens.TabButtonHPadding
-private val TAB_BASE_CORNER = 17.dp
-private val TAB_BASE_FONT_SIZE = 14.5.sp
-
-private fun Dp.scaledBy(scale: Float): Dp = (value * scale).dp
-
-private fun TextUnit.scaledBy(scale: Float): TextUnit = (value * scale).sp
+private val TAB_SELECTED_HEIGHT = LabDimens.TabButtonHeight
+private val TAB_UNSELECTED_HEIGHT = 28.dp
+private val TAB_SELECTED_FONT = 14.5.sp
+private val TAB_UNSELECTED_FONT = 12.5.sp
+private val TAB_SELECTED_H_PADDING = LabDimens.TabButtonHPadding
+private val TAB_UNSELECTED_H_PADDING = 12.dp
+private val TAB_SELECTED_CORNER = 17.dp
+private val TAB_UNSELECTED_CORNER = 14.dp
 
 private data class TabLayoutInRow(val leftPx: Float, val widthPx: Float)
 
@@ -101,11 +87,10 @@ fun GroupHeaderChrome(
             hazeState = hazeState,
         )
         if (tabs.size > 1) {
-            ChatHeaderTabCarousel(
+            ChatHeaderTabRow(
                 tabs = tabs,
                 selectedTab = selectedTab,
                 onTabSelected = onTabSelected,
-                hazeState = hazeState,
             )
         }
     }
@@ -209,71 +194,28 @@ internal fun ChatHeaderAvatarButton(
 }
 
 @Composable
-private fun ChatHeaderTabCarousel(
+private fun ChatHeaderTabRow(
     tabs: List<ChatDetailTab>,
     selectedTab: ChatDetailTab,
     onTabSelected: (ChatDetailTab) -> Unit,
-    hazeState: HazeState?,
 ) {
     val density = LocalDensity.current
     val scrollState = rememberScrollState()
-    // Read on every scroll frame so scales + gaps update live.
-    val scrollOffsetPx = scrollState.value.toFloat()
-    val scaleRangePx = with(density) { 140.dp.toPx() }
-
     val tabLayouts = remember { mutableStateMapOf<ChatDetailTab, TabLayoutInRow>() }
     var rowCoords by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
-    BoxWithConstraints(
-        modifier = Modifier
-            .fillMaxWidth()
-            .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
-            .drawWithContent {
-                drawContent()
-                val w = size.width
-                if (w <= 0f) return@drawWithContent
-                val maskPx = HEADER_TAB_EDGE_MASK_PX.coerceAtMost(w / 3f)
-                drawRect(
-                    brush = Brush.horizontalGradient(
-                        colorStops = arrayOf(
-                            0f to androidx.compose.ui.graphics.Color.Transparent,
-                            (maskPx / w).coerceIn(0f, 1f) to androidx.compose.ui.graphics.Color.Black,
-                            ((w - maskPx) / w).coerceIn(0f, 1f) to androidx.compose.ui.graphics.Color.Black,
-                            1f to androidx.compose.ui.graphics.Color.Transparent,
-                        ),
-                        startX = 0f,
-                        endX = w,
-                    ),
-                    size = Size(w, size.height),
-                    blendMode = BlendMode.DstIn,
-                )
-            },
-    ) {
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val viewportWidthPx = with(density) { maxWidth.toPx() }
-        val viewportCenterInContent = scrollOffsetPx + viewportWidthPx / 2f
+        val edgePad = (maxWidth / 2) - TAB_SELECTED_HEIGHT
 
-        fun tabCenterInContent(tab: ChatDetailTab): Float? {
-            val layout = tabLayouts[tab] ?: return null
-            return layout.leftPx + layout.widthPx / 2f
+        val selectedLayout = tabLayouts[selectedTab]
+        LaunchedEffect(selectedTab, selectedLayout, viewportWidthPx) {
+            val layout = selectedLayout ?: return@LaunchedEffect
+            if (viewportWidthPx <= 0f) return@LaunchedEffect
+            val tabCenter = layout.leftPx + layout.widthPx / 2f
+            val targetScroll = (tabCenter - viewportWidthPx / 2f).toInt().coerceAtLeast(0)
+            scrollState.animateScrollTo(targetScroll)
         }
-
-        fun scaleForTab(tab: ChatDetailTab): Float {
-            val center = tabCenterInContent(tab) ?: return 1f
-            val dist = abs(center - viewportCenterInContent)
-            return (1f - dist / scaleRangePx).coerceAtLeast(HEADER_TAB_SCALE_MIN)
-        }
-
-        LaunchedEffect(selectedTab, viewportWidthPx) {
-            repeat(3) {
-                withFrameNanos {}
-                val layout = tabLayouts[selectedTab] ?: return@repeat
-                val tabCenter = layout.leftPx + layout.widthPx / 2f
-                val targetScroll = (tabCenter - viewportWidthPx / 2f).toInt().coerceAtLeast(0)
-                scrollState.animateScrollTo(targetScroll)
-            }
-        }
-
-        val edgePad = (maxWidth / 2) - 52.dp
 
         Row(
             modifier = Modifier
@@ -286,23 +228,29 @@ private fun ChatHeaderTabCarousel(
 
             tabs.forEachIndexed { index, tab ->
                 if (index > 0) {
-                    val prevTab = tabs[index - 1]
-                    val gapScale = min(scaleForTab(prevTab), scaleForTab(tab))
-                    Spacer(Modifier.width(LabDimens.ChatHeaderTabGap * gapScale))
+                    Spacer(Modifier.width(LabDimens.ChatHeaderTabGap))
                 }
 
-                ChatHeaderTabPill(
-                    label = tab.label,
-                    selected = tab == selectedTab,
-                    onClick = { onTabSelected(tab) },
-                    hazeState = hazeState,
-                    scale = scaleForTab(tab),
-                    modifier = Modifier.onGloballyPositioned { coords ->
-                        val row = rowCoords ?: return@onGloballyPositioned
-                        val left = coords.positionInWindow().x - row.positionInWindow().x
-                        tabLayouts[tab] = TabLayoutInRow(left, coords.size.width.toFloat())
-                    },
-                )
+                val tabModifier = Modifier.onGloballyPositioned { coords ->
+                    val row = rowCoords ?: return@onGloballyPositioned
+                    val left = coords.positionInWindow().x - row.positionInWindow().x
+                    tabLayouts[tab] = TabLayoutInRow(left, coords.size.width.toFloat())
+                }
+
+                if (tab == ChatDetailTab.Search) {
+                    ChatHeaderSearchPill(
+                        selected = tab == selectedTab,
+                        onClick = { onTabSelected(tab) },
+                        modifier = tabModifier,
+                    )
+                } else {
+                    ChatHeaderTabPill(
+                        label = tab.label,
+                        selected = tab == selectedTab,
+                        onClick = { onTabSelected(tab) },
+                        modifier = tabModifier,
+                    )
+                }
             }
 
             Spacer(Modifier.width(edgePad.coerceAtLeast(48.dp)))
@@ -311,49 +259,76 @@ private fun ChatHeaderTabCarousel(
 }
 
 @Composable
-private fun ChatHeaderTabPill(
-    label: String,
+private fun ChatHeaderSearchPill(
     selected: Boolean,
     onClick: () -> Unit,
-    scale: Float,
-    hazeState: HazeState? = null,
     modifier: Modifier = Modifier,
 ) {
-    val height = TAB_BASE_HEIGHT.scaledBy(scale)
-    val hPadding = TAB_BASE_H_PADDING.scaledBy(scale)
-    val corner = TAB_BASE_CORNER.scaledBy(scale)
-    val fontSize = TAB_BASE_FONT_SIZE.scaledBy(scale)
-    val shape = RoundedCornerShape(corner)
-    val selectedGradient = accent().gradientBrush(0.66f)
-    FrostedChromeSurface(
+    val height = if (selected) TAB_SELECTED_HEIGHT else TAB_UNSELECTED_HEIGHT
+    val width = if (selected) TAB_SELECTED_HEIGHT + 4.dp else TAB_UNSELECTED_HEIGHT + 2.dp
+    val shape = RoundedCornerShape(if (selected) TAB_SELECTED_CORNER else TAB_UNSELECTED_CORNER)
+
+    Box(
         modifier = modifier
-            .height(height)
+            .size(width = width, height = height)
+            .clip(shape)
+            .background(LabColors.Gray33)
+            .border(LabDimens.ShellBorderWidth, LabColors.ShellBorder, shape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick,
             ),
-        shape = shape,
-        tint = LabColors.Gray66,
-        borderColor = LabColors.ShellBorder,
-        hazeState = hazeState,
+        contentAlignment = Alignment.Center,
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .then(
-                    if (selected) Modifier.background(selectedGradient) else Modifier,
-                )
-                .padding(horizontal = hPadding),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = label,
-                color = if (selected) LabColors.White else LabColors.White66,
-                fontSize = fontSize,
-                fontWeight = FontWeight.Medium,
-                maxLines = 1,
+        LabIcon(
+            LabIconName.Search,
+            LabDimens.HomeSearchGlyphSize,
+            LabColors.White33,
+        )
+    }
+}
+
+@Composable
+private fun ChatHeaderTabPill(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val height = if (selected) TAB_SELECTED_HEIGHT else TAB_UNSELECTED_HEIGHT
+    val hPadding = if (selected) TAB_SELECTED_H_PADDING else TAB_UNSELECTED_H_PADDING
+    val corner = if (selected) TAB_SELECTED_CORNER else TAB_UNSELECTED_CORNER
+    val fontSize = if (selected) TAB_SELECTED_FONT else TAB_UNSELECTED_FONT
+    val shape = RoundedCornerShape(corner)
+
+    Box(
+        modifier = modifier
+            .height(height)
+            .clip(shape)
+            .then(
+                if (selected) {
+                    Modifier.background(accent().gradientBrush(0.66f))
+                } else {
+                    Modifier
+                        .background(LabColors.Gray66)
+                        .border(LabDimens.ShellBorderWidth, LabColors.ShellBorder, shape)
+                },
             )
-        }
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            )
+            .padding(horizontal = hPadding),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            color = if (selected) LabColors.White else LabColors.White66,
+            fontSize = fontSize,
+            fontWeight = FontWeight.Medium,
+            maxLines = 1,
+        )
     }
 }

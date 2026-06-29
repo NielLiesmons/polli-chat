@@ -25,12 +25,12 @@ import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 
-/** zapstore / webapp `.bg-overlay` — ~75% black behind modal sheets. */
-val PolliModalBarrier: Color = Color(0xBF000000)
+/** Dimmed scrim behind modals / expanded search — ~37% black (half the old 75% barrier). */
+val PolliModalBarrier: Color = Color(0x60000000)
 
 private const val FROST_TINT_ALPHA = 0.72f
 
-/** Shared frosted-glass blur style for Polli chrome surfaces. */
+/** Shared frosted-glass blur style for Polli chrome surfaces (composer, modals, search bar). */
 fun polliHazeStyle(tint: Color = LabColors.Gray66): HazeStyle = HazeStyle(
     backgroundColor = tint.copy(alpha = FROST_TINT_ALPHA),
     tints = listOf(
@@ -38,6 +38,17 @@ fun polliHazeStyle(tint: Color = LabColors.Gray66): HazeStyle = HazeStyle(
         HazeTint(tint.copy(alpha = 0.52f)),
     ),
     blurRadius = 40.dp,
+    noiseFactor = HazeDefaults.noiseFactor,
+)
+
+/** Darker frost for the home search pill / expanded panel (solid [LabColors.Gray], not the lighter Gray33 token). */
+fun polliSearchPanelHazeStyle(tint: Color = LabColors.Gray): HazeStyle = HazeStyle(
+    backgroundColor = tint.copy(alpha = 0.94f),
+    tints = listOf(
+        HazeTint(Color.Black.copy(alpha = 0.58f)),
+        HazeTint(tint.copy(alpha = 0.82f)),
+    ),
+    blurRadius = 36.dp,
     noiseFactor = HazeDefaults.noiseFactor,
 )
 
@@ -52,19 +63,49 @@ fun polliOverlayHazeStyle(tint: Color = LabColors.Gray66): HazeStyle = HazeStyle
     noiseFactor = HazeDefaults.noiseFactor,
 )
 
-/** Home search panel — darker and more transparent than chat composer (≈ gray33 @ 33%). */
-fun polliSearchPanelHazeStyle(): HazeStyle = HazeStyle(
-    backgroundColor = LabColors.Gray33.copy(alpha = 0.33f),
-    tints = listOf(
-        HazeTint(Color.Black.copy(alpha = 0.62f)),
-        HazeTint(LabColors.Gray33.copy(alpha = 0.42f)),
-    ),
-    blurRadius = 44.dp,
+/** Light blur on scrims so content behind modals/search dimmers stays legible but frosted. */
+fun polliScrimHazeStyle(): HazeStyle = HazeStyle(
+    backgroundColor = PolliModalBarrier,
+    tints = listOf(HazeTint(PolliModalBarrier)),
+    blurRadius = 28.dp,
     noiseFactor = HazeDefaults.noiseFactor,
 )
 
 @Composable
 fun rememberPolliHazeState(): HazeState = remember { HazeState() }
+
+/**
+ * Full-screen tap target behind sheets / expanded search — blurred when [hazeState] is wired
+ * to a [dev.chrisbanes.haze.hazeSource] on the screen content.
+ */
+@OptIn(ExperimentalHazeApi::class)
+@Composable
+fun PolliScreenScrim(
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+    hazeState: HazeState? = null,
+) {
+    val interaction = remember { MutableInteractionSource() }
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .then(
+                if (hazeState != null) {
+                    Modifier.hazeEffect(state = hazeState, style = polliScrimHazeStyle()) {
+                        inputScale = HazeInputScale.Auto
+                        backgroundColor = PolliModalBarrier
+                    }
+                } else {
+                    Modifier.background(PolliModalBarrier)
+                },
+            )
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                onClick = onDismiss,
+            ),
+    )
+}
 
 @OptIn(ExperimentalHazeApi::class)
 @Composable

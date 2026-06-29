@@ -48,8 +48,11 @@ import com.polli.android.ui.LabAvatar
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.AppModal
 import com.polli.android.ui.ModalSectionLabel
+import com.polli.android.ui.PolliScreenScrim
 import com.polli.android.ui.RoundBackButton
 import com.polli.android.ui.ShellDivider
+import com.polli.android.ui.rememberPolliHazeState
+import dev.chrisbanes.haze.hazeSource
 import com.polli.ui.theme.AccentThemes
 import org.thoughtcrime.securesms.connect.DcHelper
 
@@ -92,11 +95,13 @@ fun ProfilesScreen(
     var showAppearanceModal by remember { mutableStateOf(false) }
     var showChatSettingsModal by remember { mutableStateOf(false) }
     val headerTop = AppInsets.statusBarTop() + 9.dp
+    val hazeState = rememberPolliHazeState()
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .hazeSource(state = hazeState)
                 .verticalScroll(rememberScrollState())
                 .padding(
                     top = headerTop + 48.dp,
@@ -177,12 +182,14 @@ fun ProfilesScreen(
     if (showAppearanceModal) {
         AppearanceSettingsModal(
             prefs = prefs,
+            hazeState = hazeState,
             onDismiss = { showAppearanceModal = false },
             onChanged = onThemeChanged,
         )
     }
     if (showChatSettingsModal) {
         ChatSettingsModal(
+            hazeState = hazeState,
             onDismiss = { showChatSettingsModal = false },
         )
     }
@@ -191,6 +198,7 @@ fun ProfilesScreen(
 @Composable
 private fun AppearanceSettingsModal(
     prefs: AppPrefs,
+    hazeState: dev.chrisbanes.haze.HazeState,
     onDismiss: () -> Unit,
     onChanged: () -> Unit = {},
 ) {
@@ -200,6 +208,7 @@ private fun AppearanceSettingsModal(
         onDismiss = onDismiss,
         title = "Appearance",
         description = "Accent color and UI scale for this device.",
+        hazeState = hazeState,
     ) {
         ModalSectionLabel("Accent color")
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -229,7 +238,10 @@ private fun AppearanceSettingsModal(
 }
 
 @Composable
-private fun ChatSettingsModal(onDismiss: () -> Unit) {
+private fun ChatSettingsModal(
+    hazeState: dev.chrisbanes.haze.HazeState,
+    onDismiss: () -> Unit,
+) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val dc = remember { DcHelper.getContext(context) }
     var bccSelf by remember {
@@ -242,6 +254,7 @@ private fun ChatSettingsModal(onDismiss: () -> Unit) {
         onDismiss = onDismiss,
         title = "Chat & notifications",
         description = "Messaging and delivery preferences for this account.",
+        hazeState = hazeState,
     ) {
         SettingsToggleRow(
             title = "Read receipts",

@@ -49,7 +49,6 @@ import com.polli.android.theme.LabDimens
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.ChatFeedEdgeGradients
 import com.polli.android.ui.rememberComposerChromeLayout
-import com.polli.android.ui.rememberLazyListShowTopFadeDerived
 import com.polli.android.ui.rememberPolliHazeState
 import dev.chrisbanes.haze.hazeSource
 import androidx.compose.ui.res.stringResource
@@ -85,7 +84,6 @@ fun ChatScreen(
         pageCount = { tabs.size },
     )
     val listState = rememberLazyListState()
-    val showTopFade by rememberLazyListShowTopFadeDerived(listState)
     val showScrollToBottom by rememberShowChatScrollToBottom(listState)
     val headerClearance = if (isGroup && !isBroadcast) {
         LabDimens.GroupHeaderClearance + AppInsets.statusBarTop()
@@ -167,8 +165,7 @@ fun ChatScreen(
 
             ChatFeedEdgeGradients(
                 modifier = Modifier.fillMaxSize(),
-                showTopFade = showTopFade,
-                hasGroupHeader = isGroup && !isBroadcast,
+                topChromeClearance = headerClearance,
                 bottomChromeInset = composerChrome.bottomChromeInset,
             )
 

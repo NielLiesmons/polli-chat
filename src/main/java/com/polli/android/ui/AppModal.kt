@@ -49,8 +49,8 @@ import dev.chrisbanes.haze.HazeState
 /**
  * Bottom sheet modal — zapstore [AppModal] / webapp modal sheet.
  *
- * In-tree full-screen overlay (not [androidx.compose.ui.window.Dialog]) so backdrop blur
- * can sample [hazeState] from the screen behind. Barrier is ~75% black (darker than webapp default).
+ * Full-screen backdrop is a flat [LabColors.Black16] dimmer (no blur). Frosted blur is
+ * scoped to the sheet via [FrostedChromeSurface] + [hazeState] from the screen [hazeSource].
  */
 @Composable
 fun AppModal(
@@ -90,16 +90,7 @@ fun AppModal(
             .fillMaxSize()
             .zIndex(300f),
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable(
-                    indication = null,
-                    interactionSource = remember { MutableInteractionSource() },
-                    onClick = onDismiss,
-                )
-                .background(PolliModalBarrier),
-        )
+        ModalBackdrop(onDismiss = onDismiss)
 
         Box(
             modifier = Modifier
@@ -188,6 +179,24 @@ fun AppModal(
             }
         }
     }
+}
+
+/** Flat dimmer behind modals — no blur (blur lives on the sheet only). */
+@Composable
+private fun ModalBackdrop(
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(LabColors.Black16)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onDismiss,
+            ),
+    )
 }
 
 /** Centred modal heading — zapstore [ModalTitleBlock]. */

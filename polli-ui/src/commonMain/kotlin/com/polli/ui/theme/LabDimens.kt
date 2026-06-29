@@ -11,13 +11,18 @@ object LabDimens {
     val HomeProfileSize = 50.dp
     val HomeProfileGap = 14.dp
     val HomePillInsetBeforeSearch = 14.dp
-    val HomeSearchGlyphSize = 16.dp
+    val HomeSearchGlyphSize = 19.dp
     val HomeSearchGapAfterGlyph = 8.dp
-    val HomePillActionSize = 30.dp
+    val HomePillActionSize = 32.dp
+    val HomeSearchPlusGlyphSize = 18.dp
     val HomeBarVerticalPad = 10.dp
     /** Standard stroke icon weight — chevrons, arrows, etc. */
     val IconStrokeWidth = 1.6.dp
-    val HomeSearchPanelExpandedHeight = 320.dp
+    val HomeSearchPanelExpandedHeight = 320.dp // fallback when layout not measured
+    val HomeSearchPanelIconSize = 28.dp
+    val HomeSearchPanelTopFade = 24.dp
+    val HomeSearchFavoriteColumnWidth = 120.dp // ~240px at 2× density
+    val HomeSearchCreateCardWidth = 72.dp
     val HomeSearchExpandDragDistance = 200.dp
     val HomeSearchExpandSnapThreshold = 0.32f
 
