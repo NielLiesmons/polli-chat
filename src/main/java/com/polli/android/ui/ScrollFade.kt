@@ -39,15 +39,6 @@ fun Modifier.scrollFadeMask(
     alphaMaskModifier(showTopFade, topPx, bottomPx * 2.5f, groupHeaderPx = 0f)
 }
 
-/** DstIn dissolve for home search panel — fades under the fixed search input row only. */
-fun Modifier.homeSearchPanelScrollFade(
-    showTopFade: Boolean = true,
-): Modifier = composed {
-    val density = LocalDensity.current
-    val topPx = with(density) { LabDimens.HomeSearchPanelTopFade.toPx() }
-    alphaMaskModifier(showTopFade, topPx, bottomFadePx = 0f, groupHeaderPx = 0f)
-}
-
 /**
  * Three-stop edge gradients over the chat feed (pass-through touches).
  *

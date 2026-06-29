@@ -216,6 +216,9 @@ fun HomeScreen(
         var searchPanelBodyHeight by remember {
             mutableStateOf(LabDimens.HomeSearchPanelExpandedHeight - LabDimens.HomeBarHeight)
         }
+        HomeSearchPanelHeightMeasurer { measured ->
+            if (measured > 0.dp) searchPanelBodyHeight = measured
+        }
         val expandedPanelHeight = LabDimens.HomeBarHeight + searchPanelBodyHeight
         val panelHeight = lerp(LabDimens.HomeBarHeight, expandedPanelHeight, expandProgress)
         val headerBlockHeight = LabDimens.HomeBarVerticalPad + maxOf(
@@ -341,7 +344,6 @@ fun HomeScreen(
         HomeExpandableSearchHeader(
             expandProgress = expandProgress,
             panelHeight = panelHeight,
-            onPanelBodyHeightChanged = { searchPanelBodyHeight = it },
             profileName = profileName,
             query = query,
             searchPanelOpen = searchPanelOpen,
@@ -370,7 +372,6 @@ fun HomeScreen(
 private fun HomeExpandableSearchHeader(
     expandProgress: Float,
     panelHeight: androidx.compose.ui.unit.Dp,
-    onPanelBodyHeightChanged: (androidx.compose.ui.unit.Dp) -> Unit,
     profileName: String,
     query: String,
     searchPanelOpen: Boolean,
@@ -422,7 +423,8 @@ private fun HomeExpandableSearchHeader(
                 modifier = Modifier
                     .weight(1f)
                     .padding(top = barTopInset)
-                    .height(panelHeight),
+                    .height(panelHeight)
+                    .clipToBounds(),
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Row(
@@ -492,7 +494,6 @@ private fun HomeExpandableSearchHeader(
                             onQueryChange(term)
                             onOpenSearch()
                         },
-                        onHeightMeasured = onPanelBodyHeightChanged,
                     )
                 }
             }
@@ -578,6 +579,10 @@ private fun TabRow(active: HomeTab, onSelect: (HomeTab) -> Unit) {
 
 @Composable
 private fun TabPill(label: String, selected: Boolean, onClick: () -> Unit) {
+    val height = if (selected) LabDimens.TabButtonHeight else 28.dp
+    val hPadding = if (selected) LabDimens.TabButtonHPadding else 12.dp
+    val corner = if (selected) 17.dp else 14.dp
+    val fontSize = if (selected) 14.5.sp else 12.5.sp
     val bg = if (selected) {
         accent().gradientBrush(0.66f)
     } else {
@@ -585,17 +590,17 @@ private fun TabPill(label: String, selected: Boolean, onClick: () -> Unit) {
     }
     Box(
         modifier = Modifier
-            .height(LabDimens.TabButtonHeight)
-            .clip(RoundedCornerShape(17.dp))
+            .height(height)
+            .clip(RoundedCornerShape(corner))
             .background(bg)
             .clickable(onClick = onClick)
-            .padding(horizontal = LabDimens.TabButtonHPadding),
+            .padding(horizontal = hPadding),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = label,
             color = if (selected) LabColors.White else LabColors.White66,
-            fontSize = 14.5.sp,
+            fontSize = fontSize,
             fontWeight = FontWeight.Medium,
         )
     }

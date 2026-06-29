@@ -170,7 +170,7 @@ fun MessageBubble(
                     reactions = reactions,
                     pulseEmoji = pulseEmoji,
                     modifier = Modifier
-                        .padding(horizontal = insetH)
+                        .padding(horizontal = richContentPadH)
                         .consumeBubbleOverlayTap(),
                 )
             }

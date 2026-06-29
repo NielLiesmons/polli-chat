@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -76,6 +77,10 @@ private fun ReactionPill(
         }
     }
 
+    val avatarSize = 20.dp
+    val avatarStep = 14.dp
+    val endPad = if (reaction.count > 3) 6.dp else 4.dp
+
     Row(
         modifier = Modifier
             .graphicsLayer {
@@ -93,7 +98,7 @@ private fun ReactionPill(
             )
             .padding(
                 start = 5.dp,
-                end = 4.dp,
+                end = endPad,
                 top = 3.dp,
                 bottom = 3.dp,
             ),
@@ -102,15 +107,19 @@ private fun ReactionPill(
     ) {
         Text(text = reaction.emoji, fontSize = 15.sp, lineHeight = 15.sp)
         if (reaction.count <= 3) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            val stackWidth = avatarSize + avatarStep * (reaction.reactors.size - 1).coerceAtLeast(0)
+            Box(
+                modifier = Modifier.width(stackWidth),
+                contentAlignment = Alignment.CenterStart,
+            ) {
                 reaction.reactors.forEachIndexed { index, reactor ->
                     LabAvatar(
                         name = reactor.name,
                         seed = reactor.contactId.toString(),
-                        size = 20.dp,
+                        size = avatarSize,
                         contactId = reactor.contactId,
                         modifier = Modifier
-                            .offset(x = if (index > 0) (-6 * index).dp else 0.dp)
+                            .offset(x = avatarStep * index)
                             .zIndex((reaction.reactors.size - index).toFloat()),
                     )
                 }

@@ -21,7 +21,7 @@ object LabDimens {
     val HomeSearchPanelExpandedHeight = 320.dp // fallback when layout not measured
     val HomeSearchPanelIconSize = 28.dp
     val HomeSearchPanelTopFade = 24.dp
-    val HomeSearchFavoriteColumnWidth = 120.dp // ~240px at 2× density
+    val HomeSearchFavoriteColumnWidth = 148.dp
     val HomeSearchCreateCardWidth = 72.dp
     val HomeSearchExpandDragDistance = 200.dp
     val HomeSearchExpandSnapThreshold = 0.32f
@@ -68,9 +68,9 @@ object LabDimens {
     val ChatQuoteMarginBottom = 6.dp
     val ChatReactionRowTop = 5.dp
     val ChatRowPaddingH = 8.dp
-    val ChatRowOutgoingExtraStart = 8.dp
-    /** In-row reserve beside incoming bubbles — matches [ChatAvatarSize] + [ChatAvatarGap] on the left. */
-    val ChatRowIncomingRight = ChatAvatarSize + ChatAvatarGap
+    val ChatRowOutgoingExtraStart = 5.dp
+    /** Trailing gutter beside incoming bubbles — ~⅓ tighter than avatar column reserve. */
+    val ChatRowIncomingRight = 30.dp
     val ChatRowTop = 8.dp
     val ChatRowTopCollapsed = 2.dp
     val ChatBubbleMaxWidthFraction = 0.85f

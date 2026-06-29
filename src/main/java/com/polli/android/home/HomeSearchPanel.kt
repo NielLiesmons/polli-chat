@@ -19,17 +19,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,7 +40,6 @@ import com.polli.android.icons.LabIcon
 import com.polli.android.icons.LabIconName
 import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabDimens
-import com.polli.android.ui.homeSearchPanelScrollFade
 import org.thoughtcrime.securesms.R
 
 private val recentSearches = listOf(
@@ -93,33 +95,45 @@ private val createTypes = listOf(
 )
 
 @Composable
+internal fun HomeSearchPanelHeightMeasurer(
+    onMeasured: (Dp) -> Unit,
+) {
+    val density = LocalDensity.current
+    val lastReported = remember { mutableStateOf(0.dp) }
+
+    HomeSearchPanelBody(
+        expandProgress = 1f,
+        onRecentSelect = {},
+        modifier = Modifier
+            .fillMaxWidth()
+            .layout { measurable, constraints ->
+                val placeable = measurable.measure(
+                    constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity),
+                )
+                val heightDp = with(density) { placeable.height.toDp() }
+                if (placeable.height > 0 && heightDp != lastReported.value) {
+                    lastReported.value = heightDp
+                    onMeasured(heightDp)
+                }
+                layout(0, 0) {}
+            },
+    )
+}
+
+@Composable
 internal fun HomeSearchPanelBody(
     expandProgress: Float,
     onRecentSelect: (String) -> Unit,
     modifier: Modifier = Modifier,
-    onHeightMeasured: ((Dp) -> Unit)? = null,
 ) {
-    val density = LocalDensity.current
-    val bodyAlpha = ((expandProgress - 0.2f) / 0.55f).coerceIn(0f, 1f)
+    val bodyAlpha = ((expandProgress - 0.1f) / 0.45f).coerceIn(0f, 1f)
     if (bodyAlpha <= 0.01f) return
 
     Column(
         modifier = modifier
             .fillMaxWidth()
             .alpha(bodyAlpha)
-            .homeSearchPanelScrollFade()
-            .padding(bottom = 10.dp)
-            .then(
-                if (onHeightMeasured != null) {
-                    Modifier.onSizeChanged {
-                        if (it.height > 0) {
-                            onHeightMeasured(with(density) { it.height.toDp() })
-                        }
-                    }
-                } else {
-                    Modifier
-                },
-            ),
+            .padding(bottom = 10.dp),
     ) {
         HomeSearchSectionLabel(label = "Recent")
         recentSearches.forEach { term ->
@@ -169,7 +183,7 @@ private fun HomeSearchSectionLabel(label: String) {
         fontSize = 13.sp,
         fontWeight = FontWeight.Bold,
         letterSpacing = 2.2.sp,
-        modifier = Modifier.padding(start = 12.dp, top = 8.dp, bottom = 3.dp),
+        modifier = Modifier.padding(start = 12.dp, top = 2.dp, bottom = 3.dp),
     )
 }
 

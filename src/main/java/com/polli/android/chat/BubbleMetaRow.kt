@@ -35,39 +35,36 @@ fun IncomingBubbleHeader(
             .padding(horizontal = LabDimens.ChatBubbleInsetH)
             .padding(bottom = 2.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Bottom,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = authorName,
             color = authorColor,
             fontSize = 13.sp,
-            lineHeight = 19.5.sp,
+            lineHeight = 13.sp,
             fontWeight = FontWeight.SemiBold,
             maxLines = 1,
             modifier = Modifier
                 .weight(1f, fill = false)
-                .padding(end = 8.dp)
-                .alignByBaseline(),
+                .padding(end = 8.dp),
         )
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.Bottom,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             if (isEdited) {
                 Text(
                     "Edited",
                     color = LabColors.White33,
                     fontSize = 11.sp,
-                    lineHeight = 16.5.sp,
-                    modifier = Modifier.alignByBaseline(),
+                    lineHeight = 11.sp,
                 )
             }
             Text(
                 timestamp,
                 color = LabColors.White33,
                 fontSize = 11.sp,
-                lineHeight = 16.5.sp,
-                modifier = Modifier.alignByBaseline(),
+                lineHeight = 11.sp,
             )
         }
     }
