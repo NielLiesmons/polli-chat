@@ -204,10 +204,11 @@ private fun AppearanceSettingsModal(
 ) {
     var scale by remember { mutableStateOf(prefs.uiScalePreset) }
     var accentPreset by remember { mutableStateOf(prefs.accentPreset) }
+    var sigilOnly by remember { mutableStateOf(prefs.sigilOnlyMode) }
     AppModal(
         onDismiss = onDismiss,
         title = "Appearance",
-        description = "Accent color and UI scale for this device.",
+        description = "Accent color, UI scale, and avatar display.",
         hazeState = hazeState,
     ) {
         ModalSectionLabel("Accent color")
@@ -225,6 +226,18 @@ private fun AppearanceSettingsModal(
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
+        ModalSectionLabel("Avatars")
+        SettingsToggleRow(
+            title = "Sigil only mode",
+            subtitle = "Show MNS sigils instead of profile photos everywhere.",
+            checked = sigilOnly,
+            onCheckedChange = {
+                sigilOnly = it
+                prefs.sigilOnlyMode = it
+                onChanged()
+            },
+        )
+        Spacer(modifier = Modifier.height(16.dp))
         ModalSectionLabel("UI scale")
         UiScaleSlider(
             value = scale,
@@ -234,6 +247,7 @@ private fun AppearanceSettingsModal(
                 onChanged()
             },
         )
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 

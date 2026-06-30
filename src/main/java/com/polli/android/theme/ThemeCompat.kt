@@ -2,9 +2,11 @@ package com.polli.android.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import com.polli.android.settings.AppPrefs
+import com.polli.android.settings.LocalAppPrefs
 
 @get:JvmName("getLabTypography")
 val LabTypography: Typography
@@ -14,6 +16,7 @@ object LabDimens {
     val AvatarSize: Dp get() = com.polli.ui.theme.LabDimens.AvatarSize
     val HomeBarPadding: Dp get() = com.polli.ui.theme.LabDimens.HomeBarPadding
     val StoriesRowPadding: Dp get() = com.polli.ui.theme.LabDimens.StoriesRowPadding
+    val StoriesRowPaddingStart: Dp get() = com.polli.ui.theme.LabDimens.StoriesRowPaddingStart
     val HomeBarHeight: Dp get() = com.polli.ui.theme.LabDimens.HomeBarHeight
     val HomeProfileSize: Dp get() = com.polli.ui.theme.LabDimens.HomeProfileSize
     val HomeProfileGap: Dp get() = com.polli.ui.theme.LabDimens.HomeProfileGap
@@ -33,6 +36,9 @@ object LabDimens {
     val HomeSearchExpandSnapThreshold: Float get() = com.polli.ui.theme.LabDimens.HomeSearchExpandSnapThreshold
     val TabButtonHeight: Dp get() = com.polli.ui.theme.LabDimens.TabButtonHeight
     val TabButtonHPadding: Dp get() = com.polli.ui.theme.LabDimens.TabButtonHPadding
+    val TabButtonUnselectedHeight: Dp get() = com.polli.ui.theme.LabDimens.TabButtonUnselectedHeight
+    val TabButtonUnselectedHPadding: Dp get() = com.polli.ui.theme.LabDimens.TabButtonUnselectedHPadding
+    val TabButtonUnselectedCorner: Dp get() = com.polli.ui.theme.LabDimens.TabButtonUnselectedCorner
     val TabGap: Dp get() = com.polli.ui.theme.LabDimens.TabGap
     val ChatHeaderTabGap: Dp get() = com.polli.ui.theme.LabDimens.ChatHeaderTabGap
     val TabSectionGap: Dp get() = com.polli.ui.theme.LabDimens.TabSectionGap
@@ -126,5 +132,7 @@ fun LabTheme(
     uiScaleRevision: Int = 0,
     content: @Composable () -> Unit,
 ) {
-    com.polli.ui.theme.LabTheme(prefs = prefs, uiScaleRevision = uiScaleRevision, content = content)
+    CompositionLocalProvider(LocalAppPrefs provides prefs) {
+        com.polli.ui.theme.LabTheme(prefs = prefs, uiScaleRevision = uiScaleRevision, content = content)
+    }
 }

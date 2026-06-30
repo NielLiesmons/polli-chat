@@ -9,7 +9,7 @@ data class MessageGroupLayout(
 )
 
 /** Whether [newer] continues the same stack immediately after [older] (older is above newer). */
-fun continuesGroup(older: ChatMessage, newer: ChatMessage): Boolean {
+fun continuesGroup(older: MessageStub, newer: MessageStub): Boolean {
     if (older.isOutgoing != newer.isOutgoing) return false
     if (older.authorKey != newer.authorKey) return false
     if (newer.isEdited) return false
@@ -17,33 +17,54 @@ fun continuesGroup(older: ChatMessage, newer: ChatMessage): Boolean {
     return gap <= GROUP_MAX_GAP_SECS
 }
 
-fun layoutsForMessages(messages: List<ChatMessage>): Map<Int, MessageGroupLayout> {
-    if (messages.isEmpty()) return emptyMap()
-    val out = HashMap<Int, MessageGroupLayout>(messages.size)
-    messages.forEachIndexed { i, msg ->
+fun layoutBetweenNeighbors(
+    older: MessageStub?,
+    self: MessageStub,
+    newer: MessageStub?,
+): MessageGroupLayout {
+    val isFirst = older == null ||
+        !continuesGroup(older, self) ||
+        self.isEdited
+    val isLast = newer == null ||
+        !continuesGroup(self, newer)
+    return MessageGroupLayout(isFirst, isLast)
+}
+
+fun layoutsForStubs(stubs: List<MessageStub>): Map<Int, MessageGroupLayout> {
+    if (stubs.isEmpty()) return emptyMap()
+    val out = HashMap<Int, MessageGroupLayout>(stubs.size)
+    stubs.forEachIndexed { i, stub ->
         val isFirst = i == 0 ||
-            !continuesGroup(messages[i - 1], msg) ||
-            msg.isEdited
-        val isLast = i == messages.lastIndex ||
-            !continuesGroup(msg, messages[i + 1])
-        out[msg.id] = MessageGroupLayout(isFirst, isLast)
+            !continuesGroup(stubs[i - 1], stub) ||
+            stub.isEdited
+        val isLast = i == stubs.lastIndex ||
+            !continuesGroup(stub, stubs[i + 1])
+        out[stub.id] = MessageGroupLayout(isFirst, isLast)
     }
     return out
 }
 
 /** display index 0 = newest at bottom; range.first = newest in group. */
-fun displayIndexRangeForGroup(displayItems: List<FeedItem>, anchorIndex: Int): IntRange {
+fun displayIndexRangeForGroup(
+    displayItems: List<FeedItem>,
+    anchorIndex: Int,
+    stubFor: (Int) -> MessageStub?,
+): IntRange {
     var first = anchorIndex
     var last = anchorIndex
     while (first > 0) {
-        val older = (displayItems[first] as? FeedItem.Message)?.message ?: break
-        val newer = (displayItems[first - 1] as? FeedItem.Message)?.message ?: break
+        val olderId = (displayItems[first] as? FeedItem.Message)?.msgId ?: break
+        val newerId = (displayItems[first - 1] as? FeedItem.Message)?.msgId ?: break
+        val older = stubFor(olderId) ?: break
+        val newer = stubFor(newerId) ?: break
         if (!continuesGroup(older, newer)) break
         first--
     }
     while (last < displayItems.lastIndex) {
-        val newer = (displayItems[last] as? FeedItem.Message)?.message ?: break
-        val older = (displayItems[last + 1] as? FeedItem.Message)?.message ?: break
+        val newerId = (displayItems[last] as? FeedItem.Message)?.msgId ?: break
+        val olderId = (displayItems[last + 1] as? FeedItem.Message)?.msgId ?: break
+        val newer = stubFor(newerId) ?: break
+        val older = stubFor(olderId) ?: break
         if (!continuesGroup(older, newer)) break
         last++
     }

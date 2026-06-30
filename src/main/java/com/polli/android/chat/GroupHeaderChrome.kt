@@ -54,13 +54,13 @@ import com.polli.core.chat.tabsForChat
 import dev.chrisbanes.haze.HazeState
 
 private val TAB_SELECTED_HEIGHT = LabDimens.TabButtonHeight
-private val TAB_UNSELECTED_HEIGHT = 28.dp
+private val TAB_UNSELECTED_HEIGHT = LabDimens.TabButtonUnselectedHeight
 private val TAB_SELECTED_FONT = 14.5.sp
-private val TAB_UNSELECTED_FONT = 12.5.sp
+private val TAB_UNSELECTED_FONT = 13.sp
 private val TAB_SELECTED_H_PADDING = LabDimens.TabButtonHPadding
-private val TAB_UNSELECTED_H_PADDING = 12.dp
+private val TAB_UNSELECTED_H_PADDING = LabDimens.TabButtonUnselectedHPadding
 private val TAB_SELECTED_CORNER = 17.dp
-private val TAB_UNSELECTED_CORNER = 14.dp
+private val TAB_UNSELECTED_CORNER = LabDimens.TabButtonUnselectedCorner
 
 private data class TabLayoutInRow(val leftPx: Float, val widthPx: Float)
 
@@ -203,18 +203,24 @@ private fun ChatHeaderTabRow(
     val scrollState = rememberScrollState()
     val tabLayouts = remember { mutableStateMapOf<ChatDetailTab, TabLayoutInRow>() }
     var rowCoords by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    var didInitialTabScroll by remember { mutableStateOf(false) }
 
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val viewportWidthPx = with(density) { maxWidth.toPx() }
         val edgePad = (maxWidth / 2) - TAB_SELECTED_HEIGHT
 
         val selectedLayout = tabLayouts[selectedTab]
-        LaunchedEffect(selectedTab, selectedLayout, viewportWidthPx) {
+        LaunchedEffect(selectedTab, selectedLayout, viewportWidthPx, didInitialTabScroll) {
             val layout = selectedLayout ?: return@LaunchedEffect
             if (viewportWidthPx <= 0f) return@LaunchedEffect
             val tabCenter = layout.leftPx + layout.widthPx / 2f
             val targetScroll = (tabCenter - viewportWidthPx / 2f).toInt().coerceAtLeast(0)
-            scrollState.animateScrollTo(targetScroll)
+            if (!didInitialTabScroll) {
+                scrollState.scrollTo(targetScroll)
+                didInitialTabScroll = true
+            } else {
+                scrollState.animateScrollTo(targetScroll)
+            }
         }
 
         Row(

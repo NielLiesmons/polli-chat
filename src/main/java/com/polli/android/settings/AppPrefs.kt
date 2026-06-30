@@ -7,12 +7,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import com.polli.domain.prefs.AccentPreset
 import com.polli.domain.prefs.UiPreferences
 import com.polli.domain.prefs.UiScalePreset
+import com.polli.ui.theme.polliBaselineDensity
 
 typealias UiScalePreset = com.polli.domain.prefs.UiScalePreset
 typealias AccentPreset = com.polli.domain.prefs.AccentPreset
@@ -23,6 +25,17 @@ private const val KEY_SCALE_V2 = "ui_scale_preset_v2"
 private const val KEY_RESPECT_SYSTEM = "respect_system_scale"
 private const val KEY_ACCENT = "accent_preset"
 private const val KEY_USE_DC_HOME = "use_dc_home"
+private const val KEY_SIGIL_ONLY = "sigil_only_mode"
+
+/** Bumps Compose when device-level display prefs change outside a single screen. */
+object AppSettingsNotifier {
+    var generation by mutableStateOf(0)
+        private set
+
+    fun notifyChanged() {
+        generation++
+    }
+}
 
 class AppPrefs(context: Context) : UiPreferences {
     private val sp = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -66,6 +79,14 @@ class AppPrefs(context: Context) : UiPreferences {
         get() = sp.getBoolean(KEY_USE_DC_HOME, false)
         set(value) = sp.edit().putBoolean(KEY_USE_DC_HOME, value).apply()
 
+    /** When true, every avatar shows its MNS sigil instead of a profile photo. */
+    var sigilOnlyMode: Boolean
+        get() = sp.getBoolean(KEY_SIGIL_ONLY, false)
+        set(value) {
+            sp.edit().putBoolean(KEY_SIGIL_ONLY, value).apply()
+            AppSettingsNotifier.notifyChanged()
+        }
+
 }
 
 val LocalAppPrefs = staticCompositionLocalOf<AppPrefs> {
@@ -75,7 +96,7 @@ val LocalAppPrefs = staticCompositionLocalOf<AppPrefs> {
 
 @Composable
 fun rememberLabDensity(prefs: AppPrefs, uiScaleRevision: Int = 0): Density {
-    val base = LocalDensity.current
+    val context = androidx.compose.ui.platform.LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     var resumeTick by mutableIntStateOf(0)
     DisposableEffect(lifecycleOwner) {
@@ -88,5 +109,8 @@ fun rememberLabDensity(prefs: AppPrefs, uiScaleRevision: Int = 0): Density {
     val factor = androidx.compose.runtime.remember(uiScaleRevision, resumeTick, prefs.uiScalePreset) {
         prefs.effectiveScale(1f)
     }
-    return Density(base.density * factor, base.fontScale * factor)
+    val baseline = androidx.compose.runtime.remember(context) {
+        context.polliBaselineDensity()
+    }
+    return Density(baseline * factor, factor)
 }

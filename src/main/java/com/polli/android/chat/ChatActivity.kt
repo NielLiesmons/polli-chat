@@ -109,6 +109,8 @@ class ChatActivity : BaseComposeActivity() {
                         chatId = chatId,
                         isGroup = chat.isMultiUser,
                         isBroadcast = chat.isOutBroadcast || chat.isInBroadcast,
+                        uiScaleRevision = revision,
+                        playbackViewModel = playbackViewModel,
                         showAttachModal = showAttachModal,
                         onDismissAttachModal = { showAttachModal = false },
                         onAttachClick = { showAttachModal = true },

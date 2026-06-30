@@ -28,7 +28,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
@@ -118,7 +117,6 @@ fun ChannelStoriesScreen(
     val dc = remember { DcHelper.getContext(context) }
     var channelIdx by remember { mutableIntStateOf(startIndex.coerceIn(0, (channelIds.size - 1).coerceAtLeast(0))) }
     var postIdx by remember { mutableIntStateOf(0) }
-    var segmentStart by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var replyDraft by remember { mutableStateOf("") }
     var composerFocused by remember { mutableStateOf(false) }
     var animTick by remember { mutableIntStateOf(0) }
@@ -129,7 +127,6 @@ fun ChannelStoriesScreen(
     LaunchedEffect(chatId) {
         storiesViewModel.bind(chatId)
         postIdx = 0
-        segmentStart = System.currentTimeMillis()
         replyDraft = ""
         composerFocused = false
     }
@@ -138,6 +135,8 @@ fun ChannelStoriesScreen(
     val postCount = posts.size.coerceAtLeast(1)
     val safePostIdx = if (posts.isEmpty()) 0 else postIdx.coerceIn(0, posts.lastIndex)
     val post: DcMsg? = posts.getOrNull(safePostIdx)
+    val progressKey = channelIdx to safePostIdx
+    val segmentStart = remember(progressKey) { System.currentTimeMillis() }
     val canReplyPrivately = ChannelStoryReply.canReply(dc, chat, post)
     val paused = composerFocused || replyDraft.isNotEmpty()
     val hazeState = rememberPolliHazeState()
@@ -150,7 +149,7 @@ fun ChannelStoriesScreen(
         }
     }
 
-    val segmentProgress = remember(animTick, segmentStart, paused, posts.size) {
+    val segmentProgress = remember(animTick, progressKey, segmentStart, paused, posts.size) {
         if (paused || posts.isEmpty()) {
             0f
         } else {
@@ -158,8 +157,7 @@ fun ChannelStoriesScreen(
         }
     }
 
-    LaunchedEffect(channelIdx, safePostIdx, paused, posts.size) {
-        segmentStart = System.currentTimeMillis()
+    LaunchedEffect(progressKey, paused, posts.size) {
         if (paused || posts.isEmpty()) return@LaunchedEffect
         delay(STORY_SEGMENT_MS)
         if (safePostIdx + 1 < posts.size) {
@@ -339,6 +337,9 @@ private fun StoryContentSlide(
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
     modifier: Modifier = Modifier,
 ) {
+    val contentBottomInset = bottomPadding + 24.dp
+    val contentTopInset = 108.dp
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -351,35 +352,40 @@ private fun StoryContentSlide(
                     ),
                 ),
             ),
-        contentAlignment = Alignment.Center,
     ) {
-        if (post == null) {
-            Text(
-                "No posts in this channel yet.",
-                color = LabColors.White33,
-                fontSize = 15.sp,
-            )
-            return
-        }
-        Column(
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .padding(top = 96.dp, bottom = 96.dp + bottomPadding),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                .fillMaxSize()
+                .padding(top = contentTopInset, bottom = contentBottomInset),
+            contentAlignment = Alignment.Center,
         ) {
-            if (post.hasFile()) {
-                DcMsgMediaContent(msg = post)
-            }
-            post.text?.trim()?.takeIf { it.isNotBlank() }?.let { body ->
+            if (post == null) {
                 Text(
-                    text = body,
-                    color = LabColors.White85,
-                    style = MaterialTheme.typography.bodyLarge,
-                    maxLines = 24,
-                    overflow = TextOverflow.Ellipsis,
+                    "No posts in this channel yet.",
+                    color = LabColors.White33,
+                    fontSize = 15.sp,
                 )
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    if (post.hasFile()) {
+                        DcMsgMediaContent(msg = post)
+                    }
+                    post.text?.trim()?.takeIf { it.isNotBlank() }?.let { body ->
+                        Text(
+                            text = body,
+                            color = LabColors.White85,
+                            style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 24,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
             }
         }
     }

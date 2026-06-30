@@ -17,19 +17,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -54,6 +49,7 @@ import dev.chrisbanes.haze.hazeSource
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 import org.thoughtcrime.securesms.R
+import org.thoughtcrime.securesms.components.audioplay.AudioPlaybackViewModel
 
 @Composable
 fun ChatScreen(
@@ -64,6 +60,8 @@ fun ChatScreen(
     isGroup: Boolean,
     isBroadcast: Boolean,
     onBack: () -> Unit,
+    uiScaleRevision: Int = 0,
+    playbackViewModel: AudioPlaybackViewModel? = null,
     showAttachModal: Boolean = false,
     onDismissAttachModal: () -> Unit = {},
     onAttachClick: (() -> Unit)? = null,
@@ -78,21 +76,24 @@ fun ChatScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val tabs = remember(isGroup, isBroadcast) { tabsForChat(isGroup, isBroadcast) }
+    val useGroupPager = tabs.size > 1
     var selectedTab by remember { mutableStateOf(ChatDetailTab.Chat) }
     val pagerState = rememberPagerState(
         initialPage = tabs.indexOf(ChatDetailTab.Chat).coerceAtLeast(0),
         pageCount = { tabs.size },
     )
-    val listState = rememberLazyListState()
-    val showScrollToBottom by rememberShowChatScrollToBottom(listState)
+    val scrollController = remember { ChatRecyclerController() }
+    val showScrollToBottom by scrollController.showScrollToBottom
     val headerClearance = if (isGroup && !isBroadcast) {
         LabDimens.GroupHeaderClearance + AppInsets.statusBarTop()
     } else {
         AppInsets.statusBarTop() + 52.dp
     }
 
-    LaunchedEffect(selectedTab) {
+    LaunchedEffect(selectedTab, useGroupPager) {
+        if (!useGroupPager) return@LaunchedEffect
         val idx = tabs.indexOf(selectedTab).coerceAtLeast(0)
+        if (pagerState.currentPage == idx) return@LaunchedEffect
         pagerState.animateScrollToPage(idx)
     }
 
@@ -101,7 +102,7 @@ fun ChatScreen(
             context = context,
             chatId = chatId,
             onReply = { dcMsg ->
-                viewModel.messages.find { it.id == dcMsg.id }?.let { viewModel.setReply(it) }
+                viewModel.getChatMessage(dcMsg.id)?.let { viewModel.setReply(it) }
             },
             onEdit = viewModel::beginEdit,
             onDeleted = viewModel::reload,
@@ -113,9 +114,7 @@ fun ChatScreen(
 
     val scrollToMessage: (Int) -> Unit = { msgId ->
         viewModel.jumpToMessage(msgId) { displayIndex ->
-            scope.launch {
-                listState.scrollMaybeSmoothToDisplayIndex(displayIndex)
-            }
+            scrollController.scrollMaybeSmoothToDisplayIndex(displayIndex)
         }
     }
 
@@ -131,31 +130,38 @@ fun ChatScreen(
             .background(LabColors.Black)
             .onGloballyPositioned { composerChrome.onRootPositioned(it) },
     ) {
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxSize(),
-            userScrollEnabled = false,
-        ) { page ->
-            when (tabs[page]) {
-                ChatDetailTab.Search -> ChatTabPlaceholder("Search — coming soon")
-                ChatDetailTab.Activity -> ChatTabPlaceholder("Activity — coming soon")
-                ChatDetailTab.Chat -> ChatFeedPage(
+        if (useGroupPager) {
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize(),
+                userScrollEnabled = false,
+            ) { page ->
+                ChatTabContent(
+                    tab = tabs[page],
                     viewModel = viewModel,
-                    listState = listState,
+                    scrollController = scrollController,
                     headerClearance = headerClearance,
                     feedBottomPadding = composerChrome.feedBottomPadding,
                     hazeState = hazeState,
+                    uiScaleRevision = uiScaleRevision,
+                    playbackViewModel = playbackViewModel,
+                    chatId = chatId,
                     onOpenMessageOverlay = openMessageOverlay,
                     onScrollToMessage = scrollToMessage,
                 )
-                ChatDetailTab.Apps,
-                ChatDetailTab.Files,
-                -> ChatTabPlaceholder("Media tab") {
-                    AppNav.openAllMedia(context, chatId)
-                }
-                ChatDetailTab.Tasks -> ChatTabPlaceholder("Tasks — coming soon")
-                ChatDetailTab.Docs -> ChatTabPlaceholder("Docs — coming soon")
             }
+        } else {
+            ChatFeedPage(
+                viewModel = viewModel,
+                scrollController = scrollController,
+                headerClearance = headerClearance,
+                feedBottomPadding = composerChrome.feedBottomPadding,
+                hazeState = hazeState,
+                uiScaleRevision = uiScaleRevision,
+                playbackViewModel = playbackViewModel,
+                onOpenMessageOverlay = openMessageOverlay,
+                onScrollToMessage = scrollToMessage,
+            )
         }
 
         if (selectedTab == ChatDetailTab.Chat) {
@@ -209,12 +215,12 @@ fun ChatScreen(
                 contentDescription = stringResource(R.string.menu_scroll_to_bottom),
                 hazeState = hazeState,
                 onClick = {
-                    scope.launch {
-                        listState.scrollToChatBottom(
-                            animated = listState.firstVisibleItemIndex < 50,
-                        )
-                        viewModel.onScrolledToBottom()
-                    }
+                    scrollController.scrollToBottom(
+                        animated = (scrollController.recyclerView?.layoutManager as? androidx.recyclerview.widget.LinearLayoutManager)
+                            ?.findFirstVisibleItemPosition()
+                            ?.let { it < 50 } == true,
+                    )
+                    viewModel.onScrolledToBottom()
                 },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
@@ -289,138 +295,76 @@ fun ChatScreen(
 @Composable
 private fun ChatFeedPage(
     viewModel: ChatViewModel,
-    listState: androidx.compose.foundation.lazy.LazyListState,
+    scrollController: ChatRecyclerController,
     headerClearance: androidx.compose.ui.unit.Dp,
     feedBottomPadding: androidx.compose.ui.unit.Dp,
     hazeState: dev.chrisbanes.haze.HazeState,
+    uiScaleRevision: Int,
+    playbackViewModel: AudioPlaybackViewModel?,
     onOpenMessageOverlay: (ChatMessage, androidx.compose.ui.geometry.Offset) -> Unit,
     onScrollToMessage: (Int) -> Unit,
 ) {
-    val displayItems = remember(viewModel.feedItems) { viewModel.feedItems.asReversed() }
-    var prevMsgCount by remember { mutableIntStateOf(0) }
-
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.isAtChatBottom() }.collect { atBottom ->
-            if (atBottom) viewModel.onScrolledToBottom()
-        }
-    }
-
-    LaunchedEffect(viewModel.reloadGeneration, displayItems.size) {
-        if (displayItems.isEmpty()) {
-            prevMsgCount = 0
-            return@LaunchedEffect
-        }
-
-        val msgCount = displayItems.count { it is FeedItem.Message }
-        val msgDelta = msgCount - prevMsgCount
-
-        when {
-            viewModel.pendingFirstLoadScroll -> {
-                val target = viewModel.initialScrollIndex.coerceIn(0, displayItems.lastIndex)
-                listState.scrollToItem(target)
-                viewModel.highlightScrollIndex.takeIf { it >= 0 }?.let { hi ->
-                    viewModel.messageIdAtDisplayIndex(hi)?.let { id ->
-                        viewModel.highlightMessage(id)
-                    }
+    ChatFeedRecycler(
+        viewModel = viewModel,
+        reloadGeneration = viewModel.reloadGeneration,
+        headerClearance = headerClearance,
+        feedBottomPadding = feedBottomPadding,
+        hazeState = hazeState,
+        scrollController = scrollController,
+        playbackViewModel = playbackViewModel,
+        uiScaleRevision = uiScaleRevision,
+        onOpenMessageOverlay = onOpenMessageOverlay,
+        onScrollToMessage = onScrollToMessage,
+        onFirstLoadScrollDone = {
+            viewModel.highlightScrollIndex.takeIf { it >= 0 }?.let { hi ->
+                viewModel.messageIdAtDisplayIndex(hi)?.let { id ->
+                    viewModel.highlightMessage(id)
                 }
-                viewModel.clearFirstLoadScroll()
-                viewModel.onScrolledToBottom()
             }
-            viewModel.consumeScrollToBottomOnReload() -> {
-                listState.scrollToChatBottom(
-                    animated = listState.firstVisibleItemIndex < 50,
-                )
-                viewModel.onScrolledToBottom()
-            }
-            listState.isAtChatBottom() -> {
-                if (msgDelta > 0) {
-                    listState.scrollToChatBottom(
-                        animated = listState.firstVisibleItemIndex < 50,
-                    )
-                }
-                viewModel.onScrolledToBottom()
-            }
-            msgDelta > 0 -> {
-                viewModel.addUnreadBelow(msgDelta)
-            }
-        }
-        prevMsgCount = msgCount
-    }
-
-    Box(modifier = Modifier.fillMaxSize().hazeSource(state = hazeState)) {
-        LazyColumn(
-            state = listState,
-            reverseLayout = true,
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                top = headerClearance,
-                bottom = feedBottomPadding,
-            ),
-        ) {
-            itemsIndexed(
-                items = displayItems,
-                key = { _, item ->
-                    when (item) {
-                        is FeedItem.DayMarker -> "day-${item.label}"
-                        is FeedItem.Message -> "msg-${item.message.id}"
-                    }
-                },
-            ) { _, item ->
-                ChatFeedItem(
-                    item = item,
-                    viewModel = viewModel,
-                    onQuoteClick = onScrollToMessage,
-                    onOpenMessageOverlay = onOpenMessageOverlay,
-                )
-            }
-        }
-    }
+            viewModel.clearFirstLoadScroll()
+        },
+        onScrolledToBottom = viewModel::onScrolledToBottom,
+        onUnreadBelow = viewModel::addUnreadBelow,
+        consumeScrollToBottomOnReload = viewModel::consumeScrollToBottomOnReload,
+    )
 }
 
 @Composable
-private fun ChatFeedItem(
-    item: FeedItem,
+private fun ChatTabContent(
+    tab: ChatDetailTab,
     viewModel: ChatViewModel,
-    onQuoteClick: (Int) -> Unit,
+    scrollController: ChatRecyclerController,
+    headerClearance: androidx.compose.ui.unit.Dp,
+    feedBottomPadding: androidx.compose.ui.unit.Dp,
+    hazeState: dev.chrisbanes.haze.HazeState,
+    uiScaleRevision: Int,
+    playbackViewModel: AudioPlaybackViewModel?,
+    chatId: Int,
     onOpenMessageOverlay: (ChatMessage, androidx.compose.ui.geometry.Offset) -> Unit,
+    onScrollToMessage: (Int) -> Unit,
 ) {
-    when (item) {
-        is FeedItem.DayMarker -> {
-            Text(
-                text = item.label,
-                color = LabColors.White33,
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
-                textAlign = TextAlign.Center,
-            )
+    val context = LocalContext.current
+    when (tab) {
+        ChatDetailTab.Search -> ChatTabPlaceholder("Search — coming soon")
+        ChatDetailTab.Activity -> ChatTabPlaceholder("Activity — coming soon")
+        ChatDetailTab.Chat -> ChatFeedPage(
+            viewModel = viewModel,
+            scrollController = scrollController,
+            headerClearance = headerClearance,
+            feedBottomPadding = feedBottomPadding,
+            hazeState = hazeState,
+            uiScaleRevision = uiScaleRevision,
+            playbackViewModel = playbackViewModel,
+            onOpenMessageOverlay = onOpenMessageOverlay,
+            onScrollToMessage = onScrollToMessage,
+        )
+        ChatDetailTab.Apps,
+        ChatDetailTab.Files,
+        -> ChatTabPlaceholder("Media tab") {
+            AppNav.openAllMedia(context, chatId)
         }
-        is FeedItem.Message -> {
-            val msg = item.message
-            val pulseEmoji = viewModel.reactionPulse?.takeIf { it.msgId == msg.id }?.emoji
-            if (msg.isOutgoing) {
-                OutgoingMessageRow(
-                    message = msg,
-                    layout = item.layout,
-                    highlighted = viewModel.highlightId == msg.id,
-                    reactionReloadKey = viewModel.reloadGeneration,
-                    pulseEmoji = pulseEmoji,
-                    onSwipeReply = { viewModel.setReply(msg) },
-                    onClick = { tap -> onOpenMessageOverlay(msg, tap) },
-                    onQuoteClick = onQuoteClick,
-                )
-            } else {
-                SingleIncomingMessageRow(
-                    message = msg,
-                    layout = item.layout,
-                    highlighted = viewModel.highlightId == msg.id,
-                    reactionReloadKey = viewModel.reloadGeneration,
-                    pulseEmoji = pulseEmoji,
-                    onSwipeReply = { viewModel.setReply(msg) },
-                    onClick = { tap -> onOpenMessageOverlay(msg, tap) },
-                    onQuoteClick = onQuoteClick,
-                )
-            }
-        }
+        ChatDetailTab.Tasks -> ChatTabPlaceholder("Tasks — coming soon")
+        ChatDetailTab.Docs -> ChatTabPlaceholder("Docs — coming soon")
     }
 }
 

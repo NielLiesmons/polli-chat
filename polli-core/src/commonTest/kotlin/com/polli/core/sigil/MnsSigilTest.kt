@@ -1,5 +1,6 @@
 package com.polli.core.sigil
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -127,5 +128,44 @@ class MnsSigilTest {
         assertTrue(g[5][0])
         assertFalse(g[5][1])
         assertTrue(MnsSigil.isHorizontallyMirrored(bits))
+    }
+
+    @Test
+    fun encodeDecodeRoundTrip() {
+        val samples = listOf(
+            0uL,
+            1uL,
+            0x0A1B2C3D4EuL,
+            MnsSigil.MAX_VALUE,
+        ) + List(20) { MnsSigil.randomValue(it.toULong()) }
+        for (v in samples) {
+            val name = MnsSigil.encodeName(v)
+            assertEquals(v, MnsSigil.decodeName(name))
+        }
+    }
+
+    @Test
+    fun decodeAcceptsChatmailLocalPart() {
+        val v = 0x00012_3456uL
+        val name = MnsSigil.encodeName(v)
+        assertEquals(v, MnsSigil.decodeName("$name@nine.testrun.org"))
+    }
+
+    @Test
+    fun valueFromIdentityIsStable() {
+        val addr = "dozizody-dozizody@example.org"
+        val a = MnsSigil.valueFromIdentity(addr)
+        val b = MnsSigil.valueFromIdentity(addr)
+        assertEquals(a, b)
+        assertEquals(MnsSigil.encodeName(0uL), MnsSigil.sigilName(addr))
+    }
+
+    @Test
+    fun valueFromIdentityHashesUnknownAddresses() {
+        val a = MnsSigil.valueFromIdentity("alice@unknown.test")
+        val b = MnsSigil.valueFromIdentity("bob@unknown.test")
+        assertTrue(a <= MnsSigil.MAX_VALUE)
+        assertTrue(b <= MnsSigil.MAX_VALUE)
+        assertTrue(a != b)
     }
 }

@@ -48,6 +48,7 @@ import org.thoughtcrime.securesms.util.Prefs;
 import org.thoughtcrime.securesms.util.SignalProtocolLoggerProvider;
 import org.thoughtcrime.securesms.util.Util;
 import org.thoughtcrime.securesms.webxdc.WebxdcGarbageCollectionWorker;
+import com.polli.ui.theme.PolliUiContextKt;
 
 public class ApplicationContext extends MultiDexApplication {
   private static final String TAG = "ApplicationContext";
@@ -69,6 +70,11 @@ public class ApplicationContext extends MultiDexApplication {
 
   public static ApplicationContext getInstance(@NonNull Context context) {
     return (ApplicationContext) context.getApplicationContext();
+  }
+
+  @Override
+  protected void attachBaseContext(Context base) {
+    super.attachBaseContext(PolliUiContextKt.wrapPolliUiContext(base));
   }
 
   private static void ensureInitialized() {

@@ -13,10 +13,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabDimens
 import java.io.File
@@ -54,6 +56,13 @@ fun BubbleImageFrame(
     val frameHeight = remember(contentWidth, ratio) {
         bubbleImageHeight(contentWidth, ratio)
     }
+    val density = LocalDensity.current
+    val targetWidthPx = remember(contentWidth, density) {
+        with(density) { contentWidth.roundToPx() }
+    }
+    val targetHeightPx = remember(frameHeight, density) {
+        with(density) { frameHeight.roundToPx() }
+    }
 
     Box(
         modifier = modifier
@@ -76,9 +85,13 @@ fun BubbleImageFrame(
                 }
             },
             update = { view ->
+                if (view.tag == model) return@AndroidView
+                view.tag = model
                 Glide.with(view)
                     .load(model)
                     .fitCenter()
+                    .override(targetWidthPx.coerceAtLeast(1), targetHeightPx.coerceAtLeast(1))
+                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
                     .into(view)
             },
         )
@@ -97,6 +110,13 @@ fun BubbleVideoThumbnailFrame(
         .coerceIn(MIN_ASPECT_RATIO, MAX_ASPECT_RATIO)
     val frameHeight = remember(contentWidth, ratio) {
         bubbleImageHeight(contentWidth, ratio)
+    }
+    val density = LocalDensity.current
+    val targetWidthPx = remember(contentWidth, density) {
+        with(density) { contentWidth.roundToPx() }
+    }
+    val targetHeightPx = remember(frameHeight, density) {
+        with(density) { frameHeight.roundToPx() }
     }
 
     Box(
@@ -119,11 +139,15 @@ fun BubbleVideoThumbnailFrame(
                 }
             },
             update = { view ->
+                if (view.tag == file) return@AndroidView
+                view.tag = file
                 Glide.with(view)
                     .asBitmap()
                     .load(file)
                     .frame(1_000_000)
                     .fitCenter()
+                    .override(targetWidthPx.coerceAtLeast(1), targetHeightPx.coerceAtLeast(1))
+                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
                     .into(view)
             },
         )

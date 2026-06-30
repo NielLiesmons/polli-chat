@@ -510,7 +510,7 @@ private fun ChannelStoriesRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = LabDimens.StoriesRowPadding)
+            .padding(start = LabDimens.StoriesRowPaddingStart, end = LabDimens.StoriesRowPadding)
             .horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(LabDimens.StoryRingSpacing),
     ) {
@@ -570,6 +570,7 @@ private fun TabRow(active: HomeTab, onSelect: (HomeTab) -> Unit) {
             .fillMaxWidth()
             .padding(horizontal = LabDimens.HomeBarPadding),
         horizontalArrangement = Arrangement.spacedBy(LabDimens.TabGap),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         TabPill("Spaces", active == HomeTab.Spaces) { onSelect(HomeTab.Spaces) }
         TabPill("Mail", active == HomeTab.Mail) { onSelect(HomeTab.Mail) }
@@ -579,10 +580,10 @@ private fun TabRow(active: HomeTab, onSelect: (HomeTab) -> Unit) {
 
 @Composable
 private fun TabPill(label: String, selected: Boolean, onClick: () -> Unit) {
-    val height = if (selected) LabDimens.TabButtonHeight else 28.dp
-    val hPadding = if (selected) LabDimens.TabButtonHPadding else 12.dp
-    val corner = if (selected) 17.dp else 14.dp
-    val fontSize = if (selected) 14.5.sp else 12.5.sp
+    val height = if (selected) LabDimens.TabButtonHeight else LabDimens.TabButtonUnselectedHeight
+    val hPadding = if (selected) LabDimens.TabButtonHPadding else LabDimens.TabButtonUnselectedHPadding
+    val corner = if (selected) 17.dp else LabDimens.TabButtonUnselectedCorner
+    val fontSize = if (selected) 14.5.sp else 13.sp
     val bg = if (selected) {
         accent().gradientBrush(0.66f)
     } else {

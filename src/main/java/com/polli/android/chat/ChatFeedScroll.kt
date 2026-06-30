@@ -53,8 +53,6 @@ suspend fun LazyListState.scrollToChatBottom(animated: Boolean) {
     if (layoutInfo.totalItemsCount == 0) return
     if (animated && firstVisibleItemIndex < SCROLL_ANIMATION_THRESHOLD) {
         animateScrollToItem(0)
-    } else if (firstVisibleItemIndex < SCROLL_ANIMATION_THRESHOLD * 4) {
-        animateScrollToItem(0)
     } else {
         scrollToItem(0)
     }

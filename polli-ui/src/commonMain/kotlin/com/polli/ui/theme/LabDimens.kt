@@ -6,7 +6,8 @@ import androidx.compose.ui.unit.dp
 object LabDimens {
     val AvatarSize = 50.dp
     val HomeBarPadding = 14.dp
-    val StoriesRowPadding = 12.dp // HOME_BAR - 2
+    val StoriesRowPadding = 12.dp // trailing / end inset for the stories row
+    val StoriesRowPaddingStart = 8.dp // HOME_BAR - 6
     val HomeBarHeight = 42.dp
     val HomeProfileSize = 50.dp
     val HomeProfileGap = 14.dp
@@ -28,17 +29,20 @@ object LabDimens {
 
     val TabButtonHeight = 34.dp
     val TabButtonHPadding = 15.dp
+    val TabButtonUnselectedHeight = 30.dp
+    val TabButtonUnselectedHPadding = 13.dp
+    val TabButtonUnselectedCorner = 15.dp
     val TabGap = 8.dp
     val ChatHeaderTabGap = 12.dp
     val TabSectionGap = 14.dp
     val TabContentTopGap = 14.dp
     val TabContentBottomPad = 24.dp
 
-    val StoryRingOuter = 58.dp
+    val StoryRingOuter = 60.dp
     val StoryRingInner = 48.dp
     val StoryRingStroke = 2.dp
-    val StoryRingGap = 3.dp
-    val StoryRingSpacing = 14.dp
+    val StoryRingGap = 4.dp
+    val StoryRingSpacing = 10.dp
     val StoryRowVerticalPadTop = 10.dp
     val StoryRowVerticalPadBottom = 12.dp
     val StoryProgressHeight = 2.dp

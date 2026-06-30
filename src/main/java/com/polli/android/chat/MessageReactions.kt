@@ -23,6 +23,13 @@ object MessageReactions {
         "👍", "❤️", "😂", "😮", "😢", "🙏", "👎", "🎉", "🔥", "💯", "😍", "🤔",
     )
 
+    private const val CACHE_MAX = 80
+    private val summaryCache = object : LinkedHashMap<Int, List<BubbleReaction>>(CACHE_MAX, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, List<BubbleReaction>>?): Boolean {
+            return size > CACHE_MAX
+        }
+    }
+
     fun sendReaction(context: Context, msgId: Int, emoji: String?) {
         val rpc = DcHelper.getRpc(context)
         val accId = DcHelper.getContext(context).accountId
@@ -32,11 +39,29 @@ object MessageReactions {
             } else {
                 rpc.sendReaction(accId, msgId, Collections.singletonList(emoji))
             }
+            invalidateSummary(msgId)
         } catch (_: RpcException) {
         }
     }
 
+    fun invalidateSummary(msgId: Int) {
+        synchronized(summaryCache) {
+            summaryCache.remove(msgId)
+        }
+    }
+
     fun loadReactionSummary(context: Context, msgId: Int): List<BubbleReaction> {
+        synchronized(summaryCache) {
+            summaryCache[msgId]?.let { return it }
+        }
+        val loaded = loadReactionSummaryUncached(context, msgId)
+        synchronized(summaryCache) {
+            summaryCache[msgId] = loaded
+        }
+        return loaded
+    }
+
+    private fun loadReactionSummaryUncached(context: Context, msgId: Int): List<BubbleReaction> {
         return try {
             val dc = DcHelper.getContext(context)
             val rpc = DcHelper.getRpc(context)

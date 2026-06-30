@@ -55,20 +55,30 @@ private fun authorColorSeed(dcContext: DcContext, fromId: Int, authorName: Strin
 
 sealed class FeedItem {
     data class DayMarker(val label: String) : FeedItem()
-    data class Message(val message: ChatMessage, val layout: MessageGroupLayout) : FeedItem()
+    /** Row identity only — grouping is derived per compose from neighbor stubs (DC bind-time pattern). */
+    data class Message(val msgId: Int) : FeedItem()
 }
 
 object MessageLoader {
-    fun loadMessages(dcContext: DcContext, chatId: Int): List<ChatMessage> {
-        val ids = dcContext.getChatMsgs(chatId, 0, 0) ?: return emptyList()
-        val raw = ArrayList<ChatMessage>()
-        for (id in ids) {
-            if (id <= DcMsg.DC_MSG_ID_DAYMARKER) continue
-            val msg = dcContext.getMsg(id)
-            if (!msg.isOk) continue
-            raw.add(fromDcMsg(dcContext, msg))
+    fun stubFromDcMsg(dcContext: DcContext, msg: DcMsg): MessageStub {
+        val fromId = msg.fromId
+        val authorName = when {
+            msg.isOutgoing -> "You"
+            fromId == DcContact.DC_CONTACT_ID_SELF -> "You"
+            else -> dcContext.getContact(fromId).displayName ?: "Unknown"
         }
-        return raw
+        return MessageStub(
+            id = msg.id,
+            timestamp = normalizeTimestamp(msg.timestamp),
+            isOutgoing = msg.isOutgoing,
+            authorId = fromId,
+            authorName = authorName,
+            authorColorSeed = authorColorSeed(dcContext, fromId, authorName),
+            isEdited = msg.isEdited,
+            isInfo = msg.isInfo,
+            hasText = msg.text?.trim().orEmpty().isNotEmpty(),
+            hasAttachment = msg.hasFile(),
+        )
     }
 
     fun fromDcMsg(dcContext: DcContext, msg: DcMsg): ChatMessage {
@@ -128,19 +138,11 @@ object MessageLoader {
         else -> OutgoingState.Sent
     }
 
-    fun buildFeedItems(messages: List<ChatMessage>): List<FeedItem> {
-        val display = messages.filter { !it.isInfo && (it.text.isNotEmpty() || it.hasAttachment) }
-        if (display.isEmpty()) return emptyList()
-
-        val layouts = layoutsForMessages(display)
-        val items = ArrayList<FeedItem>(display.size)
-        for (msg in display) {
-            items.add(
-                FeedItem.Message(
-                    msg,
-                    layouts[msg.id] ?: MessageGroupLayout(),
-                ),
-            )
+    fun buildIdFeed(ids: IntArray): List<FeedItem> {
+        val items = ArrayList<FeedItem>(ids.size)
+        for (id in ids) {
+            if (id <= DcMsg.DC_MSG_ID_DAYMARKER) continue
+            items.add(FeedItem.Message(id))
         }
         return items
     }

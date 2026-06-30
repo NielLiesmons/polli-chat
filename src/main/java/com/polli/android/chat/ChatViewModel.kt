@@ -3,17 +3,20 @@ package com.polli.android.chat
 import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.b44t.messenger.DcContext
 import com.b44t.messenger.DcEvent
 import com.b44t.messenger.DcMsg
-import com.polli.android.chat.MessageLoader.buildFeedItems
-import com.polli.android.chat.MessageLoader.loadMessages
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.thoughtcrime.securesms.connect.DcEventCenter
 import org.thoughtcrime.securesms.connect.DcHelper
 import chat.delta.rpc.RpcException
@@ -27,8 +30,6 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
 
     var chatId by mutableIntStateOf(-1)
         private set
-    var messages by mutableStateOf<List<ChatMessage>>(emptyList())
-        private set
     var feedItems by mutableStateOf<List<FeedItem>>(emptyList())
         private set
     var draft by mutableStateOf("")
@@ -40,9 +41,15 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
     var highlightId by mutableIntStateOf(-1)
         private set
 
-    /** Bumped on every reload so the feed can preserve scroll or stick to bottom. */
+    /** Bumped on feed structure changes so scroll logic can preserve position or stick to bottom. */
     var reloadGeneration by mutableIntStateOf(0)
         private set
+
+    /** Per-message reaction refresh — avoids reloading the whole feed (DC bumps one row). */
+    val reactionEpoch: SnapshotStateMap<Int, Int> = mutableStateMapOf()
+
+    /** Per-message content refresh (read receipts, delivery, edits). */
+    val messageEpoch: SnapshotStateMap<Int, Int> = mutableStateMapOf()
 
     /** One-shot pop animation target after sending a reaction. */
     var reactionPulse by mutableStateOf<ReactionPulse?>(null)
@@ -64,8 +71,13 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
     var unreadBelowCount by mutableIntStateOf(0)
         private set
 
-    /** Set before [reload] when the user sends — feed should stick to bottom after reload. */
+    /** Set before [scheduleReload] when the user sends — feed should stick to bottom after reload. */
     private var scrollToBottomOnReload = false
+
+    private val store = ChatMessageStore()
+    private var dcContext: DcContext? = null
+    private var registered = false
+    private var reloadJob: Job? = null
 
     fun consumeScrollToBottomOnReload(): Boolean {
         if (!scrollToBottomOnReload) return false
@@ -85,8 +97,33 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
         clearUnreadBelow()
     }
 
-    private var dcContext: DcContext? = null
-    private var registered = false
+    fun getChatMessage(msgId: Int): ChatMessage? {
+        val dc = dcContext ?: return null
+        return store.getMessage(dc, msgId)
+    }
+
+    fun messageIds(): IntArray = store.messageIds()
+
+    fun displayIndexForMsgId(msgId: Int): Int {
+        val ids = messageIds().filter { it > DcMsg.DC_MSG_ID_DAYMARKER }
+        val chron = ids.indexOf(msgId)
+        return if (chron < 0) -1 else ids.size - 1 - chron
+    }
+
+    /**
+     * Polli grouping for one row — loads at most three stubs (self + neighbors), cached after first read.
+     */
+    fun layoutForMessage(
+        msgId: Int,
+        olderMsgId: Int?,
+        newerMsgId: Int?,
+    ): MessageGroupLayout {
+        val dc = dcContext ?: return MessageGroupLayout()
+        val self = store.getStub(dc, msgId) ?: return MessageGroupLayout()
+        val olderStub = olderMsgId?.let { store.getStub(dc, it) }
+        val newerStub = newerMsgId?.let { store.getStub(dc, it) }
+        return layoutBetweenNeighbors(olderStub, self, newerStub)
+    }
 
     fun bind(
         chatId: Int,
@@ -110,8 +147,15 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
         highlightScrollIndex = startingPosition.takeIf { it >= 0 } ?: -1
         pendingFirstLoadScroll = true
         registerEvents()
-        reload(markRead = !fromArchived)
+        val dc = dcContext!!
+        store.reset()
+        feedItems = store.syncFeedIds(dc, chatId) ?: store.feedFromCurrentIds()
+        store.preloadStubsAroundDisplayIndex(dc, initialScrollIndex)
+        reloadGeneration++
+        scheduleReload(markRead = !fromArchived)
     }
+
+    fun reactionEpochFor(msgId: Int): Int = reactionEpoch[msgId] ?: 0
 
     fun clearFirstLoadScroll() {
         pendingFirstLoadScroll = false
@@ -129,7 +173,10 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
         if (registered) return
         val center = DcHelper.getEventCenter(getApplication())
         center.addMultiAccountObserver(DcContext.DC_EVENT_INCOMING_MSG, this)
+        center.addMultiAccountObserver(DcContext.DC_EVENT_MSGS_CHANGED, this)
         center.addMultiAccountObserver(DcContext.DC_EVENT_MSG_READ, this)
+        center.addMultiAccountObserver(DcContext.DC_EVENT_MSG_DELIVERED, this)
+        center.addMultiAccountObserver(DcContext.DC_EVENT_MSG_FAILED, this)
         center.addMultiAccountObserver(DcContext.DC_EVENT_CHAT_MODIFIED, this)
         center.addMultiAccountObserver(DcContext.DC_EVENT_CONTACTS_CHANGED, this)
         center.addMultiAccountObserver(DcContext.DC_EVENT_CHAT_EPHEMERAL_TIMER_MODIFIED, this)
@@ -144,41 +191,101 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
     }
 
     override fun handleEvent(event: DcEvent) {
-        val dc = dcContext ?: return
         when (event.id) {
-            DcContext.DC_EVENT_INCOMING_MSG,
+            DcContext.DC_EVENT_INCOMING_MSG -> {
+                if (event.data1Int == chatId) {
+                    scheduleAppend(event.data2Int, markRead = true)
+                }
+            }
+            DcContext.DC_EVENT_MSGS_CHANGED -> {
+                if (event.data1Int == 0 || event.data1Int == chatId) {
+                    scheduleReload(markRead = false)
+                }
+            }
             DcContext.DC_EVENT_MSG_READ,
+            DcContext.DC_EVENT_MSG_DELIVERED,
+            DcContext.DC_EVENT_MSG_FAILED,
             -> {
-                val msg = dc.getMsg(event.data1Int)
-                if (msg.isOk && msg.chatId == chatId) {
-                    viewModelScope.launch { reload(markRead = true) }
+                if (event.data1Int == chatId) {
+                    invalidateMessage(event.data2Int)
                 }
             }
             DcContext.DC_EVENT_CHAT_MODIFIED -> {
                 if (event.data1Int == chatId) {
-                    viewModelScope.launch { reload(markRead = false) }
+                    scheduleReload(markRead = false)
                 }
             }
             DcContext.DC_EVENT_CONTACTS_CHANGED,
             DcContext.DC_EVENT_CHAT_EPHEMERAL_TIMER_MODIFIED,
-            -> viewModelScope.launch { reload(markRead = false) }
+            -> scheduleReload(markRead = false)
             DcContext.DC_EVENT_REACTIONS_CHANGED -> {
                 if (event.data1Int == chatId) {
-                    viewModelScope.launch { reload(markRead = false) }
+                    bumpReactionEpoch(event.data2Int)
                 }
             }
         }
     }
 
     fun reload(markRead: Boolean = true) {
-        val dc = dcContext ?: return
-        if (markRead) {
-            dc.marknoticedChat(chatId)
+        scheduleReload(markRead)
+    }
+
+    private fun scheduleReload(markRead: Boolean) {
+        reloadJob?.cancel()
+        reloadJob = viewModelScope.launch {
+            val dc = dcContext ?: return@launch
+            if (markRead) {
+                withContext(Dispatchers.Main.immediate) {
+                    dc.marknoticedChat(chatId)
+                }
+            }
+            if (feedItems.isEmpty()) {
+                feedItems = store.syncFeedIds(dc, chatId) ?: store.feedFromCurrentIds()
+                reloadGeneration++
+            } else {
+                store.syncFeedIds(dc, chatId)?.let { items ->
+                    feedItems = items
+                    reloadGeneration++
+                }
+            }
+            withContext(Dispatchers.Default) {
+                store.preloadStubs(dc)
+            }
         }
-        val loaded = loadMessages(dc, chatId)
-        messages = loaded
-        feedItems = buildFeedItems(loaded)
-        reloadGeneration++
+    }
+
+    private fun scheduleAppend(msgId: Int, markRead: Boolean) {
+        reloadJob?.cancel()
+        reloadJob = viewModelScope.launch {
+            val dc = dcContext ?: return@launch
+            if (markRead) {
+                withContext(Dispatchers.Main.immediate) {
+                    dc.marknoticedChat(chatId)
+                }
+            }
+            val items = withContext(Dispatchers.Default) {
+                store.tryAppendIncoming(dc, chatId, msgId)
+                    ?: store.syncFeedIds(dc, chatId)
+            }
+            if (items != null) {
+                feedItems = items
+                reloadGeneration++
+            }
+            withContext(Dispatchers.Default) {
+                store.preloadStubs(dc)
+            }
+        }
+    }
+
+    private fun invalidateMessage(msgId: Int) {
+        store.invalidateMessage(msgId)
+        store.invalidateStub(msgId)
+        messageEpoch[msgId] = (messageEpoch[msgId] ?: 0) + 1
+    }
+
+    private     fun bumpReactionEpoch(msgId: Int) {
+        MessageReactions.invalidateSummary(msgId)
+        reactionEpoch[msgId] = (reactionEpoch[msgId] ?: 0) + 1
     }
 
     fun updateDraft(text: String) {
@@ -220,7 +327,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
         val app = getApplication<Application>()
         MessageReactions.sendReaction(app, msgId, emoji)
         reactionPulse = ReactionPulse(msgId, emoji)
-        reload(markRead = false)
+        bumpReactionEpoch(msgId)
         viewModelScope.launch {
             delay(700)
             if (reactionPulse?.msgId == msgId && reactionPulse?.emoji == emoji) {
@@ -246,21 +353,17 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
     }
 
     fun jumpToMessage(msgId: Int, onScroll: (displayIndex: Int) -> Unit) {
-        val feedIndex = feedItems.indexOfFirst { item ->
-            item is FeedItem.Message && item.message.id == msgId
-        }
-        if (feedIndex >= 0) {
-            onScroll(displayIndexForFeedIndex(feedIndex, feedItems.size))
+        val idx = displayIndexForMsgId(msgId)
+        if (idx >= 0) {
+            onScroll(idx)
             highlightMessage(msgId)
         }
     }
 
     fun messageIdAtDisplayIndex(displayIndex: Int): Int? {
-        val feedIndex = feedItems.size - 1 - displayIndex
-        return when (val item = feedItems.getOrNull(feedIndex)) {
-            is FeedItem.Message -> item.message.id
-            else -> null
-        }
+        val ids = messageIds().filter { it > DcMsg.DC_MSG_ID_DAYMARKER }
+        val chron = ids.size - 1 - displayIndex
+        return ids.getOrNull(chron)
     }
 
     fun send() {
@@ -278,13 +381,13 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
         replyTo = null
         dc.setDraft(chatId, null)
         scrollToBottomOnReload = true
-        reload()
+        scheduleReload(markRead = true)
     }
 
     fun deleteMessage(msgId: Int) {
         dcContext?.deleteMsgs(intArrayOf(msgId))
         overlayAnchor = null
-        reload()
+        scheduleReload(markRead = false)
     }
 
     override fun onCleared() {

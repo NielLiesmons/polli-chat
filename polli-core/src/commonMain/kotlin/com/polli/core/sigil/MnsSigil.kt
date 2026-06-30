@@ -61,6 +61,49 @@ object MnsSigil {
         return "${prefix(p1)}${suffix(s1)}-${prefix(p2)}${suffix(s2)}"
     }
 
+    /** Inverse of [encodeName]; accepts the bare MNS name or chatmail local-part. */
+    fun decodeName(name: String): ULong? {
+        val normalized = localPartFromAddress(name)
+        if (normalized.isEmpty()) return null
+        val dash = normalized.indexOf('-')
+        if (dash <= 0 || dash >= normalized.lastIndex) return null
+        val left = normalized.substring(0, dash)
+        val right = normalized.substring(dash + 1)
+        if (left.length != TOKEN_LEN || right.length != TOKEN_LEN) return null
+        val p1 = prefixIndex(left.substring(0, TOKEN_LEN / 2)) ?: return null
+        val s1 = suffixIndex(left.substring(TOKEN_LEN / 2)) ?: return null
+        val p2 = prefixIndex(right.substring(0, TOKEN_LEN / 2)) ?: return null
+        val s2 = suffixIndex(right.substring(TOKEN_LEN / 2)) ?: return null
+        return (
+            (p1.toULong() shl 30) or
+                (s1.toULong() shl 20) or
+                (p2.toULong() shl 10) or
+                s2.toULong()
+            ) and MAX_VALUE
+    }
+
+    /** Local-part of a chatmail address, or the whole string when no `@` is present. */
+    fun localPartFromAddress(address: String): String {
+        val trimmed = address.trim().lowercase()
+        val at = trimmed.indexOf('@')
+        return if (at >= 0) trimmed.substring(0, at) else trimmed
+    }
+
+    /**
+     * Deterministic 40-bit sigil for a chatmail address or MNS domain name.
+     * MNS names decode directly; everything else hashes to a stable sigil.
+     */
+    fun valueFromIdentity(identity: String): ULong {
+        val normalized = identity.trim().lowercase()
+        if (normalized.isEmpty()) return 0uL
+        decodeName(localPartFromAddress(normalized))?.let { return it }
+        decodeName(normalized)?.let { return it }
+        return hashToValue(normalized)
+    }
+
+    /** Human-readable MNS domain name for an address or raw identity string. */
+    fun sigilName(identity: String): String = encodeName(valueFromIdentity(identity))
+
     fun formatHex(value: ULong): String =
         "0x${(value and MAX_VALUE).toString(16).uppercase().padStart(10, '0')}"
 
@@ -76,11 +119,38 @@ object MnsSigil {
         return bits and MAX_VALUE
     }
 
+    private const val TOKEN_LEN = 8
+
+    private fun hashToValue(input: String): ULong {
+        var seed = 0uL
+        for (ch in input) {
+            seed = seed xor (ch.code.toULong() and 0xFFuL)
+            seed = seed * 0x9E37_79B9_7F4A_7C15uL
+            seed = seed xor (seed shr 33)
+        }
+        return randomValue(seed)
+    }
+
     private fun prefix(index: Int): String =
         RAW_PREFIX[index / 4] + PREFIX_VOWELS[index % 4]
 
     private fun suffix(index: Int): String =
         RAW_SUFFIX[index / 4] + SUFFIX_VOWELS[index % 4]
+
+    private fun prefixIndex(token: String): Int? = prefixByToken[token]
+    private fun suffixIndex(token: String): Int? = suffixByToken[token]
+
+    private val prefixByToken: Map<String, Int> by lazy {
+        buildMap(1024) {
+            for (i in 0 until 1024) put(prefix(i), i)
+        }
+    }
+
+    private val suffixByToken: Map<String, Int> by lazy {
+        buildMap(1024) {
+            for (i in 0 until 1024) put(suffix(i), i)
+        }
+    }
 
     private val PREFIX_VOWELS = charArrayOf('i', 'a', 'o', 'u')
     private val SUFFIX_VOWELS = charArrayOf('y', 'a', 'o', 'u')
