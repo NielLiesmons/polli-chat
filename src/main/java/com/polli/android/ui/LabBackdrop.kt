@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabDimens
@@ -52,6 +53,20 @@ fun polliSearchPanelHazeStyle(tint: Color = LabColors.Gray): HazeStyle = HazeSty
     noiseFactor = HazeDefaults.noiseFactor,
 )
 
+/**
+ * Modal sheet frost — matches zapstore AppModal (gray66 + ~14px backdrop blur).
+ * High tint opacity so content does not bleed through when blur is unavailable.
+ */
+fun polliModalSheetHazeStyle(tint: Color = LabColors.Gray66): HazeStyle = HazeStyle(
+    backgroundColor = tint.copy(alpha = 0.96f),
+    tints = listOf(
+        HazeTint(Color.Black.copy(alpha = 0.35f)),
+        HazeTint(tint.copy(alpha = 0.88f)),
+    ),
+    blurRadius = 28.dp,
+    noiseFactor = HazeDefaults.noiseFactor,
+)
+
 /** Heavier frost for bubble overlay panels so feed text does not bleed through. */
 fun polliOverlayHazeStyle(tint: Color = LabColors.Gray66): HazeStyle = HazeStyle(
     backgroundColor = tint.copy(alpha = 0.94f),
@@ -63,42 +78,26 @@ fun polliOverlayHazeStyle(tint: Color = LabColors.Gray66): HazeStyle = HazeStyle
     noiseFactor = HazeDefaults.noiseFactor,
 )
 
-/** Light blur on scrims so content behind modals/search dimmers stays legible but frosted. */
-fun polliScrimHazeStyle(): HazeStyle = HazeStyle(
-    backgroundColor = PolliModalBarrier,
-    tints = listOf(HazeTint(PolliModalBarrier)),
-    blurRadius = 28.dp,
-    noiseFactor = HazeDefaults.noiseFactor,
-)
 
 @Composable
 fun rememberPolliHazeState(): HazeState = remember { HazeState() }
 
 /**
- * Full-screen tap target behind sheets / expanded search — blurred when [hazeState] is wired
- * to a [dev.chrisbanes.haze.hazeSource] on the screen content.
+ * Full-screen tap target behind sheets / expanded search.
+ *
+ * Flat dim only — blur is applied on frosted chrome surfaces ([FrostedChromeSurface]),
+ * never on the scrim. Matches zapstore: barrier is ~65% black, sheet gets backdrop blur.
  */
-@OptIn(ExperimentalHazeApi::class)
 @Composable
 fun PolliScreenScrim(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
-    hazeState: HazeState? = null,
 ) {
     val interaction = remember { MutableInteractionSource() }
     Box(
         modifier = modifier
             .fillMaxSize()
-            .then(
-                if (hazeState != null) {
-                    Modifier.hazeEffect(state = hazeState, style = polliScrimHazeStyle()) {
-                        inputScale = HazeInputScale.Auto
-                        backgroundColor = PolliModalBarrier
-                    }
-                } else {
-                    Modifier.background(PolliModalBarrier)
-                },
-            )
+            .background(PolliModalBarrier)
             .clickable(
                 interactionSource = interaction,
                 indication = null,
@@ -122,6 +121,7 @@ fun FrostedChromeSurface(
     val frostTint = style.backgroundColor
     val chromeModifier = modifier
         .clip(shape)
+        .graphicsLayer { clip = true }
         .border(LabDimens.ShellBorderWidth, borderColor, shape)
         .then(
             if (hazeState != null) {
@@ -130,7 +130,7 @@ fun FrostedChromeSurface(
                     backgroundColor = frostTint
                 }
             } else {
-                Modifier.background(tint)
+                Modifier.background(frostTint)
             },
         )
     Box(modifier = chromeModifier, content = content)

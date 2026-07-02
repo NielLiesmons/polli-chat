@@ -30,7 +30,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
-import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -73,10 +72,10 @@ fun BubbleSwiper(
     var contentCoords by remember { mutableStateOf<LayoutCoordinates?>(null) }
     val scope = rememberCoroutineScope()
 
-    fun currentTapInRoot(local: Offset): Offset {
+    fun currentTapInWindow(local: Offset): Offset {
         val coords = contentCoords
         if (coords == null || !coords.isAttached) return Offset.Zero
-        return coords.localToRoot(local)
+        return coords.localToWindow(local)
     }
 
     val settleTarget = if (dragging || popping) dragX else 0f
@@ -166,7 +165,7 @@ fun BubbleSwiper(
                                         abs(dx) < TAP_SLOP_PX &&
                                         abs(dy) < TAP_SLOP_PX
                                     ) {
-                                        scope.launch { onTap(currentTapInRoot(change.position)) }
+                                        scope.launch { onTap(currentTapInWindow(change.position)) }
                                     }
                                     scope.launch { settle() }
                                 }

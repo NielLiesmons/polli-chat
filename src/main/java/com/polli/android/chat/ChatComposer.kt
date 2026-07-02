@@ -37,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -84,6 +85,7 @@ private const val VOICE_CANCEL_DRAG_PX = 80f
 private const val VOICE_LOCK_DRAG_PX = 120f
 private const val VOICE_MIN_MS = 1000L
 private const val VOICE_MIN_BYTES = 800L
+private const val COMPOSER_SCROLL_FADE_THRESHOLD = 4
 private val ComposerShellBg = LabColors.Gray66
 private val ComposerShellBorder = LabColors.ShellBorder
 
@@ -126,7 +128,7 @@ fun ChatComposerDock(
     val hasQuote = replyQuote != null
     val flattenTop = hasQuote || hasPendingAttachment || isMultiline || isTall
     val showSend = value.trim().isNotEmpty() || hasPendingAttachment
-    val composerRowExpanded = isMultiline || isTall || hasQuote
+    val composerRowExpanded = isMultiline || isTall
     val composerRowAlign = if (composerRowExpanded) Alignment.Bottom else Alignment.CenterVertically
     val composerFieldAlign = if (composerRowExpanded) Alignment.BottomStart else Alignment.CenterStart
     val pillRadius = LabDimens.ChatComposerMinHeight / 2
@@ -208,7 +210,15 @@ fun ChatComposerDock(
         dragY = 0f
     }
     val scrollState = rememberScrollState()
-    val showTextFade = scrollState.maxValue > 0
+    val fadeTop by remember {
+        derivedStateOf { scrollState.value > COMPOSER_SCROLL_FADE_THRESHOLD }
+    }
+    val fadeBottom by remember {
+        derivedStateOf {
+            scrollState.maxValue > 0 &&
+                scrollState.value < scrollState.maxValue - COMPOSER_SCROLL_FADE_THRESHOLD
+        }
+    }
 
     LaunchedEffect(voiceMode) {
         if (voiceMode == VoiceRecordMode.Idle) return@LaunchedEffect
@@ -323,7 +333,7 @@ fun ChatComposerDock(
                                     top = if (composerRowExpanded) 2.dp else 0.dp,
                                     bottom = if (composerRowExpanded) 2.dp else 1.dp,
                                 )
-                                .composerTextFadeMask(showTextFade),
+                                .composerTextFadeMask(fadeTop = fadeTop, fadeBottom = fadeBottom),
                             onTextLayout = { layout: TextLayoutResult ->
                                 textFieldHeightPx = layout.size.height.toFloat()
                             },

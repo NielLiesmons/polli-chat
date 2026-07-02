@@ -3,6 +3,8 @@ package com.polli.android.chat
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.LocalContext
+import com.polli.android.permissions.BackgroundSetup
 
 /** One feed row — used from [PolliChatFeedAdapter] bind (DC [ConversationItem.bind] equivalent). */
 @Composable
@@ -24,6 +26,13 @@ fun PolliChatFeedRow(
     }
     val reactionReloadKey = viewModel.reactionEpochFor(msgId)
     val pulseEmoji = viewModel.reactionPulse?.takeIf { it.msgId == msg.id }?.emoji
+    val context = LocalContext.current
+
+    val openOverlay: (Offset) -> Unit = { tap ->
+        if (!BackgroundSetup.tryHandleDeviceMessageTap(context, msg.id)) {
+            onOpenMessageOverlay(msg, tap)
+        }
+    }
 
     if (msg.isOutgoing) {
         OutgoingMessageRow(
@@ -33,7 +42,7 @@ fun PolliChatFeedRow(
             reactionReloadKey = reactionReloadKey,
             pulseEmoji = pulseEmoji,
             onSwipeReply = { viewModel.setReply(msg) },
-            onClick = { tap -> onOpenMessageOverlay(msg, tap) },
+            onClick = openOverlay,
             onQuoteClick = onQuoteClick,
         )
     } else {
@@ -44,7 +53,7 @@ fun PolliChatFeedRow(
             reactionReloadKey = reactionReloadKey,
             pulseEmoji = pulseEmoji,
             onSwipeReply = { viewModel.setReply(msg) },
-            onClick = { tap -> onOpenMessageOverlay(msg, tap) },
+            onClick = openOverlay,
             onQuoteClick = onQuoteClick,
         )
     }

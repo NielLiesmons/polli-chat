@@ -119,7 +119,7 @@ class AccountSetupActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEve
                 DcHelper.getEventCenter(this).endCaptureNextError()
                 Util.runOnMain {
                     progressDialog?.dismiss()
-                    startActivity(AppNav.homeIntent(this))
+                    startActivity(AppNav.homeIntentFromWelcome(this))
                     finishAffinity()
                 }
             } catch (e: RpcException) {

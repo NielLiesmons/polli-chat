@@ -191,6 +191,18 @@
         </activity>
 
         <activity
+            android:name="com.polli.android.notes.NoteEditorActivity"
+            android:theme="@style/Lab.NoActionBar"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"
+            android:parentActivityName="com.polli.android.HomeActivity"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.polli.android.HomeActivity" />
+        </activity>
+
+        <activity
             android:name="com.polli.android.home.ArchiveActivity"
             android:theme="@style/Lab.NoActionBar"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"

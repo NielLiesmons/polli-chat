@@ -23,12 +23,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -46,6 +49,7 @@ import kotlin.math.roundToInt
 
 data class BubbleOverlayAnchor(
     val message: ChatMessage,
+    /** Tap position in window coordinates — see [BubbleSwiper] + [BubbleOverlayHost]. */
     val tapX: Float,
     val tapY: Float,
 )
@@ -88,6 +92,7 @@ fun BubbleOverlayHost(
     val reactionsHeightPx = with(density) { ReactionsPanelHeight.toPx() }
     val gapPx = with(density) { PanelGap.toPx() }
     var actionsHeightPx by remember { mutableFloatStateOf(with(density) { 148.dp.toPx() }) }
+    var hostWindowOrigin by remember { mutableStateOf(Offset.Zero) }
 
     Box(
         modifier = Modifier
@@ -105,24 +110,33 @@ fun BubbleOverlayHost(
                 ),
         )
 
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxSize()
+                .onGloballyPositioned { coords ->
+                    hostWindowOrigin = coords.positionInWindow()
+                },
+        ) {
             val screenW = constraints.maxWidth.toFloat()
             val screenH = constraints.maxHeight.toFloat()
             val safeTop = statusTopPx + edgePadPx
             val safeBottom = screenH - navBottomPx - edgePadPx
 
-            val reactionsCenterY = anchor.tapY.coerceIn(
+            val tapX = anchor.tapX - hostWindowOrigin.x
+            val tapY = anchor.tapY - hostWindowOrigin.y
+
+            val reactionsCenterY = tapY.coerceIn(
                 safeTop + reactionsHeightPx / 2f,
                 safeBottom - reactionsHeightPx / 2f,
             )
             val reactionsTop = reactionsCenterY - reactionsHeightPx / 2f
-            val reactionsLeft = (anchor.tapX - reactionsWidthPx / 2f)
+            val reactionsLeft = (tapX - reactionsWidthPx / 2f)
                 .coerceIn(edgePadPx, (screenW - edgePadPx - reactionsWidthPx).coerceAtLeast(edgePadPx))
 
             val lowerZoneStart = if (keyboardVisible) screenH * 0.5f else screenH * (2f / 3f)
-            val actionsAbove = anchor.tapY >= lowerZoneStart
+            val actionsAbove = tapY >= lowerZoneStart
 
-            val actionsLeft = (anchor.tapX - actionsWidthPx / 2f)
+            val actionsLeft = (tapX - actionsWidthPx / 2f)
                 .coerceIn(edgePadPx, (screenW - edgePadPx - actionsWidthPx).coerceAtLeast(edgePadPx))
             val actionsTop = (
                 if (actionsAbove) {

@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.b44t.messenger.DcContact
 import com.polli.android.BaseComposeActivity
+import com.polli.android.navigation.AppNav
 import com.polli.android.settings.AccentPreset
 import com.polli.android.settings.AppPrefs
 import com.polli.android.ui.UiScaleSlider
@@ -48,7 +49,6 @@ import com.polli.android.ui.LabAvatar
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.AppModal
 import com.polli.android.ui.ModalSectionLabel
-import com.polli.android.ui.PolliScreenScrim
 import com.polli.android.ui.RoundBackButton
 import com.polli.android.ui.ShellDivider
 import com.polli.android.ui.rememberPolliHazeState
@@ -98,16 +98,20 @@ fun ProfilesScreen(
     val hazeState = rememberPolliHazeState()
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .hazeSource(state = hazeState)
-                .verticalScroll(rememberScrollState())
-                .padding(
-                    top = headerTop + 48.dp,
-                    bottom = AppInsets.navigationBarBottom() + 32.dp,
-                ),
+                .hazeSource(state = hazeState),
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(
+                        top = headerTop + 48.dp,
+                        bottom = AppInsets.navigationBarBottom() + 32.dp,
+                    ),
+            ) {
             ShellDivider(screenPad = 0.dp)
             ActiveProfileCard(
                 name = displayName,
@@ -157,6 +161,7 @@ fun ProfilesScreen(
                     Text(name, color = LabColors.White66, style = MaterialTheme.typography.bodyMedium)
                 }
             }
+        }
         }
 
         Box(
@@ -287,6 +292,15 @@ private fun ChatSettingsModal(
             onCheckedChange = {
                 bccSelf = it
                 dc.setConfigInt(DcHelper.CONFIG_BCC_SELF, if (it) 1 else 0)
+            },
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        SettingsRowItem(
+            title = "Notification settings",
+            description = "Sounds, background connection, battery optimization — same as Delta Chat.",
+            onClick = {
+                onDismiss()
+                AppNav.openNotificationSettings(context)
             },
         )
     }

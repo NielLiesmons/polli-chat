@@ -42,7 +42,13 @@ fun MessageBubbleText(
     val context = LocalContext.current
     val bodyColor = if (isOutgoing) LabColors.White else LabColors.White85
     val linkColor = if (isOutgoing) Color.White.copy(alpha = 0.92f) else accent().light
+    val emojiOnly = remember(text) { EmojiText.isEmojiOnlyShortText(text) }
     val parts = remember(text) { MessageLinkify.splitMessageParts(text) }
+
+    val baseFontSize = 14.5.sp
+    val baseLineHeight = 19.5.sp
+    val fontSize = if (emojiOnly) baseFontSize * EmojiText.EMOJI_MAGNIFY else baseFontSize
+    val lineHeight = if (emojiOnly) baseLineHeight * EmojiText.EMOJI_MAGNIFY else baseLineHeight
 
     val annotated = remember(parts, isOutgoing) {
         buildAnnotatedString {
@@ -97,8 +103,8 @@ fun MessageBubbleText(
             },
             style = TextStyle(
                 color = bodyColor,
-                fontSize = 14.5.sp,
-                lineHeight = 19.5.sp,
+                fontSize = fontSize,
+                lineHeight = lineHeight,
                 fontWeight = FontWeight.Normal,
             ),
             onTextLayout = { textLayout = it },

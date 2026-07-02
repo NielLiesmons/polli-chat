@@ -23,6 +23,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabDimens
+import kotlin.math.min
+
+private const val CHAT_FEED_TOP_FADE_MID_ALPHA = 0.85f
+/** Normalized Y within the top fade band where the 85% midpoint sits. */
+private const val CHAT_FEED_TOP_FADE_MID_STOP = 0.5f
+/** Normalized Y where the fade leaves the solid top band. */
+private const val CHAT_FEED_TOP_FADE_SOLID_STOP = 0.22f
 
 /**
  * Alpha masks — polli `.polli-scroll-mask-host` (home / non-chat lists).
@@ -43,7 +50,7 @@ fun Modifier.scrollFadeMask(
  * Three-stop edge gradients over the chat feed (pass-through touches).
  *
  * Bottom fade height = safe area + composer bar + 8dp; midpoint at 75% black, inner edge transparent.
- * Top fade is the reverse (from the top screen edge).
+ * Top fade is the reverse (from the top screen edge), with a held midpoint at 85% black.
  */
 @Composable
 fun ChatFeedEdgeGradients(
@@ -93,11 +100,14 @@ fun ChatFeedEdgeGradients(
 
                 val topPx = with(density) { topFadeHeight.toPx() }
                 if (topPx > 0f) {
+                    val midColor = LabColors.Black.copy(alpha = CHAT_FEED_TOP_FADE_MID_ALPHA)
+                    val solidStop = min(CHAT_FEED_TOP_FADE_SOLID_STOP, CHAT_FEED_TOP_FADE_MID_STOP - 0.05f)
                     drawRect(
                         brush = Brush.verticalGradient(
                             colorStops = arrayOf(
                                 0f to LabColors.Black,
-                                0.5f to LabColors.Black.copy(alpha = 0.75f),
+                                solidStop to LabColors.Black,
+                                CHAT_FEED_TOP_FADE_MID_STOP to midColor,
                                 1f to Color.Transparent,
                             ),
                             startY = 0f,

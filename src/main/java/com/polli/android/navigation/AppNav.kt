@@ -16,6 +16,7 @@ import com.polli.android.onboarding.AccountSetupActivity
 import com.polli.android.onboarding.WelcomeActivity
 import com.polli.android.qr.QrHubActivity
 import com.polli.android.profiles.ProfilesActivity
+import com.polli.android.notes.NoteEditorActivity
 import org.thoughtcrime.securesms.BuildConfig
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.ConversationActivity
@@ -43,6 +44,26 @@ object AppNav {
     @JvmStatic
     fun chatActivityClass(): Class<*> {
         return if (useLabUi()) ChatActivity::class.java else ConversationActivity::class.java
+    }
+
+    @JvmStatic
+    fun homeIntentFromWelcome(context: Context, rawQr: String? = null): Intent {
+        return homeIntent(context).apply {
+            putExtra(ConversationListActivity.FROM_WELCOME, true)
+            rawQr?.let { putExtra(ConversationListActivity.FROM_WELCOME_RAW_QR, it) }
+        }
+    }
+
+    @JvmStatic
+    fun openNotificationSettings(context: Context) {
+        context.startActivity(
+            Intent(context, ApplicationPreferencesActivity::class.java).apply {
+                putExtra(
+                    ApplicationPreferencesActivity.EXTRA_OPEN_CATEGORY,
+                    ApplicationPreferencesActivity.CATEGORY_NOTIFICATIONS,
+                )
+            },
+        )
     }
 
     @JvmStatic
@@ -141,6 +162,18 @@ object AppNav {
     @JvmStatic
     fun openArchive(context: Context) {
         context.startActivity(archiveIntent(context))
+    }
+
+    @JvmStatic
+    fun openNewNote(context: Context) {
+        context.startActivity(NoteEditorActivity.intent(context))
+        context.applyChatOpenTransitionIfLab()
+    }
+
+    @JvmStatic
+    fun openNoteEditor(context: Context, msgId: Int) {
+        context.startActivity(NoteEditorActivity.intent(context, msgId))
+        context.applyChatOpenTransitionIfLab()
     }
 
     @JvmStatic

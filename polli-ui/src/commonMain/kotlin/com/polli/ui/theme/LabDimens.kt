@@ -102,7 +102,7 @@ object LabDimens {
     val ScrollFadeBottom = 14.dp
     val ScrollFadeTop = 40.dp
     /** Extra reach of chat feed top edge gradient below the header zone. */
-    val ChatFeedTopFadeExtend = 32.dp
+    val ChatFeedTopFadeExtend = 16.dp
     /** Extra reach of chat feed bottom edge gradient above the composer. */
     val ChatFeedBottomFadeExtend = 8.dp
     val ChatScrollFadeBottom = 80.dp

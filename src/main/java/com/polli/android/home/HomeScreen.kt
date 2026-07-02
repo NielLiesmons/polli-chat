@@ -86,7 +86,7 @@ import org.thoughtcrime.securesms.R
 private val SearchExpandEasing = CubicBezierEasing(0.22f, 1f, 0.36f, 1f)
 private const val SearchExpandDurationMs = 380
 
-enum class HomeTab { Spaces, Mail, Sigils }
+enum class HomeTab { Spaces, Mail, Notes, Sigils }
 
 @Composable
 fun HomeScreen(
@@ -103,6 +103,8 @@ fun HomeScreen(
     onChannelClick: (Int) -> Unit = {},
     onSearch: (String) -> Unit,
     onArchiveClick: () -> Unit = {},
+    onNewNote: () -> Unit = {},
+    onOpenNote: (Int) -> Unit = {},
 ) {
     var searchPanelOpen by remember { mutableStateOf(false) }
     var storySession by remember { mutableStateOf<StorySession?>(null) }
@@ -270,12 +272,17 @@ fun HomeScreen(
             ) {
                 if (tab == HomeTab.Sigils) {
                     SigilsTab()
+                } else if (tab == HomeTab.Notes) {
+                    NotesTab(
+                        onNewNote = onNewNote,
+                        onOpenNote = onOpenNote,
+                    )
                 } else {
                     val filtered = loadedItems.filter {
                         when (tab) {
                             HomeTab.Spaces -> it.category == ChatCategory.Space
                             HomeTab.Mail -> it.category == ChatCategory.Mail
-                            HomeTab.Sigils -> false
+                            HomeTab.Notes, HomeTab.Sigils -> false
                         }
                     }
                     val showArchiveRow = tab == HomeTab.Mail && archiveLink.visible
@@ -335,10 +342,7 @@ fun HomeScreen(
         }
 
         if (searchExpanded) {
-            PolliScreenScrim(
-                onDismiss = { closeSearchPanel() },
-                hazeState = hazeState,
-            )
+            PolliScreenScrim(onDismiss = { closeSearchPanel() })
         }
 
         HomeExpandableSearchHeader(
@@ -354,6 +358,10 @@ fun HomeScreen(
             onQueryChange = { query = it; onSearch(it) },
             onPlusClick = onPlusClick,
             focusRequester = focusRequester,
+            onCreateNote = {
+                closeSearchPanel()
+                onNewNote()
+            },
         )
 
         storySession?.let { session ->
@@ -382,6 +390,7 @@ private fun HomeExpandableSearchHeader(
     onQueryChange: (String) -> Unit,
     onPlusClick: () -> Unit,
     focusRequester: FocusRequester,
+    onCreateNote: () -> Unit,
 ) {
     val cornerRadius = lerp(LabDimens.HomeBarHeight / 2, 20.dp, expandProgress)
     val profileSlotWidth = lerp(
@@ -494,6 +503,7 @@ private fun HomeExpandableSearchHeader(
                             onQueryChange(term)
                             onOpenSearch()
                         },
+                        onCreateNote = onCreateNote,
                     )
                 }
             }
@@ -568,12 +578,14 @@ private fun TabRow(active: HomeTab, onSelect: (HomeTab) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
             .padding(horizontal = LabDimens.HomeBarPadding),
         horizontalArrangement = Arrangement.spacedBy(LabDimens.TabGap),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TabPill("Spaces", active == HomeTab.Spaces) { onSelect(HomeTab.Spaces) }
         TabPill("Mail", active == HomeTab.Mail) { onSelect(HomeTab.Mail) }
+        TabPill("Notes", active == HomeTab.Notes) { onSelect(HomeTab.Notes) }
         TabPill("Sigils", active == HomeTab.Sigils) { onSelect(HomeTab.Sigils) }
     }
 }

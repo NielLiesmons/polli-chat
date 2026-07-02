@@ -494,11 +494,9 @@ public class InstantOnboardingActivity extends BaseActionBarActivity
     }
 
     Intent intent = AppNav.homeIntent(getApplicationContext());
-    if (!org.thoughtcrime.securesms.BuildConfig.POLLI_UI) {
-      intent.putExtra(ConversationListActivity.FROM_WELCOME, true);
-      if (isContactInvitation || isGroupInvitation) {
-        intent.putExtra(ConversationListActivity.FROM_WELCOME_RAW_QR, rawQrData);
-      }
+    intent.putExtra(ConversationListActivity.FROM_WELCOME, true);
+    if (isContactInvitation || isGroupInvitation) {
+      intent.putExtra(ConversationListActivity.FROM_WELCOME_RAW_QR, rawQrData);
     }
 
     startActivity(intent);

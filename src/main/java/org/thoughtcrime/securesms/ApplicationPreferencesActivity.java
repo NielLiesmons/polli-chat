@@ -57,6 +57,9 @@ import org.thoughtcrime.securesms.util.ViewUtil;
  */
 public class ApplicationPreferencesActivity extends PassphraseRequiredActionBarActivity
     implements SharedPreferences.OnSharedPreferenceChangeListener {
+  public static final String EXTRA_OPEN_CATEGORY = "open_category";
+  public static final String CATEGORY_NOTIFICATIONS = "preference_category_notifications";
+
   private static final String PREFERENCE_CATEGORY_PROFILE = "preference_category_profile";
   private static final String PREFERENCE_CATEGORY_NOTIFICATIONS =
       "preference_category_notifications";
@@ -69,6 +72,8 @@ public class ApplicationPreferencesActivity extends PassphraseRequiredActionBarA
   private static final String PREFERENCE_CATEGORY_HELP = "preference_category_help";
 
   public static final int REQUEST_CODE_SET_BACKGROUND = 11;
+
+  private boolean openedCategoryFromIntent;
 
   @Override
   protected void onCreate(Bundle icicle, boolean ready) {
@@ -83,6 +88,41 @@ public class ApplicationPreferencesActivity extends PassphraseRequiredActionBarA
     if (icicle == null) {
       initFragment(R.id.fragment, new ApplicationPreferenceFragment());
     }
+  }
+
+  @Override
+  protected void onResume() {
+    super.onResume();
+    if (!openedCategoryFromIntent
+        && CATEGORY_NOTIFICATIONS.equals(getIntent().getStringExtra(EXTRA_OPEN_CATEGORY))) {
+      openedCategoryFromIntent = true;
+      openNotificationsCategory();
+    }
+  }
+
+  private void openNotificationsCategory() {
+    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+    Fragment fragment;
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+        || notificationManager.areNotificationsEnabled()) {
+      fragment = new NotificationsPreferenceFragment();
+    } else {
+      new AlertDialog.Builder(this)
+          .setTitle(R.string.notifications_disabled)
+          .setMessage(R.string.perm_explain_access_to_notifications_denied)
+          .setPositiveButton(
+              R.string.perm_continue,
+              (dialog, which) ->
+                  startActivity(Permissions.getApplicationSettingsIntent(this)))
+          .setNegativeButton(android.R.string.cancel, null)
+          .show();
+      return;
+    }
+    getSupportFragmentManager()
+        .beginTransaction()
+        .replace(R.id.fragment, fragment)
+        .addToBackStack(null)
+        .commit();
   }
 
   @Override

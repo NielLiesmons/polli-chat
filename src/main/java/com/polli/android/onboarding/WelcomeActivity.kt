@@ -32,6 +32,7 @@ import com.polli.android.theme.accent
 import com.polli.android.theme.LabTheme
 import com.polli.android.ui.AppInsets
 import com.polli.android.navigation.AppNav
+import com.polli.android.permissions.BackgroundSetup
 import org.thoughtcrime.securesms.WelcomeActivity as DcWelcomeActivity
 import org.thoughtcrime.securesms.qr.RegistrationQrActivity
 
@@ -54,11 +55,13 @@ class WelcomeActivity : BaseComposeActivity() {
                     onCreateAccount = { AppNav.openAccountSetup(this) },
                     onImportQr = { AppNav.openQr(this) },
                     onLinkSecondDevice = {
-                        scanQr.launch(
-                            Intent(this, RegistrationQrActivity::class.java).apply {
-                                putExtra(RegistrationQrActivity.ADD_AS_SECOND_DEVICE_EXTRA, true)
-                            },
-                        )
+                        BackgroundSetup.requestNotificationsThen(this) {
+                            scanQr.launch(
+                                Intent(this, RegistrationQrActivity::class.java).apply {
+                                    putExtra(RegistrationQrActivity.ADD_AS_SECOND_DEVICE_EXTRA, true)
+                                },
+                            )
+                        }
                     },
                     onLegacyWelcome = {
                         startActivity(Intent(this, DcWelcomeActivity::class.java))

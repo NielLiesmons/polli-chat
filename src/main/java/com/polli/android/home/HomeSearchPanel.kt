@@ -104,6 +104,7 @@ internal fun HomeSearchPanelHeightMeasurer(
     HomeSearchPanelBody(
         expandProgress = 1f,
         onRecentSelect = {},
+        onCreateNote = {},
         modifier = Modifier
             .fillMaxWidth()
             .layout { measurable, constraints ->
@@ -124,6 +125,7 @@ internal fun HomeSearchPanelHeightMeasurer(
 internal fun HomeSearchPanelBody(
     expandProgress: Float,
     onRecentSelect: (String) -> Unit,
+    onCreateNote: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val bodyAlpha = ((expandProgress - 0.1f) / 0.45f).coerceIn(0f, 1f)
@@ -169,7 +171,12 @@ internal fun HomeSearchPanelBody(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             createTypes.forEach { option ->
-                HomeCreateTypeCard(option = option)
+                HomeCreateTypeCard(
+                    option = option,
+                    onClick = {
+                        if (option.label == "Note") onCreateNote()
+                    },
+                )
             }
         }
     }
@@ -268,13 +275,13 @@ private fun HomeFavoriteFileCell(file: FavoriteFileDummy) {
 }
 
 @Composable
-private fun HomeCreateTypeCard(option: CreateTypeOption) {
+private fun HomeCreateTypeCard(option: CreateTypeOption, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .width(LabDimens.HomeSearchCreateCardWidth)
             .clip(RoundedCornerShape(14.dp))
             .background(LabColors.White8)
-            .clickable { }
+            .clickable(onClick = onClick)
             .padding(horizontal = 8.dp, vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),

@@ -11,6 +11,7 @@ import androidx.activity.viewModels
 import com.polli.android.home.HomeScreen
 import com.polli.android.navigation.AppNav
 import com.polli.android.onboarding.WelcomeActivity
+import com.polli.android.permissions.BackgroundSetup
 import com.polli.android.profiles.ProfilesActivity
 import com.polli.android.settings.AppPrefs
 import com.polli.android.stories.StoriesViewModel
@@ -29,6 +30,7 @@ class HomeActivity : BaseComposeActivity() {
             finish()
             return
         }
+        BackgroundSetup.handleHomeIntent(this, intent)
         setContent {
             val prefs = remember { AppPrefs(this@HomeActivity) }
             val revision = themeRevision
@@ -45,13 +47,22 @@ class HomeActivity : BaseComposeActivity() {
                     onChatClick = { chatId -> AppNav.openChat(this, chatId) },
                     onSearch = { /* query applied inside HomeScreen local state */ },
                     onArchiveClick = { AppNav.openArchive(this) },
+                    onNewNote = { AppNav.openNewNote(this) },
+                    onOpenNote = { msgId -> AppNav.openNoteEditor(this, msgId) },
                 )
             }
         }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        BackgroundSetup.handleHomeIntent(this, intent)
+    }
+
     override fun onResume() {
         super.onResume()
         themeRevision++
+        BackgroundSetup.updateReminders(this)
     }
 }

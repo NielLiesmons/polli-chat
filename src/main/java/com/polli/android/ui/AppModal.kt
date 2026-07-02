@@ -1,6 +1,7 @@
 package com.polli.android.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -21,9 +22,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -46,11 +49,12 @@ import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabDimens
 import dev.chrisbanes.haze.HazeState
 
+private const val ModalEnterDurationMs = 280
+
 /**
  * Bottom sheet modal — zapstore [AppModal] / webapp modal sheet.
  *
- * Full-screen backdrop is a flat [LabColors.Black16] dimmer (no blur). Frosted blur is
- * scoped to the sheet via [FrostedChromeSurface] + [hazeState] from the screen [hazeSource].
+ * Scrim uses [PolliScreenScrim] (flat dimmer). Frosted blur is on the sheet only.
  */
 @Composable
 fun AppModal(
@@ -81,7 +85,24 @@ fun AppModal(
     val bottomSafe = AppInsets.navigationBarBottom()
     val maxSheetHeight = config.screenHeightDp.dp * maxHeightFraction
     val shape = RoundedCornerShape(LabDimens.ModalRadius)
+    val modalHazeStyle = remember { polliModalSheetHazeStyle() }
     var footerHeightPx by remember { mutableIntStateOf(0) }
+    var sheetHeightPx by remember { mutableIntStateOf(0) }
+
+    var enter by remember { mutableStateOf(false) }
+    LaunchedEffect(sheetHeightPx) {
+        if (sheetHeightPx > 0) enter = true
+    }
+
+    val enterProgress by animateFloatAsState(
+        targetValue = if (enter) 1f else 0f,
+        animationSpec = tween(ModalEnterDurationMs, easing = FastOutSlowInEasing),
+        label = "modalEnter",
+    )
+    // Slide the full sheet height — starts completely below the viewport, ends at rest.
+    val slidePx = sheetHeightPx.toFloat().coerceAtLeast(1f)
+    // Opacity reaches full early so the sheet does not look ghosted while sliding.
+    val sheetAlpha = (enterProgress * 3.5f).coerceIn(0f, 1f)
 
     BackHandler(onBack = onDismiss)
 
@@ -90,7 +111,13 @@ fun AppModal(
             .fillMaxSize()
             .zIndex(300f),
     ) {
-        ModalBackdrop(onDismiss = onDismiss)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer { alpha = enterProgress },
+        ) {
+            PolliScreenScrim(onDismiss = onDismiss)
+        }
 
         Box(
             modifier = Modifier
@@ -102,7 +129,12 @@ fun AppModal(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = LabDimens.ModalScreenInset)
-                    .padding(bottom = bottomSafe),
+                    .padding(bottom = bottomSafe)
+                    .onSizeChanged { sheetHeightPx = it.height }
+                    .graphicsLayer {
+                        alpha = if (sheetHeightPx == 0) 0f else sheetAlpha
+                        translationY = (1f - enterProgress) * slidePx
+                    },
             ) {
                 val maxH = minOf(maxSheetHeight, maxHeight)
                 val footerHeight = with(density) { footerHeightPx.toDp() }
@@ -131,6 +163,7 @@ fun AppModal(
                     tint = LabColors.Gray66,
                     borderColor = LabColors.White8,
                     hazeState = hazeState,
+                    hazeStyle = modalHazeStyle,
                 ) {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Column(
@@ -179,24 +212,6 @@ fun AppModal(
             }
         }
     }
-}
-
-/** Flat dimmer behind modals — no blur (blur lives on the sheet only). */
-@Composable
-private fun ModalBackdrop(
-    onDismiss: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(LabColors.Black16)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onDismiss,
-            ),
-    )
 }
 
 /** Centred modal heading — zapstore [ModalTitleBlock]. */

@@ -6,10 +6,17 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -21,7 +28,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.polli.android.icons.LabIcon
 import com.polli.android.icons.LabIconName
 import com.polli.android.theme.LabColors
@@ -36,6 +42,10 @@ private const val SCROLL_ANIMATION_THRESHOLD = 50
 
 /** Mirrors [ConversationFragment.ConversationScrollListener.isAtZoomScrollHeight]. */
 private const val SHOW_FAB_ITEM_THRESHOLD = 4
+
+private val ChatScrollFabBadgeHeight = 18.dp
+private val ChatScrollFabBadgeOverlap = 6.dp
+private val ChatScrollFabBadgeHPadding = 4.dp
 
 fun LazyListState.isAtChatBottom(): Boolean {
     if (layoutInfo.totalItemsCount == 0) return true
@@ -125,13 +135,39 @@ fun ChatScrollToBottomButton(
                 LabIcon(LabIconName.ArrowDown, 18.dp, LabColors.White33)
             }
             if (unreadCount > 0) {
-                Text(
-                    text = if (unreadCount > 99) "99+" else unreadCount.toString(),
-                    color = accent().solid,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.offset(y = (-6).dp),
-                )
+                val label = if (unreadCount > 99) "99+" else unreadCount.toString()
+                val isPill = label.length > 1
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .offset(y = -(ChatScrollFabBadgeHeight - ChatScrollFabBadgeOverlap))
+                        .then(
+                            if (isPill) {
+                                Modifier
+                                    .height(ChatScrollFabBadgeHeight)
+                                    .widthIn(min = ChatScrollFabBadgeHeight)
+                                    .background(
+                                        accent().solid,
+                                        RoundedCornerShape(percent = 50),
+                                    )
+                                    .padding(horizontal = ChatScrollFabBadgeHPadding)
+                            } else {
+                                Modifier
+                                    .size(ChatScrollFabBadgeHeight)
+                                    .background(accent().solid, CircleShape)
+                            },
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Medium,
+                            color = LabColors.White,
+                        ),
+                        maxLines = 1,
+                    )
+                }
             }
         }
     }

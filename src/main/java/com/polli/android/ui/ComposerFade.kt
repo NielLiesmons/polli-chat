@@ -10,22 +10,44 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 
-/** Text field edge fade — polli `.polli-chat-field-fade--scroll` */
-fun Modifier.composerTextFadeMask(enabled: Boolean): Modifier {
-    if (!enabled) return this
+/** Text field edge fade — only at scroll edges with clipped overflow (zapstore modal pattern). */
+fun Modifier.composerTextFadeMask(
+    fadeTop: Boolean = false,
+    fadeBottom: Boolean = false,
+): Modifier {
+    if (!fadeTop && !fadeBottom) return this
     return this
         .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
         .drawWithContent {
             drawContent()
             val fadePx = 8.dp.toPx()
-            drawRect(
-                brush = Brush.verticalGradient(
+            val h = size.height
+            if (h <= 0f) return@drawWithContent
+            val fadeStop = (fadePx / h).coerceIn(0f, 0.48f)
+
+            val stops = when {
+                fadeTop && fadeBottom -> arrayOf(
                     0f to Color.Transparent,
-                    fadePx / size.height to Color.Black,
-                    (size.height - fadePx) / size.height to Color.Black,
+                    fadeStop to Color.Black,
+                    (1f - fadeStop) to Color.Black,
                     1f to Color.Transparent,
-                ),
-                size = Size(size.width, size.height),
+                )
+                fadeTop -> arrayOf(
+                    0f to Color.Transparent,
+                    fadeStop to Color.Black,
+                    1f to Color.Black,
+                )
+                fadeBottom -> arrayOf(
+                    0f to Color.Black,
+                    (1f - fadeStop) to Color.Black,
+                    1f to Color.Transparent,
+                )
+                else -> return@drawWithContent
+            }
+
+            drawRect(
+                brush = Brush.verticalGradient(colorStops = stops, startY = 0f, endY = h),
+                size = Size(size.width, h),
                 blendMode = BlendMode.DstIn,
             )
         }
