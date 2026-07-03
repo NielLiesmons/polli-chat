@@ -2,9 +2,14 @@ package com.polli.android.profiles
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,6 +23,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -28,23 +35,60 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.polli.android.BaseComposeActivity
+import com.polli.android.media.ImageEditLauncher
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.LabColors
-import com.polli.android.theme.accent
 import com.polli.android.theme.LabTheme
-import com.polli.android.ui.LabAvatar
+import com.polli.android.theme.accent
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
+import com.polli.android.ui.SelfAvatar
 import org.thoughtcrime.securesms.connect.DcHelper
+import org.thoughtcrime.securesms.profiles.AvatarHelper
+import java.io.IOException
 
 class ProfileEditActivity : BaseComposeActivity() {
+    private var avatarRevision by mutableIntStateOf(0)
+
+    private val imageEditor = ImageEditLauncher(
+        activity = this,
+        onEdited = { uri -> saveAvatarFromUri(uri) },
+    )
+
+    private val pickAvatar = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            imageEditor.launch(uri, cropAvatar = true)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val prefs = AppPrefs(this)
         setContent {
+            val revision = avatarRevision
             LabTheme(prefs = prefs) {
-                ProfileEditScreen(onBack = { finish() })
+                ProfileEditScreen(
+                    avatarRevision = revision,
+                    onBack = { finish() },
+                    onChangeAvatar = { pickAvatar.launch("image/*") },
+                )
             }
+        }
+    }
+
+    private fun saveAvatarFromUri(uri: Uri) {
+        try {
+            val decoded = contentResolver.openInputStream(uri)?.use(BitmapFactory::decodeStream) ?: return
+            val scaled = Bitmap.createScaledBitmap(
+                decoded,
+                AvatarHelper.AVATAR_SIZE,
+                AvatarHelper.AVATAR_SIZE,
+                true,
+            )
+            AvatarHelper.setSelfAvatar(this, scaled)
+            avatarRevision++
+        } catch (_: IOException) {
+            // Same failure mode as legacy profile flows — keep existing avatar.
         }
     }
 
@@ -55,7 +99,11 @@ class ProfileEditActivity : BaseComposeActivity() {
 }
 
 @Composable
-fun ProfileEditScreen(onBack: () -> Unit) {
+fun ProfileEditScreen(
+    avatarRevision: Int,
+    onBack: () -> Unit,
+    onChangeAvatar: () -> Unit,
+) {
     val context = LocalContext.current
     val dc = remember { DcHelper.getContext(context) }
     var displayName by remember {
@@ -76,7 +124,21 @@ fun ProfileEditScreen(onBack: () -> Unit) {
             Text("Edit profile", color = LabColors.White85, style = MaterialTheme.typography.titleLarge)
         }
         Spacer(modifier = Modifier.padding(24.dp))
-        LabAvatar(name = displayName.ifBlank { addr }, seed = addr, size = 72.dp)
+        key(avatarRevision) {
+            SelfAvatar(
+                name = displayName.ifBlank { addr },
+                size = 72.dp,
+                onClick = onChangeAvatar,
+            )
+        }
+        Text(
+            "Change photo",
+            color = LabColors.White33,
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier
+                .padding(top = 8.dp)
+                .clickable(onClick = onChangeAvatar),
+        )
         Spacer(modifier = Modifier.padding(16.dp))
         BasicTextField(
             value = displayName,

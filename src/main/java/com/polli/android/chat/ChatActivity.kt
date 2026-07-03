@@ -18,6 +18,7 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import com.polli.android.BaseComposeActivity
+import com.polli.android.media.ImageEditLauncher
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.LabTheme
 import org.thoughtcrime.securesms.AttachContactActivity
@@ -45,17 +46,25 @@ class ChatActivity : BaseComposeActivity() {
     private var chatId: Int = -1
     private var mediaControllerFuture: ListenableFuture<MediaController>? = null
 
+    private val imageEditor = ImageEditLauncher(
+        activity = this,
+        onEdited = { uri -> sendMedia(uri) },
+    )
+
     private val pickGallery = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        if (uri != null) sendMedia(uri)
+        if (uri != null) sendPickedUri(uri)
     }
 
     private val pickDocument = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri != null) sendMedia(uri)
+        if (uri != null) sendPickedUri(uri)
     }
 
     private val takePhoto = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-        if (success) cameraUri?.let { sendMedia(it) }
+        val uri = cameraUri
         cameraUri = null
+        if (success && uri != null) {
+            openImageEditorOrSend(uri)
+        }
     }
 
     private val pickContact = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -187,9 +196,23 @@ class ChatActivity : BaseComposeActivity() {
         takePhoto.launch(uri)
     }
 
-    private fun sendMedia(uri: Uri) {
+    private fun sendPickedUri(uri: Uri) {
+        val mime = MediaUtil.getMimeType(this, uri) ?: "application/octet-stream"
+        when {
+            MediaUtil.isGif(mime) -> sendMedia(uri, mime)
+            MediaUtil.isVideoType(mime) -> sendMedia(uri, mime)
+            MediaUtil.isImageType(mime) -> openImageEditorOrSend(uri)
+            else -> sendMedia(uri, mime)
+        }
+    }
+
+    private fun openImageEditorOrSend(uri: Uri) {
+        imageEditor.launch(uri)
+    }
+
+    private fun sendMedia(uri: Uri, mimeType: String? = null) {
         if (chatId <= 0) return
-        MediaSend.sendUri(this, chatId, uri, MediaUtil.getMimeType(this, uri))
+        MediaSend.sendUri(this, chatId, uri, mimeType ?: MediaUtil.getMimeType(this, uri))
         viewModel.reload()
     }
 
