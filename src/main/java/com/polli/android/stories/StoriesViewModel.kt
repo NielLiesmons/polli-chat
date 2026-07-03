@@ -9,7 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.b44t.messenger.DcContext
 import com.b44t.messenger.DcEvent
 import com.b44t.messenger.DcMsg
-import com.polli.android.navigation.AppNav
+import com.polli.android.stories.ChannelStoryRingLogic
 import kotlinx.coroutines.launch
 import org.thoughtcrime.securesms.connect.DcEventCenter
 import org.thoughtcrime.securesms.connect.DcHelper
@@ -35,7 +35,7 @@ class StoriesViewModel(application: Application) : AndroidViewModel(application)
     fun reload() {
         if (chatId <= 0) return
         val dc = DcHelper.getContext(getApplication())
-        posts = AppNav.loadChannelPosts(dc, chatId)
+        posts = ChannelStoryRingLogic.recentStoryPosts(dc, chatId)
     }
 
     private fun registerEvents() {

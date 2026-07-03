@@ -179,7 +179,7 @@ fun ProfilesScreen(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RoundBackButton(onClick = onBack)
                 Spacer(modifier = Modifier.width(12.dp))
-                Text("Settings", color = LabColors.White, style = MaterialTheme.typography.titleLarge)
+                Text("Profiles", color = LabColors.White, style = MaterialTheme.typography.titleLarge)
             }
         }
     }

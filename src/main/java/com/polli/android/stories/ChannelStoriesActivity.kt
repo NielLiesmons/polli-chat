@@ -135,6 +135,13 @@ fun ChannelStoriesScreen(
     val postCount = posts.size.coerceAtLeast(1)
     val safePostIdx = if (posts.isEmpty()) 0 else postIdx.coerceIn(0, posts.lastIndex)
     val post: DcMsg? = posts.getOrNull(safePostIdx)
+
+    LaunchedEffect(chatId, safePostIdx, posts.size) {
+        if (posts.isNotEmpty()) {
+            dc.marknoticedChat(chatId)
+        }
+    }
+
     val progressKey = channelIdx to safePostIdx
     val segmentStart = remember(progressKey) { System.currentTimeMillis() }
     val canReplyPrivately = ChannelStoryReply.canReply(dc, chat, post)

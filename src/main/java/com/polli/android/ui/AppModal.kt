@@ -301,13 +301,3 @@ fun ModalSectionLabel(label: String) {
     )
 }
 
-@Composable
-fun ShellDivider(screenPad: androidx.compose.ui.unit.Dp = LabDimens.HomeBarPadding) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = screenPad)
-            .height(maxOf(LabDimens.ShellBorderWidth, 0.33.dp))
-            .background(LabColors.ShellBorder),
-    )
-}

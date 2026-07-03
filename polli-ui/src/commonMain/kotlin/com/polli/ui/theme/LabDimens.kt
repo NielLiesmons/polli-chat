@@ -7,7 +7,7 @@ object LabDimens {
     val AvatarSize = 50.dp
     val HomeBarPadding = 14.dp
     val StoriesRowPadding = 12.dp // trailing / end inset for the stories row
-    val StoriesRowPaddingStart = 8.dp // HOME_BAR - 6
+    val StoriesRowPaddingStart = 10.dp // HOME_BAR - 4 (was −6; +2px vs prior)
     val HomeBarHeight = 42.dp
     val HomeProfileSize = 50.dp
     val HomeProfileGap = 14.dp
@@ -44,10 +44,15 @@ object LabDimens {
     val StoryRingGap = 4.dp
     val StoryRingSpacing = 10.dp
     val StoryRowVerticalPadTop = 10.dp
-    val StoryRowVerticalPadBottom = 12.dp
+    val StoryRowVerticalPadBottom = 10.dp
+    /** Gap from a story-row divider to the adjacent chrome row (header above, tabs below). */
+    val StoryRowDividerGap = 10.dp
     val StoryProgressHeight = 2.dp
 
+    /** Hairline stroke on inputs, composer chrome, frosted panel borders. */
     val ShellBorderWidth = 0.33.dp
+    /** Full-width divider lines ([ShellDivider]). */
+    val ShellDividerWidth = 1.dp
     val ListRowPadding = 0.dp
     val GroupNameNotifGap = 6.dp
     val InboxPreviewRowMinHeight = 22.dp

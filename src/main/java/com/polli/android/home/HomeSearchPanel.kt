@@ -200,8 +200,8 @@ private fun HomeSearchSectionDivider() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp)
-            .height(maxOf(LabDimens.ShellBorderWidth, 0.33.dp))
-            .background(LabColors.ShellBorder),
+            .height(LabDimens.ShellDividerWidth)
+            .background(LabColors.ShellDivider),
     )
 }
 

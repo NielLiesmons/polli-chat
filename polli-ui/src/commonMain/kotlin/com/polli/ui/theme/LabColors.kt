@@ -14,6 +14,8 @@ object LabColors {
     val White8 = Color(0x14FFFFFF)
     val White4 = Color(0x0AFFFFFF)
     val ShellBorder = White11
+    /** Full-width divider lines ([ShellDivider]). */
+    val ShellDivider = White8
     val Gray = Color(0xFF242424)
     val Gray66 = Color(0xA8333333)
     val Gray33 = Color(0x54333333)

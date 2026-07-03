@@ -35,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -49,6 +50,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -73,10 +75,15 @@ import com.polli.android.ui.LabAvatar
 import com.polli.android.ui.SelfAvatar
 import com.polli.android.ui.rememberLazyListShowTopFadeDerived
 import com.polli.android.ui.PolliScreenScrim
+import com.polli.android.ui.ShellDivider
 import com.polli.android.ui.rememberPolliHazeState
 import com.polli.android.stories.ChannelStoriesOverlay
 import com.polli.android.stories.StoriesViewModel
 import com.polli.android.stories.StoryLaunchBounds
+import com.polli.android.stories.StoryRingEntry
+import com.polli.android.stories.StoryRingStyle
+import com.polli.android.stories.ChannelStoryRingLogic
+import com.polli.android.stories.rememberStoryRingEntries
 import com.polli.android.stories.StorySession
 import com.polli.android.ui.scrollFadeMask
 import com.polli.core.chat.ChatCategory
@@ -108,6 +115,7 @@ fun HomeScreen(
 ) {
     var searchPanelOpen by remember { mutableStateOf(false) }
     var storySession by remember { mutableStateOf<StorySession?>(null) }
+    var storyRingRefreshKey by remember { mutableIntStateOf(0) }
     var dragExpandProgress by remember { mutableFloatStateOf(0f) }
     var isDraggingExpand by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
@@ -134,6 +142,7 @@ fun HomeScreen(
 
     val loadedItems = items ?: rememberInboxItems(query)
     val loadedChannels = channels ?: rememberChannels(loadedItems)
+    val storyRingEntries = rememberStoryRingEntries(loadedChannels, refreshKey = storyRingRefreshKey)
     val archiveLink = rememberArchiveLinkState()
 
     fun openSearchPanel() {
@@ -231,7 +240,6 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .hazeSource(state = hazeState),
-            verticalArrangement = Arrangement.spacedBy(LabDimens.TabSectionGap),
         ) {
             Spacer(modifier = Modifier.height(headerBlockHeight))
 
@@ -241,19 +249,26 @@ fun HomeScreen(
                     .alpha(chromeAlpha),
             ) {
                 if (expandProgress < 0.92f) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(LabDimens.TabSectionGap),
-                    ) {
-                        if (loadedChannels.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(LabDimens.StoryRowDividerGap))
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        if (storyRingEntries.isNotEmpty()) {
                             ChannelStoriesRow(
-                                channels = loadedChannels,
-                                onSelect = { chatId, bounds ->
-                                    val ids = loadedChannels.map { it.chatId }
-                                    if (storiesViewModel != null) {
-                                        storySession = StorySession(chatId, ids, bounds)
-                                    } else {
-                                        onChannelClick(chatId)
+                                entries = storyRingEntries,
+                                onSelect = { entry, bounds ->
+                                    when (entry.style) {
+                                        StoryRingStyle.Stale -> onChannelClick(entry.channel.chatId)
+                                        else -> {
+                                            val ids = ChannelStoryRingLogic.storyChannelIds(storyRingEntries)
+                                            if (storiesViewModel != null) {
+                                                storySession = StorySession(
+                                                    channelId = entry.channel.chatId,
+                                                    channelIds = ids,
+                                                    launchBounds = bounds,
+                                                )
+                                            } else {
+                                                onChannelClick(entry.channel.chatId)
+                                            }
+                                        }
                                     }
                                 },
                             )
@@ -262,6 +277,8 @@ fun HomeScreen(
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(LabDimens.TabSectionGap))
 
             Box(
                 modifier = Modifier
@@ -369,7 +386,10 @@ fun HomeScreen(
                 ChannelStoriesOverlay(
                     session = session,
                     storiesViewModel = vm,
-                    onClose = { storySession = null },
+                    onClose = {
+                        storySession = null
+                        storyRingRefreshKey++
+                    },
                 )
             }
         }
@@ -513,28 +533,44 @@ private fun HomeExpandableSearchHeader(
 
 @Composable
 private fun ChannelStoriesRow(
-    channels: List<InboxItem>,
-    onSelect: (chatId: Int, bounds: StoryLaunchBounds) -> Unit,
+    entries: List<StoryRingEntry>,
+    onSelect: (StoryRingEntry, StoryLaunchBounds) -> Unit,
 ) {
-    if (channels.isEmpty()) return
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = LabDimens.StoriesRowPaddingStart, end = LabDimens.StoriesRowPadding)
-            .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(LabDimens.StoryRingSpacing),
-    ) {
-        channels.forEach { channel ->
-            StoryRing(
-                channel = channel,
-                onClick = { bounds -> onSelect(channel.chatId, bounds) },
-            )
+    if (entries.isEmpty()) return
+    Column(modifier = Modifier.fillMaxWidth()) {
+        ShellDivider(screenPad = 0.dp)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = LabDimens.StoriesRowPaddingStart,
+                    end = LabDimens.StoriesRowPadding,
+                    top = LabDimens.StoryRowVerticalPadTop,
+                    bottom = LabDimens.StoryRowVerticalPadBottom,
+                )
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(LabDimens.StoryRingSpacing),
+        ) {
+            entries.forEach { entry ->
+                StoryRing(
+                    entry = entry,
+                    onClick = { bounds -> onSelect(entry, bounds) },
+                )
+            }
         }
+        ShellDivider(screenPad = 0.dp)
+        Spacer(modifier = Modifier.height(LabDimens.StoryRowDividerGap))
     }
 }
 
 @Composable
-private fun StoryRing(channel: InboxItem, onClick: (StoryLaunchBounds) -> Unit) {
+private fun StoryRing(entry: StoryRingEntry, onClick: (StoryLaunchBounds) -> Unit) {
+    val channel = entry.channel
+    val ringColor = when (entry.style) {
+        StoryRingStyle.Unread -> accent().solid
+        StoryRingStyle.ReadRecent -> accent().solid(0.16f)
+        StoryRingStyle.Stale -> Color.Transparent
+    }
     var launchBounds by remember(channel.chatId) { mutableStateOf<StoryLaunchBounds?>(null) }
     Box(
         modifier = Modifier
@@ -548,7 +584,7 @@ private fun StoryRing(channel: InboxItem, onClick: (StoryLaunchBounds) -> Unit) 
                 )
             }
             .clip(CircleShape)
-            .background(accent().solid)
+            .background(ringColor)
             .padding(LabDimens.StoryRingStroke)
             .clickable {
                 launchBounds?.let(onClick)

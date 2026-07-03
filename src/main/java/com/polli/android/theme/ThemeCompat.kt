@@ -51,8 +51,10 @@ object LabDimens {
     val StoryRingSpacing: Dp get() = com.polli.ui.theme.LabDimens.StoryRingSpacing
     val StoryRowVerticalPadTop: Dp get() = com.polli.ui.theme.LabDimens.StoryRowVerticalPadTop
     val StoryRowVerticalPadBottom: Dp get() = com.polli.ui.theme.LabDimens.StoryRowVerticalPadBottom
+    val StoryRowDividerGap: Dp get() = com.polli.ui.theme.LabDimens.StoryRowDividerGap
     val StoryProgressHeight: Dp get() = com.polli.ui.theme.LabDimens.StoryProgressHeight
     val ShellBorderWidth: Dp get() = com.polli.ui.theme.LabDimens.ShellBorderWidth
+    val ShellDividerWidth: Dp get() = com.polli.ui.theme.LabDimens.ShellDividerWidth
     val ListRowPadding: Dp get() = com.polli.ui.theme.LabDimens.ListRowPadding
     val GroupNameNotifGap: Dp get() = com.polli.ui.theme.LabDimens.GroupNameNotifGap
     val InboxPreviewRowMinHeight: Dp get() = com.polli.ui.theme.LabDimens.InboxPreviewRowMinHeight
