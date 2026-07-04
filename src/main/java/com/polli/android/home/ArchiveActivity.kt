@@ -17,16 +17,20 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.polli.android.navigation.AppNav
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.LabColors
+import com.polli.android.theme.LabDimens
 import com.polli.android.theme.LabTheme
 import com.polli.android.ui.AppInsets
+import com.polli.android.ui.LabAvatar
 import com.polli.android.ui.RoundBackButton
 import com.polli.android.ui.ShellDivider
+import com.polli.ui.components.ChatInboxCard
 
 class ArchiveActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,6 +48,7 @@ class ArchiveActivity : ComponentActivity() {
 @Composable
 private fun ArchiveScreen(onBack: () -> Unit, onOpenChat: (Int) -> Unit) {
     val items = rememberArchivedItems()
+    val nowSec = remember { System.currentTimeMillis() / 1000 }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -74,7 +79,19 @@ private fun ArchiveScreen(onBack: () -> Unit, onOpenChat: (Int) -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 items(items, key = { it.chatId }) { item ->
-                    ChatInboxCard(item = item, onClick = { onOpenChat(item.chatId) })
+                    ChatInboxCard(
+                        item = item,
+                        onClick = { onOpenChat(item.chatId) },
+                        nowSec = nowSec,
+                        avatar = {
+                            LabAvatar(
+                                name = item.name,
+                                seed = item.colorSeed,
+                                size = LabDimens.AvatarSize,
+                                chatId = item.chatId,
+                            )
+                        },
+                    )
                 }
             }
         }

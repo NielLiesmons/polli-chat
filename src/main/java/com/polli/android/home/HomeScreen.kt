@@ -71,6 +71,7 @@ import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabDimens
 import com.polli.android.theme.accent
 import com.polli.android.ui.AppInsets
+import com.polli.ui.components.ChatInboxCard
 import com.polli.android.ui.LabAvatar
 import com.polli.android.ui.SelfAvatar
 import com.polli.android.ui.rememberLazyListShowTopFadeDerived
@@ -142,6 +143,7 @@ fun HomeScreen(
 
     val loadedItems = items ?: rememberInboxItems(query)
     val loadedChannels = channels ?: rememberChannels(loadedItems)
+    val nowSec = remember { System.currentTimeMillis() / 1000 }
     val storyRingEntries = rememberStoryRingEntries(loadedChannels, refreshKey = storyRingRefreshKey)
     val archiveLink = rememberArchiveLinkState()
 
@@ -350,7 +352,19 @@ fun HomeScreen(
                                 }
                             }
                             items(filtered, key = { it.chatId }) { item ->
-                                ChatInboxCard(item = item, onClick = { onChatClick(item.chatId) })
+                                ChatInboxCard(
+                                    item = item,
+                                    onClick = { onChatClick(item.chatId) },
+                                    nowSec = nowSec,
+                                    avatar = {
+                                        LabAvatar(
+                                            name = item.name,
+                                            seed = item.colorSeed,
+                                            size = LabDimens.AvatarSize,
+                                            chatId = item.chatId,
+                                        )
+                                    },
+                                )
                             }
                         }
                     }
@@ -700,102 +714,5 @@ private fun ArchiveRow(unreadCount: Int, onClick: () -> Unit) {
                 )
             }
         }
-    }
-}
-
-@Composable
-fun ChatInboxCard(item: InboxItem, onClick: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-    ) {
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
-            Box(modifier = Modifier.width(LabDimens.AvatarSize).padding(top = 2.dp)) {
-                LabAvatar(
-                    name = item.name,
-                    seed = item.colorSeed,
-                    size = LabDimens.AvatarSize,
-                    chatId = item.chatId,
-                )
-            }
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 12.dp, top = 2.dp),
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = LabDimens.InboxTitleRowMinHeight),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = item.name,
-                        color = LabColors.White,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f),
-                    )
-                    Text(
-                        text = formatRelativeTime(item.updatedAt),
-                        color = LabColors.White33,
-                        fontSize = 12.sp,
-                    )
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = LabDimens.GroupNameNotifGap)
-                        .heightIn(min = LabDimens.InboxPreviewRowMinHeight),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = buildString {
-                            item.previewAuthor?.let { append("$it: ") }
-                            append(if (item.preview.isBlank()) "No messages yet" else item.preview)
-                        },
-                        color = LabColors.White66,
-                        fontSize = 14.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f),
-                    )
-                    if (item.unreadCount > 0) {
-                        Box(
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .height(LabDimens.UnreadBadgeMinSize)
-                                .clip(RoundedCornerShape(999.dp))
-                                .background(accent().gradientBrush())
-                                .padding(horizontal = LabDimens.UnreadBadgeHPadding),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                text = if (item.unreadCount > 99) "99+" else item.unreadCount.toString(),
-                                color = LabColors.White,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-private fun formatRelativeTime(ts: Long): String {
-    if (ts <= 0) return "—"
-    val now = System.currentTimeMillis() / 1000
-    val diff = now - ts
-    return when {
-        diff < 60 -> "now"
-        diff < 3600 -> "${diff / 60}m"
-        diff < 86400 -> "${diff / 3600}h"
-        diff < 604800 -> "${diff / 86400}d"
-        else -> "1w+"
     }
 }
