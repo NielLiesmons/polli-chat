@@ -3,6 +3,7 @@ package com.polli.android.chat
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -42,13 +43,14 @@ class ChatActivity : BaseComposeActivity() {
     private val playbackViewModel: AudioPlaybackViewModel by viewModels()
     private var themeRevision by mutableIntStateOf(0)
     private var showAttachModal by mutableStateOf(false)
+    private var pendingAttachment by mutableStateOf<PendingAttachment?>(null)
     private var cameraUri: Uri? = null
     private var chatId: Int = -1
     private var mediaControllerFuture: ListenableFuture<MediaController>? = null
 
     private val imageEditor = ImageEditLauncher(
         activity = this,
-        onEdited = { uri -> sendMedia(uri) },
+        onEdited = { uri -> stageAttachment(uri) },
     )
 
     private val pickGallery = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -151,6 +153,9 @@ class ChatActivity : BaseComposeActivity() {
                             MediaSend.sendVoice(this, chatId, uri, 0)
                             viewModel.reload()
                         },
+                        pendingAttachment = pendingAttachment,
+                        onClearAttachment = { pendingAttachment = null },
+                        onSendMessage = { sendComposedMessage() },
                         onBack = { finish() },
                     )
                 }
@@ -199,15 +204,46 @@ class ChatActivity : BaseComposeActivity() {
     private fun sendPickedUri(uri: Uri) {
         val mime = MediaUtil.getMimeType(this, uri) ?: "application/octet-stream"
         when {
-            MediaUtil.isGif(mime) -> sendMedia(uri, mime)
-            MediaUtil.isVideoType(mime) -> sendMedia(uri, mime)
+            MediaUtil.isGif(mime) -> stageAttachment(uri, mime)
+            MediaUtil.isVideoType(mime) -> stageAttachment(uri, mime)
             MediaUtil.isImageType(mime) -> openImageEditorOrSend(uri)
-            else -> sendMedia(uri, mime)
+            else -> stageAttachment(uri, mime)
         }
     }
 
     private fun openImageEditorOrSend(uri: Uri) {
         imageEditor.launch(uri)
+    }
+
+    private fun stageAttachment(uri: Uri, mimeType: String? = null) {
+        val mime = mimeType ?: MediaUtil.getMimeType(this, uri) ?: "application/octet-stream"
+        pendingAttachment = PendingAttachment(
+            uri = uri,
+            mimeType = mime,
+            label = attachmentLabel(uri),
+            isImage = MediaUtil.isImageType(mime) || MediaUtil.isGif(mime),
+        )
+    }
+
+    private fun attachmentLabel(uri: Uri): String {
+        contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
+            val idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (idx >= 0 && cursor.moveToFirst()) {
+                cursor.getString(idx)?.trim()?.takeIf { it.isNotEmpty() }?.let { return it }
+            }
+        }
+        return uri.lastPathSegment?.substringAfterLast('/')?.takeIf { it.isNotBlank() } ?: "Attachment"
+    }
+
+    private fun sendComposedMessage() {
+        val attachment = pendingAttachment
+        if (attachment != null) {
+            MediaSend.sendUri(this, chatId, attachment.uri, attachment.mimeType, viewModel.draft)
+            pendingAttachment = null
+            viewModel.clearAfterSend()
+            return
+        }
+        viewModel.send()
     }
 
     private fun sendMedia(uri: Uri, mimeType: String? = null) {

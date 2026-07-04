@@ -8,12 +8,26 @@ import org.thoughtcrime.securesms.providers.PersistentBlobProvider
 import org.thoughtcrime.securesms.util.MediaUtil
 
 object MediaSend {
-    fun sendUri(context: Context, chatId: Int, uri: Uri, mimeType: String?) {
+    fun sendUri(
+        context: Context,
+        chatId: Int,
+        uri: Uri,
+        mimeType: String?,
+        caption: String? = null,
+    ) {
         val dc = DcHelper.getContext(context)
         val resolved = mimeType ?: MediaUtil.getMimeType(context, uri) ?: "application/octet-stream"
         val path = DcHelper.copyToBlobdir(context, uri, "file", null)
-        val msg = DcMsg(dc, DcMsg.DC_MSG_FILE)
+        val msgType = when {
+            MediaUtil.isGif(resolved) -> DcMsg.DC_MSG_GIF
+            MediaUtil.isImageType(resolved) -> DcMsg.DC_MSG_IMAGE
+            MediaUtil.isVideoType(resolved) -> DcMsg.DC_MSG_VIDEO
+            MediaUtil.isAudioType(resolved) -> DcMsg.DC_MSG_AUDIO
+            else -> DcMsg.DC_MSG_FILE
+        }
+        val msg = DcMsg(dc, msgType)
         msg.setFileAndDeduplicate(path, null, resolved)
+        caption?.trim()?.takeIf { it.isNotEmpty() }?.let { msg.setText(it) }
         dc.sendMsg(chatId, msg)
     }
 

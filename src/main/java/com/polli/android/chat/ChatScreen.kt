@@ -74,6 +74,9 @@ fun ChatScreen(
     onPickContact: () -> Unit = {},
     onPickLocation: () -> Unit = {},
     onVoiceSent: ((android.net.Uri, Long) -> Unit)? = null,
+    pendingAttachment: PendingAttachment? = null,
+    onClearAttachment: () -> Unit = {},
+    onSendMessage: () -> Unit = { viewModel.send() },
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -185,9 +188,11 @@ fun ChatScreen(
                     .onGloballyPositioned { composerChrome.onComposerPositioned(it) },
                 value = viewModel.draft,
                 onValueChange = viewModel::updateDraft,
-                onSend = viewModel::send,
+                onSend = onSendMessage,
                 replyQuote = viewModel.replyTo?.toReplyQuote(),
                 onClearQuote = { viewModel.setReply(null) },
+                pendingAttachment = pendingAttachment,
+                onClearAttachment = onClearAttachment,
                 onAttachClick = onAttachClick,
                 onVoiceSent = onVoiceSent,
                 onVoiceLockOverlayChange = { visible, dragUpPx ->

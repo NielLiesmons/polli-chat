@@ -97,7 +97,9 @@ fun ChatComposerDock(
     modifier: Modifier = Modifier,
     replyQuote: MessageQuote? = null,
     onClearQuote: (() -> Unit)? = null,
-    hasPendingAttachment: Boolean = false,
+    pendingAttachment: PendingAttachment? = null,
+    onClearAttachment: (() -> Unit)? = null,
+    hasPendingAttachment: Boolean = pendingAttachment != null,
     onAttachClick: (() -> Unit)? = null,
     onVoiceSent: ((android.net.Uri, Long) -> Unit)? = null,
     onVoiceLockOverlayChange: (visible: Boolean, dragUpPx: Float) -> Unit = { _, _ -> },
@@ -259,13 +261,28 @@ fun ChatComposerDock(
                         start = 7.dp,
                         end = 7.dp,
                         top = 7.dp,
-                        bottom = 8.dp,
+                        bottom = if (pendingAttachment != null) 4.dp else 8.dp,
                     ),
                 ) {
                     QuotedMessageBlock(
                         quote = quote,
                         style = QuotedMessageStyle.Composer,
                         onClear = onClearQuote,
+                    )
+                }
+            }
+            pendingAttachment?.let { attachment ->
+                Box(
+                    modifier = Modifier.padding(
+                        start = 7.dp,
+                        end = 7.dp,
+                        top = if (hasQuote) 0.dp else 7.dp,
+                        bottom = 8.dp,
+                    ),
+                ) {
+                    ComposerAttachmentPreview(
+                        attachment = attachment,
+                        onClear = { onClearAttachment?.invoke() },
                     )
                 }
             }
@@ -277,7 +294,7 @@ fun ChatComposerDock(
                         start = 7.dp,
                         end = 7.dp,
                         bottom = 7.dp,
-                        top = if (hasQuote) 0.dp else 7.dp,
+                        top = if (hasQuote || pendingAttachment != null) 0.dp else 7.dp,
                     ),
                 verticalAlignment = composerRowAlign,
                 horizontalArrangement = Arrangement.spacedBy(7.dp),

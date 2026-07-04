@@ -377,9 +377,13 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
             if (quoted.isOk) msg.setQuote(quoted)
         }
         dc.sendMsg(chatId, msg)
+        clearAfterSend()
+    }
+
+    fun clearAfterSend() {
         draft = ""
         replyTo = null
-        dc.setDraft(chatId, null)
+        dcContext?.setDraft(chatId, null)
         scrollToBottomOnReload = true
         scheduleReload(markRead = true)
     }
