@@ -18,7 +18,7 @@ Goal: shrink the legacy Android fork surface while keeping the Chatmail engine (
 |---------|--------|--------------|--------|
 | Chat feed + composer | `ConversationActivity` | `ChatActivity` | Replace-only prune when manifest gated |
 | Image editor on attach | `ScribbleActivity` | **Wired** via `ImageEditLauncher` | Compose editor later; keep Java editor until then |
-| Attach draft (preview before send) | `AttachmentManager` | **Missing** | Add composer pending attachment UI |
+| Attach draft (preview before send) | `AttachmentManager` | **Wired** — composer preview + caption on send | OK |
 | Gallery / file / contact / location | `AttachmentManager` | Partial in `ChatActivity` | Keep bridging |
 | Voice record + send | DC input panel | `ChatComposer` | OK |
 | Calls / WebRTC | `CallActivity` | Not in Polli UI | Replace or explicitly drop — do not silent-delete |
@@ -58,8 +58,9 @@ Goal: shrink the legacy Android fork surface while keeping the Chatmail engine (
 - [x] `polli-domain`: `InboxItem`, `ArchiveLinkState`, `ChatIntentExtras`, `ChatRepository`, `MediaRepository`
 - [x] Android adapters: `EngineChatRepository`, `EngineMediaRepository` via `PolliRepositories`
 - [x] Home + archive wired through `ChatRepository` (`HomeViewModel`, `InboxLoad`, `ArchiveLoad`)
-- [x] `polli-ui`: `ChatComingSoonTab`; chat Files tab inline via `ChatMediaTabPanel` + `MediaRepository`
-- [ ] Move more composables into `polli-ui` commonMain (media grid, inbox card)
+- [x] `polli-ui`: `ChatComingSoonTab`, `ChatInboxCard`; chat Files tab inline via `ChatMediaTabPanel` + `MediaRepository`
+- [x] Composer attach draft preview before send (images, video, files)
+- [ ] Move media grid composable into `polli-ui` commonMain
 - [ ] First screen fully in `polli-ui` commonMain: TBD
 
 ## Build check
