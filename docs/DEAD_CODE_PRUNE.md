@@ -32,7 +32,7 @@ Goal: shrink the legacy Android fork surface while keeping the Chatmail engine (
 - [x] Manifest: `ConversationListActivity` no longer exported; launcher via `RoutingActivity` → `LauncherActivity`
 - [x] Legacy chat/home redirect to Polli when `POLLI_UI` (`PolliLegacyRedirect`, `ShareRelay`)
 - [x] Share intents route to `HomeActivity` / `ChatActivity` with relay support
-- [ ] List Java packages with zero references from `com.polli.android`
+- [x] List Java packages with zero references from `com.polli.android` — see [JAVA_INVENTORY.md](JAVA_INVENTORY.md)
 
 ## Phase B — Safe deletes (only after parity)
 
@@ -62,7 +62,7 @@ Goal: shrink the legacy Android fork surface while keeping the Chatmail engine (
 - [x] `polli-ui`: `ChatComingSoonTab`, `ChatInboxCard`; chat Files tab inline via `ChatMediaTabPanel` + `MediaRepository`
 - [x] Composer attach draft preview before send (images, video, files)
 - [x] Move `ChatMediaBrowser` into `polli-ui` commonMain (platform thumb/list slots)
-- [ ] First screen fully in `polli-ui` commonMain: TBD
+- [x] First screen fully in `polli-ui` commonMain: **ArchiveScreen**
 
 ## Build check
 
