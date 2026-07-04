@@ -64,7 +64,7 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
-import com.polli.android.bridge.InboxItem
+import com.polli.domain.model.InboxItem
 import com.polli.android.icons.LabIcon
 import com.polli.android.icons.LabIconName
 import com.polli.android.theme.LabColors

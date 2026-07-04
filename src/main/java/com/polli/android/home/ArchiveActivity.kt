@@ -17,15 +17,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.polli.android.bridge.ChatListMapper
-import com.polli.android.bridge.InboxItem
 import com.polli.android.navigation.AppNav
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.LabColors
@@ -33,7 +27,6 @@ import com.polli.android.theme.LabTheme
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
 import com.polli.android.ui.ShellDivider
-import org.thoughtcrime.securesms.connect.DcHelper
 
 class ArchiveActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,8 +43,7 @@ class ArchiveActivity : ComponentActivity() {
 
 @Composable
 private fun ArchiveScreen(onBack: () -> Unit, onOpenChat: (Int) -> Unit) {
-    val context = androidx.compose.ui.platform.LocalContext.current
-    var items by remember { mutableStateOf(com.polli.android.home.loadArchived(context)) }
+    val items = rememberArchivedItems()
     Column(
         modifier = Modifier
             .fillMaxSize()

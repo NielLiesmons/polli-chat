@@ -11,32 +11,37 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import com.polli.android.bridge.ChatListMapper
-import com.polli.android.bridge.InboxItem
+import com.polli.android.data.engine.PolliRepositories
 import com.polli.core.chat.ChatCategory
+import com.polli.domain.model.InboxItem
 
 /**
- * Loads inbox rows directly from DC [DcChatlist] — same API path as ConversationListFragment.
+ * Loads inbox rows via [com.polli.domain.repository.ChatRepository] — same DC path as legacy list.
  */
 @Composable
 fun rememberInboxItems(searchQuery: String = ""): List<InboxItem> {
     val context = LocalContext.current
+    val chatRepo = remember { PolliRepositories.chat(context) }
     val q = searchQuery.trim().ifBlank { null }
-    var items by remember { mutableStateOf(ChatListMapper.load(context, q)) }
+    var items by remember { mutableStateOf(chatRepo.loadInbox(q)) }
     val lifecycleOwner = LocalLifecycleOwner.current
 
     LaunchedEffect(searchQuery) {
-        items = ChatListMapper.load(context, q)
+        items = chatRepo.loadInbox(q)
     }
 
-    DisposableEffect(lifecycleOwner, searchQuery) {
+    DisposableEffect(lifecycleOwner, searchQuery, chatRepo) {
+        val inboxObserver = chatRepo.observeInbox { items = chatRepo.loadInbox(q) }
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                items = ChatListMapper.load(context, q)
+                items = chatRepo.loadInbox(q)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+        onDispose {
+            inboxObserver.close()
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
     return items

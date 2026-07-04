@@ -5,21 +5,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
 import com.b44t.messenger.DcContext
-import com.b44t.messenger.DcEvent
-import com.polli.android.bridge.ChatListMapper
-import com.polli.android.bridge.InboxItem
+import com.polli.android.data.engine.PolliRepositories
 import com.polli.core.chat.ChatCategory
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.thoughtcrime.securesms.connect.DcEventCenter
+import com.polli.domain.model.InboxItem
+import com.polli.domain.repository.ChatRepository
 import org.thoughtcrime.securesms.connect.DcHelper
 
-class HomeViewModel(application: Application) : AndroidViewModel(application), DcEventCenter.DcEventDelegate {
+class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
-    /** Read inside @Composable (e.g. `homeViewModel.items`) so Compose subscribes to updates. */
+    private val chatRepository: ChatRepository = PolliRepositories.chat(application)
+
     var items by mutableStateOf<List<InboxItem>>(emptyList())
         private set
     var channels by mutableStateOf<List<InboxItem>>(emptyList())
@@ -30,10 +26,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), D
         private set
 
     private var searchQuery = ""
-    private var registered = false
+    private val inboxObserver = chatRepository.observeInbox { reload() }
 
     init {
-        registerEvents()
         reload()
     }
 
@@ -43,9 +38,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), D
     }
 
     fun reload() {
-        val ctx = getApplication<Application>()
         val q = searchQuery.ifBlank { null }
-        val loaded = ChatListMapper.load(ctx, q)
+        val loaded = chatRepository.loadInbox(q)
         val channelRows = loaded.filter { it.category == ChatCategory.Channel }
         items = loaded
         channels = channelRows
@@ -73,42 +67,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), D
         }
     }
 
-    private fun registerEvents() {
-        if (registered) return
-        val center = DcHelper.getEventCenter(getApplication())
-        center.addMultiAccountObserver(DcContext.DC_EVENT_INCOMING_MSG, this)
-        center.addMultiAccountObserver(DcContext.DC_EVENT_MSGS_NOTICED, this)
-        center.addMultiAccountObserver(DcContext.DC_EVENT_CHAT_DELETED, this)
-        center.addObserver(DcContext.DC_EVENT_CHAT_MODIFIED, this)
-        center.addObserver(DcContext.DC_EVENT_CONTACTS_CHANGED, this)
-        center.addObserver(DcContext.DC_EVENT_MSGS_CHANGED, this)
-        center.addObserver(DcContext.DC_EVENT_MSG_DELIVERED, this)
-        center.addObserver(DcContext.DC_EVENT_MSG_FAILED, this)
-        center.addObserver(DcContext.DC_EVENT_MSG_READ, this)
-        center.addObserver(DcContext.DC_EVENT_REACTIONS_CHANGED, this)
-        center.addObserver(DcContext.DC_EVENT_CONNECTIVITY_CHANGED, this)
-        center.addObserver(DcContext.DC_EVENT_SELFAVATAR_CHANGED, this)
-        registered = true
-    }
-
-    private fun unregisterEvents() {
-        if (!registered) return
-        DcHelper.getEventCenter(getApplication()).removeObservers(this)
-        registered = false
-    }
-
-    override fun handleEvent(event: DcEvent) {
-        val dc = DcHelper.getContext(getApplication())
-        if (event.accountId != dc.accountId && event.id != DcContext.DC_EVENT_CHAT_DELETED) {
-            return
-        }
-        viewModelScope.launch {
-            withContext(Dispatchers.Main) { reload() }
-        }
-    }
-
     override fun onCleared() {
-        unregisterEvents()
+        inboxObserver.close()
         super.onCleared()
     }
 }

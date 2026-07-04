@@ -10,40 +10,22 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import com.b44t.messenger.DcChat
-import com.b44t.messenger.DcContext
-import com.polli.android.bridge.ChatListMapper
-import com.polli.android.bridge.InboxItem
-import com.polli.core.chat.ChatCategory
-import org.thoughtcrime.securesms.connect.DcHelper
-
-data class ArchiveLinkState(
-    val visible: Boolean,
-    val unreadCount: Int,
-)
-
-fun archiveLinkState(context: android.content.Context): ArchiveLinkState {
-    val dc = DcHelper.getContext(context)
-    val chatlist = dc.getChatlist(DcContext.DC_GCL_ARCHIVED_ONLY, null, 0)
-    val visible = chatlist.getCnt() > 0
-    val unread = if (visible) {
-        dc.getFreshMsgCount(DcChat.DC_CHAT_ID_ARCHIVED_LINK).coerceAtLeast(0)
-    } else {
-        0
-    }
-    return ArchiveLinkState(visible = visible, unreadCount = unread)
-}
+import com.polli.android.data.engine.PolliRepositories
+import com.polli.domain.model.ArchiveLinkState
+import com.polli.domain.model.InboxItem
+import com.polli.domain.repository.ChatRepository
 
 @Composable
 fun rememberArchiveLinkState(): ArchiveLinkState {
     val context = LocalContext.current
-    var state by remember { mutableStateOf(archiveLinkState(context)) }
+    val chatRepo = remember { PolliRepositories.chat(context) }
+    var state by remember { mutableStateOf(chatRepo.archiveLinkState()) }
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    DisposableEffect(lifecycleOwner) {
+    DisposableEffect(lifecycleOwner, chatRepo) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                state = archiveLinkState(context)
+                state = chatRepo.archiveLinkState()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -53,33 +35,29 @@ fun rememberArchiveLinkState(): ArchiveLinkState {
     return state
 }
 
-fun loadArchived(context: android.content.Context): List<InboxItem> {
-    val dc = DcHelper.getContext(context)
-    val flags = DcContext.DC_GCL_ARCHIVED_ONLY
-    val chatlist = dc.getChatlist(flags, null, 0)
-    val out = ArrayList<InboxItem>()
-    for (i in 0 until chatlist.getCnt()) {
-        val chatId = chatlist.getChatId(i)
-        if (chatId <= DcChat.DC_CHAT_ID_LAST_SPECIAL) continue
-        val chat = dc.getChat(chatId)
-        val category = ChatListMapper.categorize(chat)
-        if (category == ChatCategory.Skip) continue
-        val summary = chatlist.getSummary(i, chat)
-        val (preview, previewAuthor) = ChatListMapper.summaryPreview(summary)
-        val unread = dc.getFreshMsgCount(chatId).coerceAtLeast(0)
-        out.add(
-            InboxItem(
-                chatId = chatId,
-                name = chat.name ?: "",
-                preview = preview,
-                previewAuthor = previewAuthor,
-                updatedAt = summary.timestamp,
-                unreadCount = unread,
-                category = category,
-                profileImage = chat.profileImage,
-                colorSeed = chat.name ?: chatId.toString(),
-            ),
-        )
+fun loadArchived(context: android.content.Context): List<InboxItem> =
+    PolliRepositories.chat(context).loadArchived()
+
+@Composable
+fun rememberArchivedItems(): List<InboxItem> {
+    val context = LocalContext.current
+    val chatRepo = remember { PolliRepositories.chat(context) }
+    var items by remember { mutableStateOf(chatRepo.loadArchived()) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner, chatRepo) {
+        val inboxObserver = chatRepo.observeInbox { items = chatRepo.loadArchived() }
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                items = chatRepo.loadArchived()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            inboxObserver.close()
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
-    return out
+
+    return items
 }
