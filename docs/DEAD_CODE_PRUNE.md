@@ -2,7 +2,7 @@
 
 Branch: `feature/java-prune-kmp`
 
-Goal: shrink the Delta Chat Android fork surface while keeping Chatmail/Delta core (Rust via JNI) as the engine. Prefer **Kotlin/Compose** for UI and **Rust** (deltachat/chatmail crates) for shared logic — not more Java.
+Goal: shrink the legacy Android fork surface while keeping the Chatmail engine (Rust via JNI) as the runtime. Prefer **Kotlin/Compose** for UI and **Rust** (chatmail crates) for shared logic — not more Java.
 
 ## Principles
 
@@ -22,7 +22,7 @@ Goal: shrink the Delta Chat Android fork surface while keeping Chatmail/Delta co
 | Gallery / file / contact / location | `AttachmentManager` | Partial in `ChatActivity` | Keep bridging |
 | Voice record + send | DC input panel | `ChatComposer` | OK |
 | Calls / WebRTC | `CallActivity` | Not in Polli UI | Replace or explicitly drop — do not silent-delete |
-| Profile avatar crop | `ScribbleActivity` + `AvatarHelper` | **Missing** on `ProfileEditActivity` | Wire `ImageEditLauncher(cropAvatar=true)` |
+| Profile avatar crop | `ScribbleActivity` + `AvatarHelper` | **Wired** via `ImageEditLauncher(cropAvatar=true)` | OK |
 | Webxdc | `WebxdcActivity` | Java only | Compose host later |
 | Settings depth | `ApplicationPreferencesActivity` | Partial | Compose settings |
 
@@ -54,8 +54,12 @@ Goal: shrink the Delta Chat Android fork surface while keeping Chatmail/Delta co
 
 ## Phase D — KMP extraction
 
-- [ ] Implement `polli-domain` repositories on Android (`DcHelper` behind interfaces)
-- [ ] Move home list models + categorizer consumers to shared code
+- [x] `polli-core`: `ChatCategorizer`, `ChatSummaryFormat`, `ChatKind`, `ChatMediaFilter`, `MsgTypes`
+- [x] `polli-domain`: `InboxItem`, `ArchiveLinkState`, `ChatIntentExtras`, `ChatRepository`, `MediaRepository`
+- [x] Android adapters: `EngineChatRepository`, `EngineMediaRepository` via `PolliRepositories`
+- [x] Home + archive wired through `ChatRepository` (`HomeViewModel`, `InboxLoad`, `ArchiveLoad`)
+- [x] `polli-ui`: `ChatComingSoonTab`; chat Files tab inline via `ChatMediaTabPanel` + `MediaRepository`
+- [ ] Move more composables into `polli-ui` commonMain (media grid, inbox card)
 - [ ] First screen fully in `polli-ui` commonMain: TBD
 
 ## Build check
