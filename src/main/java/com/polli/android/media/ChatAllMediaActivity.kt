@@ -39,7 +39,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import android.widget.ImageView
-import com.b44t.messenger.DcMsg
+import com.polli.android.data.engine.PolliRepositories
+import com.polli.core.chat.ChatMediaFilter
 import com.bumptech.glide.Glide
 import com.polli.android.BaseComposeActivity
 import com.polli.android.settings.AppPrefs
@@ -47,12 +48,13 @@ import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabTheme
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
+import com.polli.domain.navigation.ChatIntentExtras
 import org.thoughtcrime.securesms.connect.DcHelper
 
 class ChatAllMediaActivity : BaseComposeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val chatId = intent.getIntExtra(CHAT_ID_EXTRA, -1)
+        val chatId = intent.getIntExtra(ChatIntentExtras.CHAT_ID, -1)
         val prefs = AppPrefs(this)
         setContent {
             LabTheme(prefs = prefs) {
@@ -68,62 +70,40 @@ class ChatAllMediaActivity : BaseComposeActivity() {
     }
 
     companion object {
-        const val CHAT_ID_EXTRA = "chat_id"
-
         fun intent(context: Context, chatId: Int): Intent =
             Intent(context, ChatAllMediaActivity::class.java).apply {
-                putExtra(CHAT_ID_EXTRA, chatId)
+                putExtra(ChatIntentExtras.CHAT_ID, chatId)
             }
     }
 }
 
-private enum class AllMediaTab(val label: String, val type1: Int, val type2: Int, val type3: Int) {
-    Gallery("Gallery", DcMsg.DC_MSG_IMAGE, DcMsg.DC_MSG_GIF, DcMsg.DC_MSG_VIDEO),
-    Audio("Audio", DcMsg.DC_MSG_AUDIO, DcMsg.DC_MSG_VOICE, 0),
-    Files("Files", DcMsg.DC_MSG_FILE, DcMsg.DC_MSG_WEBXDC, 0),
-}
-
 @Composable
-fun ChatAllMediaScreen(
+fun ChatMediaTabPanel(
     chatId: Int,
-    onBack: () -> Unit,
+    topPadding: androidx.compose.ui.unit.Dp,
     onOpenMessage: (Int) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tab = AllMediaTab.entries[selectedTab]
+    val filter = ChatMediaFilter.entries[selectedTab]
     val context = LocalContext.current
-    val msgIds = remember(chatId, tab) {
-        MediaGalleryLoad.mediaIds(context, chatId, tab.type1, tab.type2, tab.type3).reversedArray()
+    val mediaRepo = remember { PolliRepositories.media(context) }
+    val msgIds = remember(chatId, filter) {
+        mediaRepo.messageIdsForFilter(chatId, filter)
     }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .background(LabColors.Black),
+            .padding(top = topPadding),
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = AppInsets.statusBarTop() + 8.dp)
-                .padding(horizontal = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            RoundBackButton(onClick = onBack)
-            Text(
-                "All media",
-                color = LabColors.White85,
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(start = 12.dp),
-            )
-        }
-
         ScrollableTabRow(
             selectedTabIndex = selectedTab,
             containerColor = LabColors.Black,
             contentColor = LabColors.White85,
             edgePadding = 16.dp,
         ) {
-            AllMediaTab.entries.forEachIndexed { index, item ->
+            ChatMediaFilter.entries.forEachIndexed { index, item ->
                 Tab(
                     selected = selectedTab == index,
                     onClick = { selectedTab = index },
@@ -137,9 +117,9 @@ fun ChatAllMediaScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
-                Text("No media", color = LabColors.White33)
+                Text("No ${filter.label.lowercase()}", color = LabColors.White33)
             }
-        } else if (tab == AllMediaTab.Gallery) {
+        } else if (filter.isGrid) {
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(108.dp),
                 contentPadding = PaddingValues(12.dp),
@@ -162,6 +142,42 @@ fun ChatAllMediaScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ChatAllMediaScreen(
+    chatId: Int,
+    onBack: () -> Unit,
+    onOpenMessage: (Int) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(LabColors.Black),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = AppInsets.statusBarTop() + 8.dp)
+                .padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            RoundBackButton(onClick = onBack)
+            Text(
+                "All media",
+                color = LabColors.White85,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(start = 12.dp),
+            )
+        }
+
+        ChatMediaTabPanel(
+            chatId = chatId,
+            topPadding = 0.dp,
+            onOpenMessage = onOpenMessage,
+            modifier = Modifier.fillMaxSize(),
+        )
     }
 }
 

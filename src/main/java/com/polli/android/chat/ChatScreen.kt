@@ -38,8 +38,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.polli.core.chat.ChatDetailTab
 import com.polli.core.chat.tabsForChat
+import com.polli.android.media.ChatMediaTabPanel
 import com.polli.android.navigation.AppNav
 import com.polli.android.theme.LabColors
+import com.polli.ui.components.ChatComingSoonTab
 import com.polli.android.theme.LabDimens
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.ChatFeedEdgeGradients
@@ -345,8 +347,8 @@ private fun ChatTabContent(
 ) {
     val context = LocalContext.current
     when (tab) {
-        ChatDetailTab.Search -> ChatTabPlaceholder("Search — coming soon")
-        ChatDetailTab.Activity -> ChatTabPlaceholder("Activity — coming soon")
+        ChatDetailTab.Search -> ChatComingSoonTab("Search")
+        ChatDetailTab.Activity -> ChatComingSoonTab("Activity")
         ChatDetailTab.Chat -> ChatFeedPage(
             viewModel = viewModel,
             scrollController = scrollController,
@@ -358,13 +360,14 @@ private fun ChatTabContent(
             onOpenMessageOverlay = onOpenMessageOverlay,
             onScrollToMessage = onScrollToMessage,
         )
-        ChatDetailTab.Apps,
-        ChatDetailTab.Files,
-        -> ChatTabPlaceholder("Media tab") {
-            AppNav.openAllMedia(context, chatId)
-        }
-        ChatDetailTab.Tasks -> ChatTabPlaceholder("Tasks — coming soon")
-        ChatDetailTab.Docs -> ChatTabPlaceholder("Docs — coming soon")
+        ChatDetailTab.Files -> ChatMediaTabPanel(
+            chatId = chatId,
+            topPadding = headerClearance,
+            onOpenMessage = { msgId -> AppNav.openMediaPreview(context, msgId) },
+        )
+        ChatDetailTab.Apps -> ChatComingSoonTab("Apps")
+        ChatDetailTab.Tasks -> ChatComingSoonTab("Tasks")
+        ChatDetailTab.Docs -> ChatComingSoonTab("Docs")
     }
 }
 
@@ -385,12 +388,4 @@ private fun SimpleChatHeader(
         hazeState = hazeState,
         modifier = modifier,
     )
-}
-
-@Composable
-private fun ChatTabPlaceholder(message: String, onOpen: (() -> Unit)? = null) {
-    LaunchedEffect(Unit) { onOpen?.invoke() }
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(message, color = LabColors.White33)
-    }
 }
