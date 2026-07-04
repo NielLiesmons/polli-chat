@@ -51,6 +51,7 @@ import com.b44t.messenger.DcContact;
 import com.b44t.messenger.DcContext;
 import com.b44t.messenger.DcEvent;
 import com.b44t.messenger.DcMsg;
+import com.polli.android.navigation.AppNav;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -632,8 +633,13 @@ public class ConversationFragment extends MessageSelectorFragment {
       replyMsg.setQuote(msg);
       dcContext.setDraft(privateChatId, replyMsg);
 
-      Intent intent = new Intent(getActivity(), ConversationActivity.class);
-      intent.putExtra(ConversationActivity.CHAT_ID_EXTRA, privateChatId);
+      Intent intent;
+      if (BuildConfig.POLLI_UI) {
+        intent = AppNav.chatIntent(getActivity(), privateChatId);
+      } else {
+        intent = new Intent(getActivity(), ConversationActivity.class);
+        intent.putExtra(ConversationActivity.CHAT_ID_EXTRA, privateChatId);
+      }
       intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
       getActivity().startActivity(intent);
     } else {
@@ -986,12 +992,19 @@ public class ConversationFragment extends MessageSelectorFragment {
 
       int foreignChatId = original.getChatId();
       if (foreignChatId != 0 && foreignChatId != chatId) {
-        Intent intent = new Intent(getActivity(), ConversationActivity.class);
-        intent.putExtra(ConversationActivity.CHAT_ID_EXTRA, foreignChatId);
         int start = DcMsg.getMessagePosition(original, DcHelper.getContext(getContext()));
-        intent.putExtra(ConversationActivity.STARTING_POSITION_EXTRA, start);
+        Intent intent;
+        if (BuildConfig.POLLI_UI) {
+          intent = AppNav.chatIntent(getActivity(), foreignChatId, -1, null, start, false);
+        } else {
+          intent = new Intent(getActivity(), ConversationActivity.class);
+          intent.putExtra(ConversationActivity.CHAT_ID_EXTRA, foreignChatId);
+          intent.putExtra(ConversationActivity.STARTING_POSITION_EXTRA, start);
+        }
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        ((ConversationActivity) getActivity()).hideSoftKeyboard();
+        if (getActivity() instanceof ConversationActivity) {
+          ((ConversationActivity) getActivity()).hideSoftKeyboard();
+        }
         if (getActivity() != null) {
           getActivity().startActivity(intent);
         } else {
