@@ -19,6 +19,7 @@ import com.polli.android.profiles.ProfilesActivity
 import com.polli.android.notes.NoteEditorActivity
 import org.thoughtcrime.securesms.BuildConfig
 import org.thoughtcrime.securesms.R
+import com.polli.domain.navigation.ChatIntentExtras
 import org.thoughtcrime.securesms.ConversationActivity
 import org.thoughtcrime.securesms.ConversationListActivity
 import org.thoughtcrime.securesms.ConversationListArchiveActivity
@@ -49,8 +50,8 @@ object AppNav {
     @JvmStatic
     fun homeIntentFromWelcome(context: Context, rawQr: String? = null): Intent {
         return homeIntent(context).apply {
-            putExtra(ConversationListActivity.FROM_WELCOME, true)
-            rawQr?.let { putExtra(ConversationListActivity.FROM_WELCOME_RAW_QR, it) }
+            putExtra(ChatIntentExtras.FROM_WELCOME, true)
+            rawQr?.let { putExtra(ChatIntentExtras.FROM_WELCOME_RAW_QR, it) }
         }
     }
 
@@ -76,9 +77,9 @@ object AppNav {
     @JvmStatic
     fun homeIntentWithAccount(context: Context, accountId: Int, clearNotifications: Boolean): Intent {
         return homeIntent(context).apply {
-            putExtra(ConversationListActivity.ACCOUNT_ID_EXTRA, accountId)
+            putExtra(ChatIntentExtras.ACCOUNT_ID, accountId)
             if (clearNotifications) {
-                putExtra(ConversationListActivity.CLEAR_NOTIFICATIONS, true)
+                putExtra(ChatIntentExtras.CLEAR_NOTIFICATIONS, true)
             }
         }
     }
@@ -94,16 +95,16 @@ object AppNav {
         fromArchived: Boolean = false,
     ): Intent {
         val intent = Intent(context, chatActivityClass())
-        intent.putExtra(ConversationActivity.CHAT_ID_EXTRA, chatId)
+        intent.putExtra(ChatIntentExtras.CHAT_ID, chatId)
         if (accountId >= 0) {
-            intent.putExtra(ConversationActivity.ACCOUNT_ID_EXTRA, accountId)
+            intent.putExtra(ChatIntentExtras.ACCOUNT_ID, accountId)
         }
-        draftText?.let { intent.putExtra(ConversationActivity.TEXT_EXTRA, it) }
+        draftText?.let { intent.putExtra(ChatIntentExtras.DRAFT_TEXT, it) }
         if (startingPosition >= 0) {
-            intent.putExtra(ConversationActivity.STARTING_POSITION_EXTRA, startingPosition)
+            intent.putExtra(ChatIntentExtras.STARTING_POSITION, startingPosition)
         }
         if (fromArchived) {
-            intent.putExtra(ConversationActivity.FROM_ARCHIVED_CHATS_EXTRA, true)
+            intent.putExtra(ChatIntentExtras.FROM_ARCHIVED, true)
         }
         return intent
     }

@@ -11,7 +11,7 @@ import com.b44t.messenger.DcContext
 import com.b44t.messenger.DcMsg
 import chat.delta.rpc.types.SecurejoinSource
 import chat.delta.rpc.types.SecurejoinUiPath
-import org.thoughtcrime.securesms.ConversationListActivity
+import com.polli.domain.navigation.ChatIntentExtras
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.components.reminder.DozeReminder
 import org.thoughtcrime.securesms.connect.DcHelper
@@ -29,13 +29,13 @@ object BackgroundSetup {
     /** Call from [com.polli.android.HomeActivity.onCreate] — welcome device msgs + join-by-QR. */
     @JvmStatic
     fun handleHomeIntent(activity: Activity, intent: Intent) {
-        addDeviceMessages(activity, intent.getBooleanExtra(ConversationListActivity.FROM_WELCOME, false))
-        intent.getStringExtra(ConversationListActivity.FROM_WELCOME_RAW_QR)?.let { rawQr ->
+        addDeviceMessages(activity, intent.getBooleanExtra(ChatIntentExtras.FROM_WELCOME, false))
+        intent.getStringExtra(ChatIntentExtras.FROM_WELCOME_RAW_QR)?.let { rawQr ->
             QrCodeHandler(activity).secureJoinByQr(rawQr, SecurejoinSource.Scan, SecurejoinUiPath.Unknown)
-            intent.removeExtra(ConversationListActivity.FROM_WELCOME_RAW_QR)
+            intent.removeExtra(ChatIntentExtras.FROM_WELCOME_RAW_QR)
         }
-        if (intent.getBooleanExtra(ConversationListActivity.FROM_WELCOME, false)) {
-            intent.removeExtra(ConversationListActivity.FROM_WELCOME)
+        if (intent.getBooleanExtra(ChatIntentExtras.FROM_WELCOME, false)) {
+            intent.removeExtra(ChatIntentExtras.FROM_WELCOME)
         }
     }
 

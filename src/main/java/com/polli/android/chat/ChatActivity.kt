@@ -21,8 +21,8 @@ import com.polli.android.BaseComposeActivity
 import com.polli.android.media.ImageEditLauncher
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.LabTheme
+import com.polli.domain.navigation.ChatIntentExtras
 import org.thoughtcrime.securesms.AttachContactActivity
-import org.thoughtcrime.securesms.ConversationActivity
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.components.audioplay.AudioPlaybackViewModel
 import org.thoughtcrime.securesms.components.audioplay.ChatAudioQueueProvider
@@ -83,16 +83,16 @@ class ChatActivity : BaseComposeActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        chatId = intent.getIntExtra(ConversationActivity.CHAT_ID_EXTRA, -1)
+        chatId = intent.getIntExtra(ChatIntentExtras.CHAT_ID, -1)
         if (chatId <= 0) {
             finish()
             return
         }
         val dc = DcHelper.getContext(this)
         val chat = dc.getChat(chatId)
-        val draftText = intent.getStringExtra(ConversationActivity.TEXT_EXTRA)
-        val startingPosition = intent.getIntExtra(ConversationActivity.STARTING_POSITION_EXTRA, -1)
-        val fromArchived = intent.getBooleanExtra(ConversationActivity.FROM_ARCHIVED_CHATS_EXTRA, false)
+        val draftText = intent.getStringExtra(ChatIntentExtras.DRAFT_TEXT)
+        val startingPosition = intent.getIntExtra(ChatIntentExtras.STARTING_POSITION, -1)
+        val fromArchived = intent.getBooleanExtra(ChatIntentExtras.FROM_ARCHIVED, false)
         val prefs = AppPrefs(this)
 
         playbackViewModel.setQueueProvider(
@@ -227,7 +227,7 @@ class ChatActivity : BaseComposeActivity() {
         @JvmStatic
         fun intent(context: android.content.Context, chatId: Int): Intent {
             return Intent(context, ChatActivity::class.java).apply {
-                putExtra(ConversationActivity.CHAT_ID_EXTRA, chatId)
+                putExtra(ChatIntentExtras.CHAT_ID, chatId)
             }
         }
     }

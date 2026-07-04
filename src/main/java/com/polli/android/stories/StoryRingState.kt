@@ -14,7 +14,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.b44t.messenger.DcContext
 import com.b44t.messenger.DcMsg
-import com.polli.android.bridge.InboxItem
+import com.polli.domain.model.InboxItem
 import com.polli.android.navigation.AppNav
 import org.thoughtcrime.securesms.connect.DcHelper
 
