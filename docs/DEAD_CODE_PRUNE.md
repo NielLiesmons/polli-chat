@@ -16,7 +16,7 @@ Goal: shrink the legacy Android fork surface while keeping the Chatmail engine (
 
 | Feature | Legacy | Polli status | Action |
 |---------|--------|--------------|--------|
-| Chat feed + composer | `ConversationActivity` | `ChatActivity` | Replace-only prune when manifest gated |
+| Chat feed + composer | `ConversationActivity` | `ChatActivity` | **Gated** — legacy redirects when `POLLI_UI` |
 | Image editor on attach | `ScribbleActivity` | **Wired** via `ImageEditLauncher` | Compose editor later; keep Java editor until then |
 | Attach draft (preview before send) | `AttachmentManager` | **Wired** — composer preview + caption on send | OK |
 | Gallery / file / contact / location | `AttachmentManager` | Partial in `ChatActivity` | Keep bridging |
@@ -29,8 +29,9 @@ Goal: shrink the legacy Android fork surface while keeping the Chatmail engine (
 ## Phase A — Inventory
 
 - [x] Confirm Polli chat bypassed image editor (fixed: `ImageEditLauncher`)
-- [ ] Manifest activity audit: `polli` / `legacy-bypass` / `infra` / `delete-candidate`
-- [ ] Confirm `POLLI_UI` paths never launch legacy chat/home
+- [x] Manifest: `ConversationListActivity` no longer exported; launcher via `RoutingActivity` → `LauncherActivity`
+- [x] Legacy chat/home redirect to Polli when `POLLI_UI` (`PolliLegacyRedirect`, `ShareRelay`)
+- [x] Share intents route to `HomeActivity` / `ChatActivity` with relay support
 - [ ] List Java packages with zero references from `com.polli.android`
 
 ## Phase B — Safe deletes (only after parity)
@@ -60,7 +61,7 @@ Goal: shrink the legacy Android fork surface while keeping the Chatmail engine (
 - [x] Home + archive wired through `ChatRepository` (`HomeViewModel`, `InboxLoad`, `ArchiveLoad`)
 - [x] `polli-ui`: `ChatComingSoonTab`, `ChatInboxCard`; chat Files tab inline via `ChatMediaTabPanel` + `MediaRepository`
 - [x] Composer attach draft preview before send (images, video, files)
-- [ ] Move media grid composable into `polli-ui` commonMain
+- [x] Move `ChatMediaBrowser` into `polli-ui` commonMain (platform thumb/list slots)
 - [ ] First screen fully in `polli-ui` commonMain: TBD
 
 ## Build check
