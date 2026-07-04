@@ -12,12 +12,17 @@ import android.view.MenuItem;
 import androidx.activity.OnBackPressedCallback;
 import com.b44t.messenger.DcChat;
 import com.polli.android.navigation.AppNav;
+import com.polli.android.navigation.PolliLegacyRedirect;
+import com.polli.android.navigation.ShareRelay;
 import org.thoughtcrime.securesms.connect.DcHelper;
 
 public class ConversationListArchiveActivity extends PassphraseRequiredActionBarActivity
     implements ConversationListFragment.ConversationSelectedListener {
   @Override
   protected void onCreate(Bundle icicle, boolean ready) {
+    if (PolliLegacyRedirect.redirectArchiveListToPolli(this)) {
+      return;
+    }
     setContentView(R.layout.activity_conversation_list_archive);
     getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     if (isRelayingMessageContent(this)) {
@@ -91,6 +96,11 @@ public class ConversationListArchiveActivity extends PassphraseRequiredActionBar
 
   @Override
   public void onCreateConversation(int chatId) {
+    if (com.polli.android.navigation.AppNav.useLabUi()) {
+      ShareRelay.openChat(this, chatId);
+      finish();
+      return;
+    }
     Intent intent = AppNav.chatIntent(this, chatId, -1, null, -1, true);
     if (isRelayingMessageContent(this)) {
       acquireRelayMessageContent(this, intent);

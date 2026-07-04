@@ -59,6 +59,7 @@ import com.b44t.messenger.DcContact;
 import com.b44t.messenger.DcContext;
 import com.b44t.messenger.DcMsg;
 import com.google.zxing.integration.android.IntentIntegrator;
+import com.polli.android.navigation.PolliLegacyRedirect;
 import com.google.zxing.integration.android.IntentResult;
 import java.util.ArrayList;
 import java.util.Date;
@@ -132,6 +133,9 @@ public class ConversationListActivity extends PassphraseRequiredActionBarActivit
 
   @Override
   protected void onCreate(Bundle icicle, boolean ready) {
+    if (PolliLegacyRedirect.redirectConversationListToPolli(this)) {
+      return;
+    }
     relayLockLauncher =
         registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -622,6 +626,9 @@ public class ConversationListActivity extends PassphraseRequiredActionBarActivit
   }
 
   public void openConversation(int chatId, int startingPosition) {
+    if (PolliLegacyRedirect.openPolliChatFromList(this, chatId, startingPosition)) {
+      return;
+    }
     searchToolbar.clearFocus();
 
     final DcContext dcContext = DcHelper.getContext(this);

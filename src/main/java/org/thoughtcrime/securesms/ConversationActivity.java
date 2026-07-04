@@ -204,6 +204,9 @@ public class ConversationActivity extends PassphraseRequiredActionBarActivity
 
   @Override
   protected void onCreate(Bundle state, boolean ready) {
+    if (com.polli.android.navigation.PolliLegacyRedirect.redirectConversationToPolli(this)) {
+      return;
+    }
     this.context = ApplicationContext.getInstance(getApplicationContext());
     this.rpc = DcHelper.getRpc(context);
 

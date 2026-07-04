@@ -30,7 +30,10 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.pm.ShortcutManagerCompat;
 import com.b44t.messenger.DcContext;
+import com.polli.android.navigation.PolliLegacyRedirect;
 import com.polli.android.navigation.AppNav;
+import com.polli.android.HomeActivity;
+import com.polli.domain.navigation.ChatIntentExtras;
 import java.util.ArrayList;
 import java.util.List;
 import org.thoughtcrime.securesms.connect.DcHelper;
@@ -269,15 +272,23 @@ public class ShareActivity extends PassphraseRequiredActionBarActivity
     Intent composeIntent;
     if (accId != -1 && chatId > 0) {
       composeIntent = getBaseShareIntent(AppNav.chatActivityClass());
-      composeIntent.putExtra(ConversationActivity.CHAT_ID_EXTRA, chatId);
-      composeIntent.putExtra(ConversationActivity.ACCOUNT_ID_EXTRA, accId);
+      composeIntent.putExtra(ChatIntentExtras.CHAT_ID, chatId);
+      composeIntent.putExtra(ChatIntentExtras.ACCOUNT_ID, accId);
       ShareUtil.setSharedUris(composeIntent, resolvedExtras);
       startActivity(composeIntent);
     } else {
-      composeIntent = getBaseShareIntent(ConversationListRelayingActivity.class);
+      if (AppNav.useLabUi()) {
+        composeIntent = getBaseShareIntent(HomeActivity.class);
+      } else {
+        composeIntent = getBaseShareIntent(ConversationListRelayingActivity.class);
+      }
       ShareUtil.setSharedUris(composeIntent, resolvedExtras);
       ShareUtil.setIsFromWebxdc(composeIntent, ShareUtil.isFromWebxdc(this));
-      ConversationListRelayingActivity.start(this, composeIntent);
+      if (AppNav.useLabUi()) {
+        startActivity(composeIntent);
+      } else {
+        ConversationListRelayingActivity.start(this, composeIntent);
+      }
     }
     finish();
   }
