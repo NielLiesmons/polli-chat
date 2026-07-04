@@ -4,34 +4,17 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.polli.android.navigation.AppNav
 import com.polli.android.navigation.ShareRelay
 import com.polli.android.settings.AppPrefs
-import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabDimens
 import com.polli.android.theme.LabTheme
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.LabAvatar
 import com.polli.android.ui.RoundBackButton
-import com.polli.android.ui.ShellDivider
-import com.polli.ui.components.ChatInboxCard
+import com.polli.ui.screens.ArchiveScreen
 
 class ArchiveActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +23,7 @@ class ArchiveActivity : ComponentActivity() {
         val prefs = AppPrefs(this)
         setContent {
             LabTheme(prefs = prefs) {
-                ArchiveScreen(
+                ArchiveHost(
                     onBack = { finish() },
                     onOpenChat = { chatId ->
                         if (ShareRelay.isActive(this)) {
@@ -56,54 +39,23 @@ class ArchiveActivity : ComponentActivity() {
 }
 
 @Composable
-private fun ArchiveScreen(onBack: () -> Unit, onOpenChat: (Int) -> Unit) {
+private fun ArchiveHost(onBack: () -> Unit, onOpenChat: (Int) -> Unit) {
     val items = rememberArchivedItems()
     val nowSec = remember { System.currentTimeMillis() / 1000 }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(LabColors.Black)
-            .padding(top = AppInsets.statusBarTop()),
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            RoundBackButton(onClick = onBack)
-            Text(
-                text = "Archive",
-                color = LabColors.White85,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(start = 12.dp),
+    ArchiveScreen(
+        items = items,
+        nowSec = nowSec,
+        onBack = onBack,
+        onOpenChat = onOpenChat,
+        topInset = AppInsets.statusBarTop(),
+        backButton = { RoundBackButton(onClick = onBack) },
+        avatar = { item ->
+            LabAvatar(
+                name = item.name,
+                seed = item.colorSeed,
+                size = LabDimens.AvatarSize,
+                chatId = item.chatId,
             )
-        }
-        ShellDivider(screenPad = 0.dp)
-        if (items.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("No archived chats", color = LabColors.White33)
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 14.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-            ) {
-                items(items, key = { it.chatId }) { item ->
-                    ChatInboxCard(
-                        item = item,
-                        onClick = { onOpenChat(item.chatId) },
-                        nowSec = nowSec,
-                        avatar = {
-                            LabAvatar(
-                                name = item.name,
-                                seed = item.colorSeed,
-                                size = LabDimens.AvatarSize,
-                                chatId = item.chatId,
-                            )
-                        },
-                    )
-                }
-            }
-        }
-    }
+        },
+    )
 }

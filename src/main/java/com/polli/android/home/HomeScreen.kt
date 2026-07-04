@@ -71,6 +71,7 @@ import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabDimens
 import com.polli.android.theme.accent
 import com.polli.android.ui.AppInsets
+import com.polli.ui.components.ArchiveLinkRow
 import com.polli.ui.components.ChatInboxCard
 import com.polli.android.ui.LabAvatar
 import com.polli.android.ui.SelfAvatar
@@ -357,7 +358,8 @@ fun HomeScreen(
                         ) {
                             if (showArchiveRow) {
                                 item(key = "archive-link") {
-                                    ArchiveRow(
+                                    ArchiveLinkRow(
+                                        label = stringResource(R.string.chat_archived_chats_title),
                                         unreadCount = archiveLink.unreadCount,
                                         onClick = onArchiveClick,
                                     )
@@ -678,53 +680,5 @@ private fun TabPill(label: String, selected: Boolean, onClick: () -> Unit) {
             fontSize = fontSize,
             fontWeight = FontWeight.Medium,
         )
-    }
-}
-
-@Composable
-private fun ArchiveRow(unreadCount: Int, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            modifier = Modifier
-                .size(LabDimens.AvatarSize)
-                .clip(CircleShape)
-                .background(LabColors.Gray66),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text("⌂", color = LabColors.White66, fontSize = 20.sp)
-        }
-        Text(
-            text = stringResource(R.string.chat_archived_chats_title),
-            color = LabColors.White,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 12.dp),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        if (unreadCount > 0) {
-            Box(
-                modifier = Modifier
-                    .height(LabDimens.UnreadBadgeMinSize)
-                    .clip(RoundedCornerShape(999.dp))
-                    .background(accent().gradientBrush())
-                    .padding(horizontal = LabDimens.UnreadBadgeHPadding),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = if (unreadCount > 99) "99+" else unreadCount.toString(),
-                    color = LabColors.White,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold,
-                )
-            }
-        }
     }
 }
