@@ -113,6 +113,7 @@ fun HomeScreen(
     onArchiveClick: () -> Unit = {},
     onNewNote: () -> Unit = {},
     onOpenNote: (Int) -> Unit = {},
+    shareRelayTitle: String? = null,
 ) {
     var searchPanelOpen by remember { mutableStateOf(false) }
     var storySession by remember { mutableStateOf<StorySession?>(null) }
@@ -250,6 +251,17 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .alpha(chromeAlpha),
             ) {
+                shareRelayTitle?.let { title ->
+                    Text(
+                        text = title,
+                        color = LabColors.White66,
+                        style = MaterialTheme.typography.labelLarge,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = LabDimens.HomeBarPadding)
+                            .padding(bottom = 8.dp),
+                    )
+                }
                 if (expandProgress < 0.92f) {
                     Spacer(modifier = Modifier.height(LabDimens.StoryRowDividerGap))
                     Column(modifier = Modifier.fillMaxWidth()) {

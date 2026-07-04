@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.activity.viewModels
 import com.polli.android.home.HomeScreen
 import com.polli.android.navigation.AppNav
+import com.polli.android.navigation.ShareRelay
 import com.polli.android.onboarding.WelcomeActivity
 import com.polli.android.permissions.BackgroundSetup
 import com.polli.android.profiles.ProfilesActivity
@@ -40,11 +41,18 @@ class HomeActivity : BaseComposeActivity() {
                     profileName = dc.getConfig(DcHelper.CONFIG_DISPLAY_NAME).ifBlank { "Profile" },
                     profileSeed = dc.getConfig(DcHelper.CONFIG_CONFIGURED_ADDRESS).ifBlank { "me" },
                     storiesViewModel = storiesViewModel,
+                    shareRelayTitle = ShareRelay.relayTitle(this@HomeActivity),
                     onProfileClick = {
                         startActivity(Intent(this, ProfilesActivity::class.java))
                     },
                     onPlusClick = { AppNav.openNewConversation(this) },
-                    onChatClick = { chatId -> AppNav.openChat(this, chatId) },
+                    onChatClick = { chatId ->
+                        if (ShareRelay.isActive(this)) {
+                            ShareRelay.openChat(this, chatId)
+                        } else {
+                            AppNav.openChat(this, chatId)
+                        }
+                    },
                     onSearch = { /* query applied inside HomeScreen local state */ },
                     onArchiveClick = { AppNav.openArchive(this) },
                     onNewNote = { AppNav.openNewNote(this) },

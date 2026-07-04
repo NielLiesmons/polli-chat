@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.polli.android.navigation.AppNav
+import com.polli.android.navigation.ShareRelay
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabDimens
@@ -39,7 +40,16 @@ class ArchiveActivity : ComponentActivity() {
         val prefs = AppPrefs(this)
         setContent {
             LabTheme(prefs = prefs) {
-                ArchiveScreen(onBack = { finish() }, onOpenChat = { AppNav.openChat(this, it) })
+                ArchiveScreen(
+                    onBack = { finish() },
+                    onOpenChat = { chatId ->
+                        if (ShareRelay.isActive(this)) {
+                            ShareRelay.openChat(this, chatId)
+                        } else {
+                            AppNav.openChat(this, chatId)
+                        }
+                    },
+                )
             }
         }
     }

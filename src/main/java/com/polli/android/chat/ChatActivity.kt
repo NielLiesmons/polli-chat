@@ -109,6 +109,13 @@ class ChatActivity : BaseComposeActivity() {
             fromArchived = fromArchived,
         )
 
+        ShareInbound.apply(
+            activity = this,
+            chatId = chatId,
+            viewModel = viewModel,
+            stageAttachment = { uri, mime -> stageAttachment(uri, mime) },
+        )
+
         setContent {
             val revision = themeRevision
             LabTheme(prefs = prefs, uiScaleRevision = revision) {
