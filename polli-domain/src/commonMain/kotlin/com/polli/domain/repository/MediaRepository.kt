@@ -1,5 +1,7 @@
 package com.polli.domain.repository
 
+import com.polli.core.chat.ChatMediaFilter
+
 interface MediaRepository {
-    fun sendMedia(chatId: Int, uri: String, mimeType: String?)
+    fun messageIdsForFilter(chatId: Int, filter: ChatMediaFilter): IntArray
 }
