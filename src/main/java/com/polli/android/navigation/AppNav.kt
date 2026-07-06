@@ -22,7 +22,7 @@ import org.thoughtcrime.securesms.R
 import com.polli.domain.navigation.ChatIntentExtras
 import com.polli.android.settings.NotificationSettingsActivity
 import com.polli.android.profiles.ProfileDetailActivity
-import org.thoughtcrime.securesms.WebxdcActivity
+import com.polli.android.webxdc.WebxdcActivity
 
 /** Sole routing API — all user-facing navigation goes through here. */
 object AppNav {

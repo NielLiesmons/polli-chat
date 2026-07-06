@@ -202,7 +202,6 @@ public class NotificationCenter {
   public static final String CH_MSG_VERSION = "5";
   public static final String CH_PERMANENT = "dc_fg_notification_ch";
   public static final String CH_GENERIC = "ch_generic";
-  public static final String CH_CALLS_PREFIX = "call_chan";
 
   private boolean notificationChannelsSupported() {
     return Build.VERSION.SDK_INT >= 26;
@@ -339,54 +338,6 @@ public class NotificationCenter {
         }
       } catch (Exception e) {
         Log.e(TAG, "Error in getNotificationChannel()", e);
-      }
-    }
-
-    return channelId;
-  }
-
-  public String getCallNotificationChannel(
-      NotificationManagerCompat notificationManager, ChatData chatData, String name) {
-    String channelId = CH_CALLS_PREFIX + "-" + chatData.accountId + "-" + chatData.chatId;
-
-    if (notificationChannelsSupported()) {
-      try {
-        name = "(calls) " + name;
-
-        // check if there is already a channel with the given name
-        List<NotificationChannel> channels = notificationManager.getNotificationChannels();
-        boolean channelExists = false;
-        for (int i = 0; i < channels.size(); i++) {
-          String currChannelId = channels.get(i).getId();
-          if (currChannelId.startsWith(CH_CALLS_PREFIX)) {
-            // this is one of the calls channels handled here ...
-            if (currChannelId.equals(channelId)) {
-              // ... this is the actually required channel, fine :)
-              // update the name to reflect localize changes and chat renames
-              channelExists = true;
-              channels.get(i).setName(name);
-            }
-          }
-        }
-
-        // create the channel
-        if (!channelExists) {
-          NotificationChannel channel =
-              new NotificationChannel(channelId, name, NotificationManager.IMPORTANCE_MAX);
-          channel.setDescription("Informs about incoming calls.");
-          channel.setShowBadge(true);
-
-          Uri ringtone = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-          channel.setSound(
-              ringtone,
-              new AudioAttributes.Builder()
-                  .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
-                  .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                  .build());
-          notificationManager.createNotificationChannel(channel);
-        }
-      } catch (Exception e) {
-        Log.e(TAG, "Error in getCallNotificationChannel()", e);
       }
     }
 

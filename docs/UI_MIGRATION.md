@@ -33,9 +33,9 @@ Branch: `feature/compose-kmp-migration`
 | Account setup | Yes | app | AccountSetupActivity + AdvancedOnboardingActivity |
 | Settings depth | No | — | preference fragments |
 | Profile detail | Yes | app | ProfileDetailActivity |
-| Webxdc | No | — | WebxdcActivity |
+| Webxdc | Partial | app (`com.polli.android.webxdc`) | WebxdcActivity (Java WebView + JS bridge) |
 | Relay | No | — | RelayListActivity |
-| Calls | No | — | CallActivity |
+| Calls | — | — | **Removed** |
 
 ## Phase status
 

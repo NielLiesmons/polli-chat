@@ -1,4 +1,4 @@
-package org.thoughtcrime.securesms;
+package com.polli.android.webxdc;
 
 import android.app.Activity;
 import android.content.Context;
@@ -51,6 +51,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import org.json.JSONObject;
+import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.WebViewActivity;
 import org.thoughtcrime.securesms.connect.AccountManager;
 import org.thoughtcrime.securesms.connect.DcEventCenter;
 import org.thoughtcrime.securesms.connect.DcHelper;

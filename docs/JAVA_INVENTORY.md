@@ -8,7 +8,7 @@ Cross-reference: references from `com.polli.android` vs legacy-only Java.
 - `ConversationListActivity`, archive list, relay list
 - Java `WelcomeActivity`, `NewConversationActivity`
 
-Polli hosts: `HomeActivity`, `ChatActivity`, `ArchiveActivity`, Compose `WelcomeActivity`, `NewConversationActivity`, `GroupCreateActivity`, `AccountSetupActivity`, `AdvancedOnboardingActivity`, `ProfileDetailActivity`, `ProfilesActivity`, `NotificationSettingsActivity`.
+Polli hosts: `HomeActivity`, `ChatActivity`, `ArchiveActivity`, Compose `WelcomeActivity`, `NewConversationActivity`, `GroupCreateActivity`, `AccountSetupActivity`, `AdvancedOnboardingActivity`, `ProfileDetailActivity`, `ProfilesActivity`, `NotificationSettingsActivity`, `com.polli.android.webxdc.WebxdcActivity` / `WebxdcStoreActivity`.
 
 ## Polli-referenced (keep — engine / bridge)
 
@@ -28,9 +28,8 @@ Polli hosts: `HomeActivity`, `ChatActivity`, `ArchiveActivity`, Compose `Welcome
 
 | Target | Polli replacement | Status |
 |--------|-------------------|--------|
-| `WebxdcActivity` | — | Java only |
-| `calls/` + `webrtc/` | — | Not in Polli UI |
+| `WebViewActivity`, `ConnectivityActivity`, `FullMsgActivity` | — | Java only (shared WebView base) |
 
 ## Do not delete yet
 
-`connect/`, `notifications/`, `imageeditor/`, `scribbles/`, `calls/`, `webrtc/` until replacements or product decisions land.
+`connect/`, `notifications/`, `imageeditor/`, `scribbles/` until replacements or product decisions land.

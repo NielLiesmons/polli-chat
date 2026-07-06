@@ -21,9 +21,9 @@ Goal: shrink the legacy Android fork surface while keeping the Chatmail engine (
 | Attach draft (preview before send) | `AttachmentManager` | **Wired** — composer preview + caption on send | OK |
 | Gallery / file / contact / location | `AttachmentManager` | Partial in `ChatActivity` | Keep bridging |
 | Voice record + send | DC input panel | `ChatComposer` | OK |
-| Calls / WebRTC | `CallActivity` | Not in Polli UI | Replace or explicitly drop — do not silent-delete |
+| Calls / WebRTC | `CallActivity` | **Dropped** — not in Polli product | **Removed** (~5.5k LOC) |
 | Profile avatar crop | `ScribbleActivity` + `AvatarHelper` | **Wired** via `ImageEditLauncher(cropAvatar=true)` | OK |
-| Webxdc | `WebxdcActivity` | Java only | Compose host later |
+| Webxdc | `com.polli.android.webxdc.WebxdcActivity` | Java WebView host (engine in Rust core) | Compose host later |
 | Settings depth | `ApplicationPreferencesActivity` + preference fragments | **Done** — `ProfilesActivity` + `NotificationSettingsActivity` |
 
 ## Phase A — Inventory
@@ -42,7 +42,7 @@ Goal: shrink the legacy Android fork surface while keeping the Chatmail engine (
 | `ConversationListActivity` + archive | ~1k | **Removed** — `HomeActivity` / `ArchiveActivity` only |
 | Java welcome/onboarding duplicates | ~1.5k | **Done** — Compose welcome + `AdvancedOnboardingActivity` |
 | `imageeditor/` + `scribbles/` | ~6.7k | **Compose image editor** — do not delete until then |
-| `calls/` + `webrtc/` | ~5.5k | Product decision + replacement |
+| `calls/` + `webrtc/` | ~5.5k | **Removed** — Polli does not ship video calls |
 
 ## Phase C — Kotlin replacements
 

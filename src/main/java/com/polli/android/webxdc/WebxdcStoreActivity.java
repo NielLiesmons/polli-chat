@@ -1,4 +1,4 @@
-package org.thoughtcrime.securesms;
+package com.polli.android.webxdc;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -20,6 +20,8 @@ import chat.delta.rpc.types.HttpResponse;
 import com.b44t.messenger.DcContext;
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
+import org.thoughtcrime.securesms.PassphraseRequiredActionBarActivity;
+import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.connect.DcHelper;
 import org.thoughtcrime.securesms.providers.PersistentBlobProvider;
 import org.thoughtcrime.securesms.util.IntentUtils;

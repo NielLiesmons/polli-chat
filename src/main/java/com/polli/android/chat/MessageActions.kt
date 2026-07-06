@@ -14,7 +14,7 @@ import com.b44t.messenger.DcMsg
 import com.polli.android.navigation.AppNav
 import com.polli.android.HomeRelayingActivity
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.WebxdcActivity
+import com.polli.android.webxdc.WebxdcActivity
 import org.thoughtcrime.securesms.connect.DcHelper
 import org.thoughtcrime.securesms.util.ShareUtil.setForwardingMessageIds
 import org.thoughtcrime.securesms.util.Util
