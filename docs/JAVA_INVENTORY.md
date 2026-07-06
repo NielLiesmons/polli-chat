@@ -8,7 +8,7 @@ Cross-reference: references from `com.polli.android` vs legacy-only Java.
 - `ConversationListActivity`, archive list, relay list
 - Java `WelcomeActivity`, `NewConversationActivity`
 
-Polli hosts: `HomeActivity`, `ChatActivity`, `ArchiveActivity`, Compose `WelcomeActivity`, `NewConversationActivity`, `GroupCreateActivity` (create/edit/clone).
+Polli hosts: `HomeActivity`, `ChatActivity`, `ArchiveActivity`, Compose `WelcomeActivity`, `NewConversationActivity`, `GroupCreateActivity`, `AccountSetupActivity`, `AdvancedOnboardingActivity`.
 
 ## Polli-referenced (keep — engine / bridge)
 
@@ -28,7 +28,6 @@ Polli hosts: `HomeActivity`, `ChatActivity`, `ArchiveActivity`, Compose `Welcome
 
 | Target | Polli replacement | Status |
 |--------|-------------------|--------|
-| `InstantOnboardingActivity` | `AccountSetupActivity` | Java kept for **advanced setup** from welcome |
 | `ProfileActivity` | Profiles sheet | Java profile detail |
 | `ApplicationPreferencesActivity` | `ProfilesActivity` | Notification/system prefs bridge |
 | `WebxdcActivity` | — | Java only |

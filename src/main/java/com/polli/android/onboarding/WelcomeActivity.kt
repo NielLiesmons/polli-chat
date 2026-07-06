@@ -15,7 +15,7 @@ import com.polli.android.theme.LabTheme
 import com.polli.android.ui.AppInsets
 import com.polli.ui.screens.WelcomeScreen
 import androidx.compose.ui.unit.dp
-import org.thoughtcrime.securesms.InstantOnboardingActivity
+import com.polli.android.onboarding.AdvancedOnboardingActivity
 import org.thoughtcrime.securesms.qr.BackupTransferActivity
 import org.thoughtcrime.securesms.qr.RegistrationQrActivity
 
@@ -50,7 +50,7 @@ class WelcomeActivity : BaseComposeActivity() {
                         }
                     },
                     onAdvancedSetup = {
-                        startActivity(Intent(this, InstantOnboardingActivity::class.java))
+                        startActivity(AdvancedOnboardingActivity.intent(this))
                     },
                 )
             }

@@ -8,8 +8,8 @@ import androidx.appcompat.app.AlertDialog
 import com.b44t.messenger.DcContext
 import com.b44t.messenger.DcLot
 import com.polli.android.navigation.AppNav
+import com.polli.android.onboarding.AdvancedOnboardingActivity
 import com.polli.android.onboarding.AccountSetupActivity
-import org.thoughtcrime.securesms.InstantOnboardingActivity
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.connect.AccountManager
 import org.thoughtcrime.securesms.connect.DcHelper
@@ -30,9 +30,7 @@ object QrResultHandler {
                 )
             }
             DcContext.DC_QR_ASK_VERIFYCONTACT, DcContext.DC_QR_ASK_VERIFYGROUP -> {
-                activity.startActivity(Intent(activity, InstantOnboardingActivity::class.java).apply {
-                    data = android.net.Uri.parse(trimmed)
-                })
+                activity.startActivity(AdvancedOnboardingActivity.intentWithQr(activity, trimmed))
             }
             DcContext.DC_QR_BACKUP2 -> showBackup2Dialog(activity, trimmed)
             DcContext.DC_QR_BACKUP_TOO_NEW -> {

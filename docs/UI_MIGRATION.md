@@ -26,11 +26,11 @@ Branch: `feature/compose-kmp-migration`
 | ContactPicker | Yes | app | — |
 | GroupCreate | Yes | app | GroupCreateActivity |
 | AppSettings | Partial | app | ApplicationPreferencesActivity |
-| Onboarding depth | Yes | app | InstantOnboardingActivity (legacy fallback) |
+| Onboarding depth | Yes | app | AdvancedOnboardingActivity |
 | Media preview | Yes | app | MediaPreviewActivity |
 | All media | Yes | app | AllMediaActivity |
 | QR hub | Yes | app | QrActivity |
-| Account setup | Yes | app | InstantOnboardingActivity |
+| Account setup | Yes | app | AccountSetupActivity + AdvancedOnboardingActivity |
 | Settings depth | No | — | preference fragments |
 | Profile detail | No | — | ProfileActivity |
 | Webxdc | No | — | WebxdcActivity |
