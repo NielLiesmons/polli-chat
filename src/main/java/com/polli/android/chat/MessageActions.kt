@@ -52,14 +52,14 @@ object MessageActions {
         val chat = dc.getChat(chatId)
         val actions = mutableListOf<MessageAction>()
 
-        if (chat.canSend() && ConversationFragmentCompat.canReplyToMsg(msg)) {
+        if (chat.canSend() && ChatMessageRules.canReplyToMsg(msg)) {
             actions += MessageAction(
                 MessageActionId.Reply,
                 R.string.notify_reply_button,
                 R.drawable.ic_polli_reply,
             )
         }
-        if (chat.isEncrypted && chat.canSend() && ConversationFragmentCompat.canEditMsg(msg)) {
+        if (chat.isEncrypted && chat.canSend() && ChatMessageRules.canEditMsg(msg)) {
             actions += MessageAction(
                 MessageActionId.Edit,
                 R.string.edit_message,
@@ -83,7 +83,7 @@ object MessageActions {
             R.string.menu_forward,
             R.drawable.ic_forward_white_24dp,
         )
-        if (chat.isMultiUser && !msg.isOutgoing && ConversationFragmentCompat.canReplyToMsg(msg)) {
+        if (chat.isMultiUser && !msg.isOutgoing && ChatMessageRules.canReplyToMsg(msg)) {
             actions += MessageAction(
                 MessageActionId.ReplyPrivately,
                 R.string.reply_privately,
@@ -134,8 +134,8 @@ object MessageActions {
     }
 }
 
-/** Mirrors [org.thoughtcrime.securesms.ConversationFragment] message action visibility. */
-object ConversationFragmentCompat {
+/** Message action visibility rules (formerly legacy ConversationFragment). */
+object ChatMessageRules {
     fun canReplyToMsg(msg: DcMsg): Boolean = !msg.isInfo
 
     fun canEditMsg(msg: DcMsg): Boolean =

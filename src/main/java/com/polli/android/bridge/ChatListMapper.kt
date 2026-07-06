@@ -10,6 +10,7 @@ import com.polli.core.chat.ChatCategorizer
 import com.polli.core.chat.ChatCategory
 import com.polli.core.chat.ChatKind
 import com.polli.core.chat.ChatSummaryFormat
+import com.polli.core.chat.InboxFilterRules
 import com.polli.domain.model.InboxItem
 import org.thoughtcrime.securesms.connect.DcHelper
 
@@ -52,7 +53,7 @@ object ChatListMapper {
 
         for (i in 0 until count) {
             val chatId = chatlist.getChatId(i)
-            if (chatId <= DcChat.DC_CHAT_ID_LAST_SPECIAL) {
+            if (!InboxFilterRules.isListableChatId(chatId)) {
                 skippedSpecial++
                 continue
             }

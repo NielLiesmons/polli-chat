@@ -14,7 +14,7 @@ Kotlin modules (`polli-core`, `polli-engine-rpc`, `polli-domain`) are **thin ada
 
 ## Desktop RPC
 
-Desktop uses `deltachat-rpc-server` + `polli-engine-rpc`. Inbox rows are parsed in `RpcChatListMapper` (JSON boundary only); tab routing must match `polli-home::categorize`, archive link visibility must match `polli-home::archive_link_state` (mirrored in `polli-domain` `ArchiveLinkRules`).
+Desktop uses `deltachat-rpc-server` + `polli-engine-rpc`. Inbox rows are parsed in `RpcChatListMapper` (JSON boundary only); tab routing must match `polli-home::categorize`, archive link visibility must match `polli-home::archive_link_state` (mirrored in `polli-domain` `ArchiveLinkRules`), and reserved chat ids must be filtered with `polli-home::is_listable_inbox_chat` (mirrored in `polli-core` `InboxFilterRules`).
 
 **RPC gotcha:** `get_chatlist_entries` takes `query_contact_id: Option<u32>`. Pass `null`, not `0` — `0` means “filter by contact 0” and returns an empty list. JNI used `0` as “no filter”; JSON-RPC does not.
 

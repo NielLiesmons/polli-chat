@@ -40,7 +40,7 @@ Goal: shrink the legacy Android fork surface while keeping the Chatmail engine (
 |--------|------|----------------|
 | `ConversationActivity` + `ConversationFragment` + `ConversationItem` | ~4.3k | **Removed** |
 | `ConversationListActivity` + archive | ~1k | **Removed** — `HomeActivity` / `ArchiveActivity` only |
-| Java welcome/onboarding duplicates | ~1.5k | Polli onboarding paths verified |
+| Java welcome/onboarding duplicates | ~1.5k | **Partial** — Compose welcome; `InstantOnboardingActivity` for advanced |
 | `imageeditor/` + `scribbles/` | ~6.7k | **Compose image editor** — do not delete until then |
 | `calls/` + `webrtc/` | ~5.5k | Product decision + replacement |
 
