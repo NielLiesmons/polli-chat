@@ -31,7 +31,7 @@ import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.LabTheme
 import org.thoughtcrime.securesms.ContactMultiSelectionActivity
 import org.thoughtcrime.securesms.ContactSelectionListFragment
-import org.thoughtcrime.securesms.MediaPreviewActivity
+import com.polli.android.media.MediaPreviewActivity
 import org.thoughtcrime.securesms.MuteDialog
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.connect.DcEventCenter
@@ -329,14 +329,18 @@ class ProfileDetailActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEv
         if (enlarge && file.exists()) {
             val type = "image/" + profileImagePath.substringAfterLast('.', "jpeg")
             startActivity(
-                Intent(this, MediaPreviewActivity::class.java).apply {
-                    setDataAndType(Uri.fromFile(file), type)
-                    putExtra(MediaPreviewActivity.ACTIVITY_TITLE_EXTRA, title)
-                    putExtra(
-                        MediaPreviewActivity.EDIT_AVATAR_CHAT_ID,
-                        if (state.isMultiUser && !state.isInBroadcast && !state.isMailingList) state.chatId else 0,
-                    )
-                },
+                MediaPreviewActivity.intentAvatar(
+                    this,
+                    file = file,
+                    mimeType = type,
+                    title = title,
+                    editChatId =
+                        if (state.isMultiUser && !state.isInBroadcast && !state.isMailingList) {
+                            state.chatId
+                        } else {
+                            0
+                        },
+                ),
             )
         } else if (state.isMultiUser) {
             onEditName(state)

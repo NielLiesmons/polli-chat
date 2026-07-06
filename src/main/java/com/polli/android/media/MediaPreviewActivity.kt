@@ -20,6 +20,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -33,41 +34,99 @@ import com.bumptech.glide.Glide
 import com.polli.android.BaseComposeActivity
 import com.polli.android.icons.LabIcon
 import com.polli.android.icons.LabIconName
+import com.polli.android.newchat.GroupCreateActivity
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabTheme
+import com.polli.android.theme.accent
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
 import org.thoughtcrime.securesms.connect.DcHelper
+import org.thoughtcrime.securesms.mms.Slide
 import org.thoughtcrime.securesms.util.SaveAttachmentTask
 import org.thoughtcrime.securesms.util.StorageUtil
+import java.io.File
 
+/** Compose media preview — replaces Java MediaPreviewActivity. */
 class MediaPreviewActivity : BaseComposeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val msgId = intent.getIntExtra(DC_MSG_ID, DcMsg.DC_MSG_NO_ID)
+        val avatarUri = intent.data
+        val title = intent.getStringExtra(ACTIVITY_TITLE_EXTRA)
+        val editChatId = intent.getIntExtra(EDIT_AVATAR_CHAT_ID, 0)
         val prefs = AppPrefs(this)
         setContent {
             LabTheme(prefs = prefs) {
-                MediaPreviewScreen(
-                    msgId = msgId,
-                    onBack = { finish() },
-                    onOpenAllMedia = { chatId ->
-                        startActivity(ChatAllMediaActivity.intent(this, chatId))
-                        finish()
-                    },
-                )
+                when {
+                    msgId != DcMsg.DC_MSG_NO_ID -> {
+                        MediaPreviewScreen(
+                            msgId = msgId,
+                            onBack = { finish() },
+                            onOpenAllMedia = { chatId ->
+                                startActivity(ChatAllMediaActivity.intent(this, chatId))
+                                finish()
+                            },
+                        )
+                    }
+                    avatarUri != null -> {
+                        AvatarPreviewScreen(
+                            uri = avatarUri,
+                            title = title.orEmpty(),
+                            editChatId = editChatId,
+                            onBack = { finish() },
+                            onEditAvatar = {
+                                startActivity(GroupCreateActivity.intentEdit(this, editChatId))
+                                finish()
+                            },
+                        )
+                    }
+                    else -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(LabColors.Black),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text("Media unavailable", color = LabColors.White33)
+                        }
+                    }
+                }
             }
         }
     }
 
     companion object {
         const val DC_MSG_ID = "dc_msg_id"
+        const val ACTIVITY_TITLE_EXTRA = "activity_title"
+        const val EDIT_AVATAR_CHAT_ID = "avatar_for_chat_id"
+        const val OUTGOING_EXTRA = "outgoing"
 
+        @JvmStatic
         fun intent(context: Context, messageId: Int): Intent =
             Intent(context, MediaPreviewActivity::class.java).apply {
                 putExtra(DC_MSG_ID, messageId)
             }
+
+        @JvmStatic
+        fun intentAvatar(
+            context: Context,
+            file: File,
+            mimeType: String,
+            title: String,
+            editChatId: Int = 0,
+        ): Intent =
+            Intent(context, MediaPreviewActivity::class.java).apply {
+                setDataAndType(Uri.fromFile(file), mimeType)
+                putExtra(ACTIVITY_TITLE_EXTRA, title)
+                if (editChatId != 0) {
+                    putExtra(EDIT_AVATAR_CHAT_ID, editChatId)
+                }
+            }
+
+        @JvmStatic
+        fun isTypeSupported(slide: Slide?): Boolean =
+            slide != null && (slide.hasVideo() || slide.hasImage())
     }
 }
 
@@ -140,6 +199,53 @@ fun MediaPreviewScreen(
         ) { page ->
             MediaPage(msgIds[page])
         }
+    }
+}
+
+@Composable
+private fun AvatarPreviewScreen(
+    uri: Uri,
+    title: String,
+    editChatId: Int,
+    onBack: () -> Unit,
+    onEditAvatar: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(LabColors.Black),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = AppInsets.statusBarTop() + 8.dp)
+                .padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            RoundBackButton(onClick = onBack)
+            Text(
+                text = title,
+                color = LabColors.White85,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 12.dp),
+            )
+            if (editChatId != 0) {
+                TextButton(onClick = onEditAvatar) {
+                    Text("Edit", color = accent().light)
+                }
+            }
+        }
+        AndroidView(
+            modifier = Modifier.fillMaxSize(),
+            factory = { ctx ->
+                ImageView(ctx).apply { scaleType = ImageView.ScaleType.FIT_CENTER }
+            },
+            update = { view ->
+                Glide.with(view).load(uri).fitCenter().into(view)
+            },
+        )
     }
 }
 

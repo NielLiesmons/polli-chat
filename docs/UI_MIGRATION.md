@@ -28,7 +28,7 @@ Branch: `feature/compose-kmp-migration`
 | AppSettings | Yes | app | ProfilesActivity + NotificationSettingsActivity |
 | Onboarding depth | Yes | app | AdvancedOnboardingActivity |
 | Media preview | Yes | app | MediaPreviewActivity |
-| All media | Yes | app | AllMediaActivity |
+| All media | Yes | app | ChatAllMediaActivity |
 | QR hub | Yes | app | QrActivity |
 | Account setup | Yes | app | AccountSetupActivity + AdvancedOnboardingActivity |
 | Settings depth | No | — | preference fragments |

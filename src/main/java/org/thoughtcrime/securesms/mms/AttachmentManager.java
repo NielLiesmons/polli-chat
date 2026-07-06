@@ -46,7 +46,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import org.thoughtcrime.securesms.MediaPreviewActivity;
+import com.polli.android.media.MediaPreviewActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.ShareLocationDialog;
 import org.thoughtcrime.securesms.WebxdcActivity;
@@ -668,7 +668,6 @@ public class AttachmentManager {
       intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
       intent.putExtra(MediaPreviewActivity.DC_MSG_ID, slide.getDcMsgId());
       intent.putExtra(MediaPreviewActivity.OUTGOING_EXTRA, true);
-      intent.setDataAndType(slide.getUri(), slide.getContentType());
 
       context.startActivity(intent);
     }
