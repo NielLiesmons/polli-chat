@@ -362,8 +362,7 @@ public class ProfileActivity extends PassphraseRequiredActionBarActivity
     if (chatIsMultiUser) {
       DcChat dcChat = dcContext.getChat(chatId);
       if (chatIsMailingList || dcChat.canSend()) {
-        Intent intent = new Intent(this, GroupCreateActivity.class);
-        intent.putExtra(GroupCreateActivity.EDIT_GROUP_CHAT_ID, chatId);
+        Intent intent = com.polli.android.newchat.GroupCreateActivity.intentEdit(this, chatId);
         startActivity(intent);
       }
     } else {
@@ -475,8 +474,7 @@ public class ProfileActivity extends PassphraseRequiredActionBarActivity
   }
 
   private void onClone() {
-    Intent intent = new Intent(this, GroupCreateActivity.class);
-    intent.putExtra(GroupCreateActivity.CLONE_CHAT_EXTRA, chatId);
+    Intent intent = com.polli.android.newchat.GroupCreateActivity.intentClone(this, chatId);
     startActivity(intent);
   }
 

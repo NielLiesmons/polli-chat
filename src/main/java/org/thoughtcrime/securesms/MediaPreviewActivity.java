@@ -264,8 +264,7 @@ public class MediaPreviewActivity extends PassphraseRequiredActionBarActivity
   }
 
   private void editAvatar() {
-    Intent intent = new Intent(this, GroupCreateActivity.class);
-    intent.putExtra(GroupCreateActivity.EDIT_GROUP_CHAT_ID, editAvatarChatId);
+    Intent intent = com.polli.android.newchat.GroupCreateActivity.intentEdit(this, editAvatarChatId);
     startActivity(intent);
     finish(); // avoid the need to update the enlarged-avatar
   }

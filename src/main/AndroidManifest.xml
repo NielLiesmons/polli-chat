@@ -323,10 +323,6 @@
             android:exported="false" />
 
         <activity
-            android:name=".GroupCreateActivity"
-            android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
-
-        <activity
             android:name=".contacts.NewContactActivity"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
 
