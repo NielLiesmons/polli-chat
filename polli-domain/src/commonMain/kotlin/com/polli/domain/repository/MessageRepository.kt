@@ -40,6 +40,9 @@ interface MessageRepository {
         quotedMessageId: Int? = null,
     ): Int?
 
+    /** Request edit of an outgoing text message (chatmail edit protocol). */
+    fun editMessage(msgId: Int, newText: String)
+
     fun resendMessages(msgIds: IntArray)
 
     fun getMessageInfo(msgId: Int): String?

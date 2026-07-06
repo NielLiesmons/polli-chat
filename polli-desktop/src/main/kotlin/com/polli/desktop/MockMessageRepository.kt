@@ -89,6 +89,21 @@ class MockMessageRepository : MessageRepository {
         quotedMessageId: Int?,
     ): Int? = null
 
+    override fun editMessage(msgId: Int, newText: String) {
+        for (list in threads.values) {
+            val idx = list.indexOfFirst { it.stub.id == msgId }
+            if (idx >= 0) {
+                val old = list[idx]
+                list[idx] =
+                    old.copy(
+                        body = newText.trim(),
+                        stub = old.stub.copy(isEdited = true),
+                    )
+                return
+            }
+        }
+    }
+
     override fun resendMessages(msgIds: IntArray) {}
 
     override fun getMessageInfo(msgId: Int): String? = null

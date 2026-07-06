@@ -55,6 +55,12 @@ class ChatMessageStore(
         stubById.remove(msgId)
     }
 
+    /** Drop cached rows after engine events (edit, reaction, delivery state). */
+    fun invalidateAllCaches() {
+        clearMessageCache()
+        stubById.clear()
+    }
+
     fun clearMessageCache() {
         synchronized(messageCache) {
             messageCache.clear()

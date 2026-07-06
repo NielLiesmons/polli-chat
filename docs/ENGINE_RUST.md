@@ -13,7 +13,7 @@ Non-UI business logic for Polli lives in **Rust** under `jni/deltachat-core-rust
 
 Kotlin modules (`polli-core`, `polli-engine`, `polli-domain`) are **thin adapters** at platform boundaries: JNI, JSON-RPC transport, Compose state. Do not add new categorization or engine rules there — add them in Rust and mirror only where the type system requires it.
 
-Domain stubs for the spaces path: `com.polli.domain.model.space.Space` and `SpaceDrive` in `polli-domain` (no Kotlin implementation yet).
+Domain stubs for the spaces path: `com.polli.domain.model.space` (`Space`, `MnsName`, `InboxSource`, `SpaceDrive`) and `SpaceRepository` in `polli-domain` (`EmptySpaceRepository` in `polli-engine` returns no rows until `polli-spaces` lands).
 
 ## Desktop RPC
 

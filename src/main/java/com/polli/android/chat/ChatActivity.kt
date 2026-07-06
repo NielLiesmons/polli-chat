@@ -266,7 +266,7 @@ class ChatActivity : BaseComposeActivity() {
     private fun sendMedia(uri: Uri, mimeType: String? = null) {
         if (chatId <= 0) return
         MediaSend.sendUri(this, chatId, uri, mimeType ?: PlatformMedia.mimeType(this, uri))
-        viewModel.reload()
+        viewModel.notifyOutboundSent()
     }
 
     override fun onResume() {

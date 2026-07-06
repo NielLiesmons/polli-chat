@@ -178,6 +178,16 @@ class RpcMessageRepository(
         }
     }
 
+    override fun editMessage(msgId: Int, newText: String) {
+        val trimmed = newText.trim()
+        if (trimmed.isEmpty()) return
+        try {
+            rpc.sendEditRequest(accountId, msgId, trimmed)
+        } catch (_: RpcException) {
+            // ignore
+        }
+    }
+
     override fun resendMessages(msgIds: IntArray) {
         if (msgIds.isEmpty()) return
         try {

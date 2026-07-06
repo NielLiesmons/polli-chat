@@ -32,8 +32,6 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         private set
     var highlightScrollIndex by mutableIntStateOf(-1)
         private set
-    var editingMsgId by mutableIntStateOf(-1)
-        private set
     var unreadBelowCount by mutableIntStateOf(0)
         private set
 
@@ -158,11 +156,13 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun beginEdit(msg: ChatMessage) {
-        editingMsgId = msg.id
-        ensureController().updateDraft(msg.text)
-        ensureController().setReply(null)
+        ensureController().beginEdit(msg)
         overlayAnchor = null
     }
+
+    fun cancelEdit() = ensureController().cancelEdit()
+
+    fun notifyOutboundSent() = ensureController().notifyOutboundSent()
 
     fun highlightMessage(msgId: Int) = ensureController().highlightMessage(msgId)
 

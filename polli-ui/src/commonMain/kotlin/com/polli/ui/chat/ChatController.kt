@@ -36,6 +36,8 @@ class ChatController(
         private set
     var replyTo by mutableStateOf<ChatMessage?>(null)
         private set
+    var editingMessageId by mutableIntStateOf(-1)
+        private set
     var highlightId by mutableIntStateOf(-1)
         private set
     var reloadGeneration by mutableIntStateOf(0)
@@ -75,6 +77,7 @@ class ChatController(
     ) {
         if (this.chatId == chatId && registered) return
         this.chatId = chatId
+        editingMessageId = -1
         draft = initialDraft?.takeIf { it.isNotBlank() } ?: messages.getDraft(chatId)
         val freshMsgs = freshMessageCount()
         showNewMessagesMarker = freshMsgs > 0
@@ -111,7 +114,19 @@ class ChatController(
 
     fun setReply(message: ChatMessage?) {
         replyTo = message
+        editingMessageId = -1
         persistDraft()
+    }
+
+    fun beginEdit(message: ChatMessage) {
+        editingMessageId = message.id
+        draft = message.text
+        replyTo = null
+        messages.clearDraft(chatId)
+    }
+
+    fun cancelEdit() {
+        editingMessageId = -1
     }
 
     fun sendReaction(msgId: Int, emoji: String) {
@@ -146,12 +161,30 @@ class ChatController(
         if (chatId <= 0) return
         val text = draft.trim()
         if (text.isEmpty()) return
+        val editId = editingMessageId
+        if (editId > 0) {
+            messages.editMessage(editId, text)
+            store.invalidateMessage(editId)
+            store.invalidateStub(editId)
+            editingMessageId = -1
+            draft = ""
+            messages.clearDraft(chatId)
+            scrollToBottomOnReload = true
+            scheduleReload(markRead = true)
+            return
+        }
         messages.setDraft(chatId, text, replyTo?.id)
         messages.sendDraft(chatId)
         clearAfterSend()
     }
 
+    fun notifyOutboundSent() {
+        scrollToBottomOnReload = true
+        scheduleReload(markRead = true)
+    }
+
     fun clearAfterSend() {
+        editingMessageId = -1
         draft = ""
         replyTo = null
         messages.clearDraft(chatId)
@@ -199,17 +232,11 @@ class ChatController(
                 if (chatId <= 0) return@launch
                 val fresh = freshMessageCount()
                 if (markRead) messages.marknoticedChat(chatId)
-                if (feedItems.isEmpty()) {
-                    feedItems =
-                        store.syncFeedIds(chatId, showNewMessagesMarker, fresh)
-                            ?: store.buildFeed(showNewMessagesMarker, fresh)
-                    reloadGeneration++
-                } else {
-                    store.syncFeedIds(chatId, showNewMessagesMarker, fresh)?.let { items ->
-                        feedItems = items
-                        reloadGeneration++
-                    }
-                }
+                store.invalidateAllCaches()
+                feedItems =
+                    store.syncFeedIds(chatId, showNewMessagesMarker, fresh)
+                        ?: store.buildFeed(showNewMessagesMarker, fresh)
+                reloadGeneration++
                 store.preloadStubs()
             }
     }

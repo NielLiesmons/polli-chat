@@ -13,6 +13,7 @@ import com.polli.android.data.engine.PolliRepositories
 import com.polli.android.navigation.AppNav
 import com.polli.android.HomeRelayingActivity
 import com.polli.android.platform.AttachmentIntents
+import com.polli.core.PolliFeatures
 import com.polli.domain.model.chat.ChatActionContext
 import com.polli.domain.model.chat.ChatMessage
 import com.polli.domain.model.chat.ChatMessageRules
@@ -125,7 +126,7 @@ object MessageActions {
                 R.drawable.ic_swap_vert_24dp,
             )
         }
-        if (msg.viewType == "Webxdc") {
+        if (PolliFeatures.WEBXDC_ENABLED && msg.viewType == "Webxdc") {
             actions += MessageAction(
                 MessageActionId.AddToHomeScreen,
                 R.string.add_to_home_screen,
@@ -167,6 +168,7 @@ class MessageActionExecutor(
             MessageActionId.Info -> showInfo(msgId)
             MessageActionId.Resend -> messages.resendMessages(intArrayOf(msgId))
             MessageActionId.AddToHomeScreen -> {
+                if (!PolliFeatures.WEBXDC_ENABLED) return
                 val activity = context as? Activity
                 if (activity != null) {
                     WebxdcActivity.addToHomeScreen(activity, msgId)
