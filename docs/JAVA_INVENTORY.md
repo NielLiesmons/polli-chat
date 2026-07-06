@@ -7,6 +7,7 @@ Cross-reference: references from `com.polli.android` vs legacy-only Java.
 - `ConversationActivity`, `ConversationFragment`, `ConversationItem` + adapters
 - `ConversationListActivity`, archive list, relay list
 - Java `WelcomeActivity`, `NewConversationActivity`
+- `com.polli.android.bridge.ChatListMapper` (superseded by `RpcChatListMapper` / `ChatRepository`)
 
 Polli hosts: `HomeActivity`, `ChatActivity`, `ArchiveActivity`, Compose `WelcomeActivity`, `NewConversationActivity`, `GroupCreateActivity`, `AccountSetupActivity`, `AdvancedOnboardingActivity`, `ProfileDetailActivity`, `ProfilesActivity`, `NotificationSettingsActivity`, `com.polli.android.webxdc.WebxdcActivity` / `WebxdcStoreActivity`.
 

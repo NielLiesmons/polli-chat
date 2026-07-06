@@ -22,7 +22,7 @@ Reference: Polli web at 390px width (`polli/` + `polli/assets/global.css`).
 | Posts load | Text + attachment messages shown | `StoriesViewModel` |
 | Live updates | New channel posts appear without restart | DC events |
 | Progress | 2px bars, 5.5s segment | Wired |
-| Chrome | Lab play/pause/cross icons | Wired |
+| Chrome | Polli play/pause/cross icons | Wired |
 | Private reply | Composer sends quoted reply | Wired |
 
 ## Chat composer
@@ -31,7 +31,7 @@ Reference: Polli web at 390px width (`polli/` + `polli/assets/global.css`).
 |------|-----------|--------|
 | Default trailing | Voice icon 24dp, White33 | Wired |
 | With draft | Send 16dp blurple circle | Wired |
-| Plus | Lab plus icon → attach modal | Wired |
+| Plus | Polli plus icon → attach modal | Wired |
 | Attach | Camera, browse files | Activity result launchers |
 | Voice | Press-hold, swipe-left cancel, send | `VoiceRecorderBridge` |
 
@@ -52,7 +52,7 @@ Reference: Polli web at 390px width (`polli/` + `polli/assets/global.css`).
 | Flow | Must pass | Status |
 |------|-----------|--------|
 | Background | `#121212` gray mode on Polli activities | `BaseComposeActivity` |
-| Icons | Lab SVG set on home/chat/stories/composer | 16 drawables + `LabIcon` |
+| Icons | Polli SVG set on home/chat/stories/composer | 16 drawables + `PolliIcon` |
 
 ## Chat parity (incremental)
 

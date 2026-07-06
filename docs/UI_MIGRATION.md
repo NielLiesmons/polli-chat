@@ -16,7 +16,7 @@ Branch: `feature/compose-kmp-migration`
 | Screen | Compose | Module | Java legacy |
 |--------|---------|--------|-------------|
 | Home | Yes | app (→ polli-ui) | ConversationListActivity |
-| Chat | Yes | app (→ polli-ui) | ConversationActivity |
+| Chat | Yes (Android RecyclerView + shared state) | `polli-ui/ChatScreen.kt` + `ChatController` | ConversationActivity |
 | Archive | Yes | app | ConversationListArchiveActivity |
 | Stories | Yes | app | — |
 | Welcome | Yes | app | WelcomeActivity.java |
@@ -41,6 +41,7 @@ Branch: `feature/compose-kmp-migration`
 
 - [x] Phase 0: KMP modules scaffolded
 - [x] Phase 1 (partial): Media preview, all media, onboarding, QR hub via AppNav
-- [ ] Phase 1: Move existing screens into `polli-ui`
+- [x] Phase 1 (chat): `ChatController` + `ChatScreen` in `polli-ui`; Android `ChatViewModel` delegates; desktop wired via `DesktopChatScreen`
+- [ ] Phase 1: Move Android RecyclerView chat chrome into `polli-ui` or platform slots
 - [ ] Phase 2A–F: Remaining Java screens
 - [ ] Phase 3: Single-Activity NavHost
