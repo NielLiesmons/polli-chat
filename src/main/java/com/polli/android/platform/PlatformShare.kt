@@ -23,4 +23,11 @@ object PlatformShare {
     fun setForwardingMessageIds(intent: Intent, msgIds: IntArray, accountId: Int) {
         ShareUtil.setForwardingMessageIds(intent, msgIds, accountId)
     }
+
+    fun isRelayingMessageContent(activity: Activity): Boolean =
+        ShareUtil.isRelayingMessageContent(activity)
+
+    fun acquireRelayMessageContent(activity: Activity, intent: Intent) {
+        ShareUtil.acquireRelayMessageContent(activity, intent)
+    }
 }

@@ -14,8 +14,8 @@ import com.polli.domain.model.chat.ChatMessage
 import com.polli.domain.model.chat.FeedItem
 import com.polli.domain.model.chat.displayIndexForMessage
 import com.polli.domain.model.chat.messageIdAtDisplayIndex
+import com.polli.android.platform.PlatformDates
 import com.polli.ui.chat.ChatController
-import org.thoughtcrime.securesms.util.DateUtils
 
 /**
  * Android lifecycle wrapper around shared [ChatController] (polli-ui).
@@ -46,7 +46,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                 ChatController(
                     messages = PolliRepositories.messages(app),
                     scope = viewModelScope,
-                    formatDayLabel = { ts -> DateUtils.getRelativeDate(app, ts * 1000) },
+                    formatDayLabel = { ts -> PlatformDates.relativeDate(app, ts * 1000) },
                 )
         }
         return controller

@@ -17,7 +17,7 @@ import com.polli.android.profiles.ProfilesActivity
 import com.polli.android.settings.AppPrefs
 import com.polli.android.stories.StoriesViewModel
 import com.polli.android.theme.PolliTheme
-import org.thoughtcrime.securesms.connect.DcHelper
+import com.polli.android.platform.EngineBridge
 
 open class HomeActivity : BaseComposeActivity() {
 
@@ -26,7 +26,7 @@ open class HomeActivity : BaseComposeActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (!DcHelper.isConfigured(this)) {
+        if (!EngineBridge.isConfigured(this)) {
             startActivity(WelcomeActivity.intent(this))
             finish()
             return
@@ -36,10 +36,10 @@ open class HomeActivity : BaseComposeActivity() {
             val prefs = remember { AppPrefs(this@HomeActivity) }
             val revision = themeRevision
             PolliTheme(prefs = prefs, uiScaleRevision = revision) {
-                val dc = DcHelper.getContext(this)
+                val dc = EngineBridge.getContext(this)
                 AndroidHomeScreen(
-                    profileName = dc.getConfig(DcHelper.CONFIG_DISPLAY_NAME).ifBlank { "Profile" },
-                    profileSeed = dc.getConfig(DcHelper.CONFIG_CONFIGURED_ADDRESS).ifBlank { "me" },
+                    profileName = dc.getConfig(EngineBridge.CONFIG_DISPLAY_NAME).ifBlank { "Profile" },
+                    profileSeed = dc.getConfig(EngineBridge.CONFIG_CONFIGURED_ADDRESS).ifBlank { "me" },
                     storiesViewModel = storiesViewModel,
                     shareRelayTitle = ShareRelay.relayTitle(this@HomeActivity),
                     onProfileClick = {

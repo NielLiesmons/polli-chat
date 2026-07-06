@@ -20,7 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.polli.android.settings.LocalAppPrefs
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
-import org.thoughtcrime.securesms.components.audioplay.AudioPlaybackViewModel
+import com.polli.android.platform.PolliAudioPlaybackViewModel
 
 /**
  * DC [org.thoughtcrime.securesms.ConversationFragment] list host — [RecyclerView] with reverse
@@ -34,7 +34,7 @@ fun ChatFeedRecycler(
     feedBottomPadding: Dp,
     hazeState: HazeState,
     scrollController: ChatRecyclerController,
-    playbackViewModel: AudioPlaybackViewModel?,
+    playbackViewModel: PolliAudioPlaybackViewModel?,
     uiScaleRevision: Int,
     onOpenMessageOverlay: (ChatMessage, Offset) -> Unit,
     onScrollToMessage: (Int) -> Unit,

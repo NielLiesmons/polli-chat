@@ -18,8 +18,8 @@ import com.polli.domain.model.chat.ChatMessage
 import com.polli.domain.model.chat.ChatMessageRules
 import org.thoughtcrime.securesms.R
 import com.polli.android.webxdc.WebxdcActivity
-import org.thoughtcrime.securesms.util.ShareUtil.setForwardingMessageIds
-import org.thoughtcrime.securesms.util.Util
+import com.polli.android.platform.PlatformClipboard
+import com.polli.android.platform.PlatformShare
 import chat.delta.rpc.RpcException
 import java.util.Collections
 
@@ -182,7 +182,7 @@ class MessageActionExecutor(
     private fun copyMessage(msg: ChatMessage) {
         val text = msg.text.trim()
         if (text.isEmpty()) return
-        Util.writeTextToClipboard(context, text)
+        PlatformClipboard.copyText(context, text)
         Toast.makeText(context, R.string.copied_to_clipboard, Toast.LENGTH_SHORT).show()
     }
 
@@ -190,7 +190,7 @@ class MessageActionExecutor(
         val activity = context as? Activity ?: return
         try {
             val intent = Intent()
-            setForwardingMessageIds(
+            PlatformShare.setForwardingMessageIds(
                 intent,
                 intArrayOf(msgId),
                 PolliRepositories.accounts(context).selectedAccountId,

@@ -3,12 +3,12 @@ package com.polli.android.chat
 import android.content.Context
 import android.net.Uri
 import android.util.Pair
-import org.thoughtcrime.securesms.audio.AudioRecorder
-import org.thoughtcrime.securesms.util.Util
+import com.polli.android.platform.PolliVoiceRecorder
+import com.polli.android.platform.PlatformThread
 import java.util.concurrent.ExecutionException
 
 class VoiceRecorderBridge(context: Context) {
-    private val recorder = AudioRecorder(context.applicationContext)
+    private val recorder = PolliVoiceRecorder(context.applicationContext)
     private var active = false
 
     fun start() {
@@ -27,11 +27,11 @@ class VoiceRecorderBridge(context: Context) {
         future.addListener(
             object : chat.delta.util.ListenableFuture.Listener<Pair<Uri, Long>> {
                 override fun onSuccess(result: Pair<Uri, Long>) {
-                    Util.runOnMain { onResult(result.first, result.second) }
+                    PlatformThread.runOnMain { onResult(result.first, result.second) }
                 }
 
                 override fun onFailure(e: ExecutionException) {
-                    Util.runOnMain { onResult(null, 0L) }
+                    PlatformThread.runOnMain { onResult(null, 0L) }
                 }
             },
         )

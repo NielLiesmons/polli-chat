@@ -14,15 +14,16 @@ import androidx.lifecycle.Observer
 import com.polli.domain.repository.MessageRepository
 import com.polli.android.data.engine.PolliRepositories
 import com.polli.ui.components.audio.VoiceMessageBubble
-import org.thoughtcrime.securesms.components.audioplay.AudioPlaybackState
-import org.thoughtcrime.securesms.components.audioplay.AudioPlaybackViewModel
+import com.polli.android.platform.PolliAudioPlaybackState
+import com.polli.android.platform.PolliAudioPlaybackViewModel
+import com.polli.android.platform.PolliPlaybackStatus
 import kotlin.math.roundToInt
 
 @Composable
 fun BubbleVoicePlayer(
     messageId: Int,
     isOutgoing: Boolean,
-    playbackViewModel: AudioPlaybackViewModel?,
+    playbackViewModel: PolliAudioPlaybackViewModel?,
     modifier: Modifier = Modifier,
     durationMsHint: Long? = null,
     waveformSeed: Int = messageId,
@@ -51,11 +52,11 @@ fun BubbleVoicePlayer(
             messages.getMessage(messageId)?.filePath?.takeIf { it.isNotBlank() }?.let(Uri::parse)
         }
 
-    var playbackState by remember { mutableStateOf(AudioPlaybackState.idle()) }
+    var playbackState by remember { mutableStateOf(PolliAudioPlaybackState.idle()) }
     var durations by remember { mutableStateOf<Map<Int, Long>>(emptyMap()) }
 
     DisposableEffect(playbackViewModel) {
-        val stateObserver = Observer<AudioPlaybackState> { playbackState = it }
+        val stateObserver = Observer<PolliAudioPlaybackState> { playbackState = it }
         val durationObserver = Observer<Map<Int, Long>> { durations = it }
         playbackViewModel.playbackState.observeForever(stateObserver)
         playbackViewModel.durations.observeForever(durationObserver)
@@ -81,7 +82,7 @@ fun BubbleVoicePlayer(
             else -> 0L
         }
     val isActive = playbackState.msgId == messageId
-    val isPlaying = isActive && playbackState.status == AudioPlaybackState.PlaybackStatus.PLAYING
+    val isPlaying = isActive && playbackState.status == PolliPlaybackStatus.PLAYING
     val positionMs = if (isActive) playbackState.currentPosition else 0L
     val progress =
         if (durationMs > 0L) {
@@ -103,10 +104,10 @@ fun BubbleVoicePlayer(
         onPlayPause = {
             val uri = audioUri ?: return@VoiceMessageBubble
             if (isActive &&
-                (playbackState.status == AudioPlaybackState.PlaybackStatus.PLAYING ||
-                    playbackState.status == AudioPlaybackState.PlaybackStatus.PAUSED)
+                (playbackState.status == PolliPlaybackStatus.PLAYING ||
+                    playbackState.status == PolliPlaybackStatus.PAUSED)
             ) {
-                if (playbackState.status == AudioPlaybackState.PlaybackStatus.PLAYING) {
+                if (playbackState.status == PolliPlaybackStatus.PLAYING) {
                     playbackViewModel.pause(messageId)
                 } else {
                     playbackViewModel.play(messageId)

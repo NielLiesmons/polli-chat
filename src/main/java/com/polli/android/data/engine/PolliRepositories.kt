@@ -6,14 +6,14 @@ import com.polli.domain.repository.ChatRepository
 import com.polli.domain.repository.MediaRepository
 import com.polli.domain.repository.MessageRepository
 import com.polli.engine.rpc.PolliEngine
-import org.thoughtcrime.securesms.ApplicationContext
+import com.polli.android.platform.PolliApplication
 
 /** Android wiring for shared [PolliEngine] repositories (JSON-RPC over FFI). */
 object PolliRepositories {
     private fun session(context: Context) =
         PolliEngine.getOrNull()
             ?: run {
-                val app = ApplicationContext.getInstance(context)
+                val app = PolliApplication.getInstance(context)
                 PolliEngine.getOrNull()
                     ?: error("PolliEngine not bound yet")
             }

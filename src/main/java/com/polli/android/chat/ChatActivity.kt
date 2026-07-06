@@ -24,15 +24,14 @@ import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.PolliTheme
 import com.polli.android.data.engine.PolliRepositories
 import com.polli.domain.navigation.ChatIntentExtras
-import org.thoughtcrime.securesms.AttachContactActivity
+import com.polli.android.platform.EngineBridge
+import com.polli.android.platform.LegacyAttachContactActivity
+import com.polli.android.platform.PlatformAttachments
+import com.polli.android.platform.PlatformMedia
+import com.polli.android.platform.PolliAudioPlaybackService
+import com.polli.android.platform.PolliAudioPlaybackViewModel
+import com.polli.android.platform.PolliChatAudioQueueProvider
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.components.audioplay.AudioPlaybackViewModel
-import org.thoughtcrime.securesms.components.audioplay.ChatAudioQueueProvider
-import org.thoughtcrime.securesms.connect.DcHelper
-import org.thoughtcrime.securesms.mms.AttachmentManager
-import org.thoughtcrime.securesms.providers.PersistentBlobProvider
-import org.thoughtcrime.securesms.service.AudioPlaybackService
-import org.thoughtcrime.securesms.util.MediaUtil
 import chat.delta.rpc.RpcException
 import java.io.File
 import java.util.Collections
@@ -41,7 +40,7 @@ import java.util.Collections
 class ChatActivity : BaseComposeActivity() {
 
     private val viewModel: ChatViewModel by viewModels()
-    private val playbackViewModel: AudioPlaybackViewModel by viewModels()
+    private val playbackViewModel: PolliAudioPlaybackViewModel by viewModels()
     private var themeRevision by mutableIntStateOf(0)
     private var showAttachModal by mutableStateOf(false)
     private var pendingAttachment by mutableStateOf<PendingAttachment?>(null)
@@ -72,12 +71,12 @@ class ChatActivity : BaseComposeActivity() {
 
     private val pickContact = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode != RESULT_OK || result.data == null) return@registerForActivityResult
-        val contactId = result.data!!.getIntExtra(AttachContactActivity.CONTACT_ID_EXTRA, 0)
+        val contactId = result.data!!.getIntExtra(LegacyAttachContactActivity.CONTACT_ID_EXTRA, 0)
         if (contactId <= 0) return@registerForActivityResult
         try {
-            val rpc = DcHelper.getRpc(this)
+            val rpc = EngineBridge.getRpc(this)
             val vcard = rpc.makeVcard(rpc.selectedAccountId, Collections.singletonList(contactId)).toByteArray()
-            val uri = PersistentBlobProvider.getInstance().create(this, vcard, "application/octet-stream", "vcard.vcf")
+            val uri = PlatformMedia.createPersistentBlob(this, vcard, "application/octet-stream", "vcard.vcf")
             sendMedia(uri)
         } catch (_: RpcException) {
             // Ignore — same as ConversationActivity on RPC failure.
@@ -102,7 +101,7 @@ class ChatActivity : BaseComposeActivity() {
         val prefs = AppPrefs(this)
 
         playbackViewModel.setQueueProvider(
-            ChatAudioQueueProvider(
+            PolliChatAudioQueueProvider(
                 this,
                 chatId,
                 PolliRepositories.accounts(this).selectedAccountId,
@@ -161,11 +160,11 @@ class ChatActivity : BaseComposeActivity() {
                         },
                         onPickContact = {
                             showAttachModal = false
-                            pickContact.launch(Intent(this, AttachContactActivity::class.java))
+                            pickContact.launch(Intent(this, LegacyAttachContactActivity::class.java))
                         },
                         onPickLocation = {
                             showAttachModal = false
-                            AttachmentManager.selectLocation(this, chatId)
+                            PlatformAttachments.selectLocation(this, chatId)
                         },
                         onVoiceSent = { uri, _ ->
                             MediaSend.sendVoice(this, chatId, uri, 0)
@@ -197,7 +196,7 @@ class ChatActivity : BaseComposeActivity() {
     private fun initializeMediaController() {
         val sessionToken = SessionToken(
             this,
-            android.content.ComponentName(this, AudioPlaybackService::class.java),
+            android.content.ComponentName(this, PolliAudioPlaybackService::class.java),
         )
         mediaControllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
         mediaControllerFuture?.addListener(
@@ -220,11 +219,11 @@ class ChatActivity : BaseComposeActivity() {
     }
 
     private fun sendPickedUri(uri: Uri) {
-        val mime = MediaUtil.getMimeType(this, uri) ?: "application/octet-stream"
+        val mime = PlatformMedia.mimeType(this, uri) ?: "application/octet-stream"
         when {
-            MediaUtil.isGif(mime) -> stageAttachment(uri, mime)
-            MediaUtil.isVideoType(mime) -> stageAttachment(uri, mime)
-            MediaUtil.isImageType(mime) -> openImageEditorOrSend(uri)
+            PlatformMedia.isGif(mime) -> stageAttachment(uri, mime)
+            PlatformMedia.isVideoType(mime) -> stageAttachment(uri, mime)
+            PlatformMedia.isImageType(mime) -> openImageEditorOrSend(uri)
             else -> stageAttachment(uri, mime)
         }
     }
@@ -234,12 +233,12 @@ class ChatActivity : BaseComposeActivity() {
     }
 
     private fun stageAttachment(uri: Uri, mimeType: String? = null) {
-        val mime = mimeType ?: MediaUtil.getMimeType(this, uri) ?: "application/octet-stream"
+        val mime = mimeType ?: PlatformMedia.mimeType(this, uri) ?: "application/octet-stream"
         pendingAttachment = PendingAttachment(
             uri = uri,
             mimeType = mime,
             label = attachmentLabel(uri),
-            isImage = MediaUtil.isImageType(mime) || MediaUtil.isGif(mime),
+            isImage = PlatformMedia.isImageType(mime) || PlatformMedia.isGif(mime),
         )
     }
 
@@ -266,7 +265,7 @@ class ChatActivity : BaseComposeActivity() {
 
     private fun sendMedia(uri: Uri, mimeType: String? = null) {
         if (chatId <= 0) return
-        MediaSend.sendUri(this, chatId, uri, mimeType ?: MediaUtil.getMimeType(this, uri))
+        MediaSend.sendUri(this, chatId, uri, mimeType ?: PlatformMedia.mimeType(this, uri))
         viewModel.reload()
     }
 

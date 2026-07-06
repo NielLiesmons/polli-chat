@@ -4,8 +4,7 @@ import android.content.Context
 import android.net.Uri
 import com.polli.android.data.engine.PolliRepositories
 import com.polli.android.platform.EngineBlobStore
-import org.thoughtcrime.securesms.providers.PersistentBlobProvider
-import org.thoughtcrime.securesms.util.MediaUtil
+import com.polli.android.platform.PlatformMedia
 
 object MediaSend {
     fun sendUri(
@@ -16,14 +15,14 @@ object MediaSend {
         caption: String? = null,
     ) {
         val messages = PolliRepositories.messages(context)
-        val resolved = mimeType ?: MediaUtil.getMimeType(context, uri) ?: "application/octet-stream"
+        val resolved = mimeType ?: PlatformMedia.mimeType(context, uri) ?: "application/octet-stream"
         val path = EngineBlobStore.copyUriToBlobdir(context, uri, "file", null)
         val viewType =
             when {
-                MediaUtil.isGif(resolved) -> "Gif"
-                MediaUtil.isImageType(resolved) -> "Image"
-                MediaUtil.isVideoType(resolved) -> "Video"
-                MediaUtil.isAudioType(resolved) -> "Audio"
+                PlatformMedia.isGif(resolved) -> "Gif"
+                PlatformMedia.isImageType(resolved) -> "Image"
+                PlatformMedia.isVideoType(resolved) -> "Video"
+                PlatformMedia.isAudioType(resolved) -> "Audio"
                 else -> "File"
             }
         messages.sendMedia(
@@ -44,12 +43,12 @@ object MediaSend {
                 chatId = chatId,
                 filePath = path,
                 fileName = "voice.m4a",
-                mimeType = MediaUtil.AUDIO_M4A,
+                mimeType = PlatformMedia.audioM4a,
                 caption = null,
                 viewType = "Voice",
             )
         } finally {
-            PersistentBlobProvider.getInstance().delete(context, uri)
+            PlatformMedia.deletePersistentBlob(context, uri)
         }
     }
 }

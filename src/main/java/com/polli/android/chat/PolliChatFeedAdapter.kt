@@ -21,7 +21,7 @@ import com.polli.android.theme.PolliTheme
 import com.polli.ui.components.chat.ChatDayMarkerPill
 import com.polli.ui.components.chat.ChatNewMessagesPill
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.components.audioplay.AudioPlaybackViewModel
+import com.polli.android.platform.PolliAudioPlaybackViewModel
 
 private data class FeedRowKey(
     val stableId: Long,
@@ -39,7 +39,7 @@ class PolliChatFeedAdapter(
     private val viewModel: ChatViewModel,
     private val prefs: AppPrefs,
     private val uiScaleRevision: Int,
-    private val playbackViewModel: AudioPlaybackViewModel?,
+    private val playbackViewModel: PolliAudioPlaybackViewModel?,
     private val onOpenMessageOverlay: (ChatMessage, Offset) -> Unit,
     private val onQuoteClick: (Int) -> Unit,
 ) : RecyclerView.Adapter<PolliChatFeedAdapter.Holder>() {
@@ -168,7 +168,7 @@ class PolliChatFeedAdapter(
         viewModel: ChatViewModel,
         prefs: AppPrefs,
         uiScaleRevision: Int,
-        playbackViewModel: AudioPlaybackViewModel?,
+        playbackViewModel: PolliAudioPlaybackViewModel?,
         onOpenMessageOverlay: (ChatMessage, Offset) -> Unit,
         onQuoteClick: (Int) -> Unit,
     ) : RecyclerView.ViewHolder(composeView) {

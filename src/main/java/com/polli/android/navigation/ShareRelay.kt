@@ -5,20 +5,20 @@ import android.content.Context
 import android.content.Intent
 import com.polli.android.HomeActivity
 import com.polli.android.HomeRelayingActivity
+import com.polli.android.platform.PlatformShare
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.util.ShareUtil
 
 /** Share / forward flows that pick a destination chat before opening the composer. */
 object ShareRelay {
 
     fun isActive(context: Context): Boolean =
-        context is Activity && ShareUtil.isRelayingMessageContent(context)
+        context is Activity && PlatformShare.isRelayingMessageContent(context)
 
     fun relayTitle(context: Context): String? {
         val activity = context as? Activity ?: return null
-        if (!ShareUtil.isRelayingMessageContent(activity)) return null
+        if (!PlatformShare.isRelayingMessageContent(activity)) return null
         return context.getString(
-            if (ShareUtil.isSharing(activity)) {
+            if (PlatformShare.isSharing(activity)) {
                 R.string.chat_share_with_title
             } else {
                 R.string.forward_to
@@ -30,8 +30,8 @@ object ShareRelay {
     @JvmOverloads
     fun openChat(context: Context, chatId: Int, startingPosition: Int = -1) {
         val intent = AppNav.chatIntent(context, chatId, startingPosition = startingPosition)
-        if (context is Activity && ShareUtil.isRelayingMessageContent(context)) {
-            ShareUtil.acquireRelayMessageContent(context, intent)
+        if (context is Activity && PlatformShare.isRelayingMessageContent(context)) {
+            PlatformShare.acquireRelayMessageContent(context, intent)
         }
         context.startActivity(intent)
         if (context is Activity && AppNav.useLabUi()) {

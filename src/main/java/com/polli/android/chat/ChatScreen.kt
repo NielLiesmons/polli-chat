@@ -53,7 +53,7 @@ import dev.chrisbanes.haze.hazeSource
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.components.audioplay.AudioPlaybackViewModel
+import com.polli.android.platform.PolliAudioPlaybackViewModel
 
 @Composable
 fun ChatScreen(
@@ -66,7 +66,7 @@ fun ChatScreen(
     isBroadcast: Boolean,
     onBack: () -> Unit,
     uiScaleRevision: Int = 0,
-    playbackViewModel: AudioPlaybackViewModel? = null,
+    playbackViewModel: PolliAudioPlaybackViewModel? = null,
     showAttachModal: Boolean = false,
     onDismissAttachModal: () -> Unit = {},
     onAttachClick: (() -> Unit)? = null,
@@ -308,7 +308,7 @@ private fun ChatFeedPage(
     feedBottomPadding: androidx.compose.ui.unit.Dp,
     hazeState: dev.chrisbanes.haze.HazeState,
     uiScaleRevision: Int,
-    playbackViewModel: AudioPlaybackViewModel?,
+    playbackViewModel: PolliAudioPlaybackViewModel?,
     onOpenMessageOverlay: (ChatMessage, androidx.compose.ui.geometry.Offset) -> Unit,
     onScrollToMessage: (Int) -> Unit,
 ) {
@@ -346,7 +346,7 @@ private fun ChatTabContent(
     feedBottomPadding: androidx.compose.ui.unit.Dp,
     hazeState: dev.chrisbanes.haze.HazeState,
     uiScaleRevision: Int,
-    playbackViewModel: AudioPlaybackViewModel?,
+    playbackViewModel: PolliAudioPlaybackViewModel?,
     chatId: Int,
     onOpenMessageOverlay: (ChatMessage, androidx.compose.ui.geometry.Offset) -> Unit,
     onScrollToMessage: (Int) -> Unit,
