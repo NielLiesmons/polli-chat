@@ -1,6 +1,6 @@
 package org.thoughtcrime.securesms.util;
 
-import static org.thoughtcrime.securesms.ConversationActivity.TEXT_EXTRA;
+import com.polli.domain.navigation.ChatIntentExtras;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -86,7 +86,7 @@ public class ShareUtil {
 
   public static String getSharedText(Activity activity) {
     try {
-      return activity.getIntent().getStringExtra(TEXT_EXTRA);
+      return activity.getIntent().getStringExtra(ChatIntentExtras.DRAFT_TEXT);
     } catch (NullPointerException npe) {
       return null;
     }
@@ -107,7 +107,7 @@ public class ShareUtil {
       activity.getIntent().removeExtra(SHARED_URIS);
       activity.getIntent().removeExtra(IS_SHARING);
       activity.getIntent().removeExtra(DIRECT_SHARING_CHAT_ID);
-      activity.getIntent().removeExtra(TEXT_EXTRA);
+      activity.getIntent().removeExtra(ChatIntentExtras.DRAFT_TEXT);
     } catch (NullPointerException npe) {
       npe.printStackTrace();
     }
@@ -127,7 +127,7 @@ public class ShareUtil {
         newActivityIntent.putParcelableArrayListExtra(SHARED_URIS, getSharedUris(currentActivity));
       }
       if (getSharedText(currentActivity) != null) {
-        newActivityIntent.putExtra(TEXT_EXTRA, getSharedText(currentActivity));
+        newActivityIntent.putExtra(ChatIntentExtras.DRAFT_TEXT, getSharedText(currentActivity));
       }
     }
   }
@@ -148,7 +148,7 @@ public class ShareUtil {
   }
 
   public static void setSharedText(Intent composeIntent, String text) {
-    composeIntent.putExtra(TEXT_EXTRA, text);
+    composeIntent.putExtra(ChatIntentExtras.DRAFT_TEXT, text);
     composeIntent.putExtra(IS_SHARING, true);
   }
 

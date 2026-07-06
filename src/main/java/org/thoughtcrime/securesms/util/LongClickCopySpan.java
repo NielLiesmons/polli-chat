@@ -12,7 +12,6 @@ import chat.delta.rpc.types.SecurejoinSource;
 import com.b44t.messenger.DcContact;
 import com.b44t.messenger.DcContext;
 import com.polli.android.navigation.AppNav;
-import org.thoughtcrime.securesms.ConversationActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.connect.DcHelper;
 import org.thoughtcrime.securesms.qr.QrCodeHandler;
@@ -41,15 +40,7 @@ public class LongClickCopySpan extends ClickableSpan {
   @Override
   public void onClick(View widget) {
     if (url.startsWith(PREFIX_CMD)) {
-      try {
-        String cmd = url.substring(PREFIX_CMD.length());
-        Activity activity = (Activity) widget.getContext();
-        if (activity instanceof ConversationActivity) {
-          ((ConversationActivity) activity).setDraftText(cmd + " ");
-        }
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
+      // Draft commands are applied via long-press copy; Compose chat has no Java draft hook.
     } else if (url.startsWith(PREFIX_MAILTO)) {
       try {
         String addr = prepareUrl(url);
