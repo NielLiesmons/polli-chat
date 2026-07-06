@@ -24,7 +24,7 @@ Goal: shrink the legacy Android fork surface while keeping the Chatmail engine (
 | Calls / WebRTC | `CallActivity` | Not in Polli UI | Replace or explicitly drop — do not silent-delete |
 | Profile avatar crop | `ScribbleActivity` + `AvatarHelper` | **Wired** via `ImageEditLauncher(cropAvatar=true)` | OK |
 | Webxdc | `WebxdcActivity` | Java only | Compose host later |
-| Settings depth | `ApplicationPreferencesActivity` | Partial | Compose settings |
+| Settings depth | `ApplicationPreferencesActivity` | Partial — `ProfilesActivity` + notification legacy |
 
 ## Phase A — Inventory
 

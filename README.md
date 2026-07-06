@@ -2,7 +2,7 @@
 
 ![Your Handle. Your Spaces. For Chat, Mail, Drive & More.](assets/branding/readme-hero.png)
 
-Polli is a chat-first app for everyday life online: conversations with friends, work in small teams, communities you choose to join, and everything in between. It is designed to feel as immediate and polished as the best messengers, while resting on protocols you can actually own: email, encryption, and open identity, not another walled garden.
+Polli is a chat-first app for everyday life online: your spaces, encrypted drive, mail, and the people and communities around them. Everything is encrypted by default. You choose how far each space reaches, from just you, to close friends, a team, or fully public publishing on the web.
 
 ---
 
@@ -10,22 +10,33 @@ Polli is a chat-first app for everyday life online: conversations with friends, 
 
 ### Beautiful by default
 
-Messaging should be a pleasure to use. Polli puts care into typography, motion, and layout so the app stays out of your way until you need it. Chat is the home screen; everything else flows from there.
+Polli puts care into typography, motion, and layout so the app stays out of your way until you need it. Chat is the home screen; everything else flows from there.
 
-### Private by default, public on your terms
+### Encrypted by default, open when you want
 
-Most of what you do is yours: encrypted conversations, shared files, small groups that never needed a stage. When you *do* want reach (a newsletter, a community channel, a space anyone can find), you opt in explicitly. Nothing is public unless you decide it is.
+Polli is **private-first**, not private-only. New spaces start locked down: encrypted chat, files, and state. Nothing leaks outward unless you say so.
+
+When you are ready, you raise the visibility on your terms:
+
+| Level | Examples |
+|-------|----------|
+| **Just you** | Personal notes, drafts, a private drive |
+| **Close circle** | Family, friends, a small trusted group |
+| **Team / space** | A household, project, club, or workspace |
+| **Public** | A community anyone can find, a newsletter, a channel, content published to the web |
+
+The same space can hold quiet coordination *and* public-facing posts, articles, or files. Publishing outward is always an explicit choice: share a link, open a channel, mail a space inbox, or publish to a wider audience. You are not locked into one mode.
 
 ### Chat-first, not chat-only
 
-Polli organizes life around **Spaces**: places for a household, a project, a club, or just you. Chat is how you stay in sync; files, tasks, and posts live in the same space without turning the app into a cluttered dashboard. Talk first; structure when you need it.
+Polli organizes life around **Spaces**: places for a household, a project, a club, or just you. Chat is how you stay in sync; files, tasks, articles, and posts live in the same space without turning the app into a cluttered dashboard. Talk first; structure when you need it.
 
 ### Built on standards that already exist
 
 Polli does not ask the world to adopt a new network overnight.
 
 - **Chatmail** ([Delta Chat core](https://github.com/chatmail/core)) for encrypted messaging, groups, and delivery that works offline
-- **Email** for federation: anyone can reach a space inbox from a normal mail client
+- **Email** so anyone can reach a space inbox from a normal mail client
 - **[MNS](https://github.com/mlkut/mns)** names and **sigils** for identity without ICANN squatting
 - **[Cryptree](https://github.com/mlkut/cryptree)** for encrypted shared files and durable space state
 

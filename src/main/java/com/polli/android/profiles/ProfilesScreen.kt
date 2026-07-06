@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -59,9 +60,11 @@ import org.thoughtcrime.securesms.connect.DcHelper
 class ProfilesActivity : BaseComposeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val openChatSettings = intent.getBooleanExtra(EXTRA_OPEN_CHAT_SETTINGS, false)
         setContent {
             val prefs = remember { AppPrefs(this@ProfilesActivity) }
             var themeRevision by remember { mutableIntStateOf(0) }
+            var showChatSettings by remember { mutableStateOf(openChatSettings) }
             LabTheme(prefs = prefs, uiScaleRevision = themeRevision) {
                 ProfilesScreen(
                     prefs = prefs,
@@ -70,12 +73,16 @@ class ProfilesActivity : BaseComposeActivity() {
                     onEditProfile = {
                         startActivity(ProfileEditActivity.intent(this@ProfilesActivity))
                     },
+                    initialChatSettingsOpen = showChatSettings,
+                    onChatSettingsConsumed = { showChatSettings = false },
                 )
             }
         }
     }
 
     companion object {
+        const val EXTRA_OPEN_CHAT_SETTINGS = "open_chat_settings"
+
         fun intent(context: Context): Intent = Intent(context, ProfilesActivity::class.java)
     }
 }
@@ -86,6 +93,8 @@ fun ProfilesScreen(
     onThemeChanged: () -> Unit = {},
     onBack: () -> Unit,
     onEditProfile: () -> Unit,
+    initialChatSettingsOpen: Boolean = false,
+    onChatSettingsConsumed: () -> Unit = {},
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val dc = remember { DcHelper.getContext(context) }
@@ -94,6 +103,12 @@ fun ProfilesScreen(
     val addr = dc.getConfig(DcHelper.CONFIG_CONFIGURED_ADDRESS)
     var showAppearanceModal by remember { mutableStateOf(false) }
     var showChatSettingsModal by remember { mutableStateOf(false) }
+    LaunchedEffect(initialChatSettingsOpen) {
+        if (initialChatSettingsOpen) {
+            showChatSettingsModal = true
+            onChatSettingsConsumed()
+        }
+    }
     val headerTop = AppInsets.statusBarTop() + 9.dp
     val hazeState = rememberPolliHazeState()
 

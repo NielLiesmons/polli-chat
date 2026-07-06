@@ -20,14 +20,9 @@ import com.polli.android.notes.NoteEditorActivity
 import org.thoughtcrime.securesms.BuildConfig
 import org.thoughtcrime.securesms.R
 import com.polli.domain.navigation.ChatIntentExtras
-import org.thoughtcrime.securesms.ConversationActivity
 import org.thoughtcrime.securesms.ApplicationPreferencesActivity
 import org.thoughtcrime.securesms.ProfileActivity
 import org.thoughtcrime.securesms.WebxdcActivity
-import org.thoughtcrime.securesms.MediaPreviewActivity as LegacyMediaPreviewActivity
-import org.thoughtcrime.securesms.AllMediaActivity as LegacyAllMediaActivity
-import org.thoughtcrime.securesms.InstantOnboardingActivity
-import org.thoughtcrime.securesms.qr.QrActivity
 
 /** Sole routing API — all user-facing navigation goes through here. */
 object AppNav {
@@ -39,9 +34,7 @@ object AppNav {
     fun homeActivityClass(): Class<*> = HomeActivity::class.java
 
     @JvmStatic
-    fun chatActivityClass(): Class<*> {
-        return if (useLabUi()) ChatActivity::class.java else ConversationActivity::class.java
-    }
+    fun chatActivityClass(): Class<*> = ChatActivity::class.java
 
     @JvmStatic
     fun homeIntentFromWelcome(context: Context, rawQr: String? = null): Intent {
@@ -140,11 +133,7 @@ object AppNav {
 
     @JvmStatic
     fun openNewConversation(context: Context) {
-        if (useLabUi()) {
-            context.startActivity(NewConversationActivity.intent(context))
-        } else {
-            context.startActivity(Intent(context, org.thoughtcrime.securesms.NewConversationActivity::class.java))
-        }
+        context.startActivity(NewConversationActivity.intent(context))
     }
 
     @JvmStatic
@@ -169,8 +158,7 @@ object AppNav {
     }
 
     @JvmStatic
-    fun welcomeIntent(context: Context): Intent =
-        if (useLabUi()) WelcomeActivity.intent(context) else Intent(context, org.thoughtcrime.securesms.WelcomeActivity::class.java)
+    fun welcomeIntent(context: Context): Intent = WelcomeActivity.intent(context)
 
     @JvmStatic
     fun openWelcome(context: Context) {
@@ -178,8 +166,7 @@ object AppNav {
     }
 
     @JvmStatic
-    fun accountSetupIntent(context: Context): Intent =
-        if (useLabUi()) AccountSetupActivity.intent(context) else Intent(context, InstantOnboardingActivity::class.java)
+    fun accountSetupIntent(context: Context): Intent = AccountSetupActivity.intent(context)
 
     @JvmStatic
     fun openAccountSetup(context: Context) {
@@ -187,8 +174,7 @@ object AppNav {
     }
 
     @JvmStatic
-    fun qrIntent(context: Context): Intent =
-        if (useLabUi()) QrHubActivity.intent(context) else Intent(context, QrActivity::class.java)
+    fun qrIntent(context: Context): Intent = QrHubActivity.intent(context)
 
     @JvmStatic
     fun openQr(context: Context) {
@@ -197,13 +183,7 @@ object AppNav {
 
     @JvmStatic
     fun mediaPreviewIntent(context: Context, messageId: Int): Intent =
-        if (useLabUi()) {
-            MediaPreviewActivity.intent(context, messageId)
-        } else {
-            Intent(context, LegacyMediaPreviewActivity::class.java).apply {
-                putExtra(LegacyMediaPreviewActivity.DC_MSG_ID, messageId)
-            }
-        }
+        MediaPreviewActivity.intent(context, messageId)
 
     @JvmStatic
     fun openMediaPreview(context: Context, messageId: Int) {
@@ -212,13 +192,7 @@ object AppNav {
 
     @JvmStatic
     fun allMediaIntent(context: Context, chatId: Int): Intent =
-        if (useLabUi()) {
-            ChatAllMediaActivity.intent(context, chatId)
-        } else {
-            Intent(context, LegacyAllMediaActivity::class.java).apply {
-                putExtra(LegacyAllMediaActivity.CHAT_ID_EXTRA, chatId)
-            }
-        }
+        ChatAllMediaActivity.intent(context, chatId)
 
     @JvmStatic
     fun openAllMedia(context: Context, chatId: Int) {
@@ -226,8 +200,7 @@ object AppNav {
     }
 
     @JvmStatic
-    fun settingsIntent(context: Context): Intent =
-        if (useLabUi()) ProfilesActivity.intent(context) else Intent(context, ApplicationPreferencesActivity::class.java)
+    fun settingsIntent(context: Context): Intent = ProfilesActivity.intent(context)
 
     @JvmStatic
     fun openSettings(context: Context) {
