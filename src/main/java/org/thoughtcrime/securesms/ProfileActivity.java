@@ -28,6 +28,7 @@ import com.b44t.messenger.DcEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import com.polli.android.HomeRelayingActivity;
 import org.thoughtcrime.securesms.connect.DcEventCenter;
 import org.thoughtcrime.securesms.connect.DcHelper;
 import org.thoughtcrime.securesms.providers.PersistentBlobProvider;
@@ -419,7 +420,7 @@ public class ProfileActivity extends PassphraseRequiredActionBarActivity
     } else {
       ShareUtil.setSharedText(composeIntent, dcContact.getAddr());
     }
-    ConversationListRelayingActivity.start(this, composeIntent);
+    HomeRelayingActivity.start(this, composeIntent);
   }
 
   private void onCopyAddrToClipboard() {

@@ -81,6 +81,7 @@ import com.b44t.messenger.DcContact;
 import com.b44t.messenger.DcContext;
 import com.b44t.messenger.DcEvent;
 import com.b44t.messenger.DcMsg;
+import com.polli.android.HomeRelayingActivity;
 import com.polli.android.navigation.AppNav;
 import java.io.File;
 import java.util.ArrayList;
@@ -362,7 +363,7 @@ public class ConversationActivity extends PassphraseRequiredActionBarActivity
       handleSharing();
     }
 
-    ConversationListRelayingActivity.finishActivity();
+    HomeRelayingActivity.finishActivity();
   }
 
   @Override

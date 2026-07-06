@@ -12,7 +12,7 @@ import androidx.appcompat.app.AlertDialog
 import com.b44t.messenger.DcContext
 import com.b44t.messenger.DcMsg
 import com.polli.android.navigation.AppNav
-import org.thoughtcrime.securesms.ConversationListRelayingActivity
+import com.polli.android.HomeRelayingActivity
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.WebxdcActivity
 import org.thoughtcrime.securesms.connect.DcHelper
@@ -199,7 +199,7 @@ class MessageActionExecutor(
                 intArrayOf(msg.id),
                 DcHelper.getRpc(context).selectedAccountId,
             )
-            ConversationListRelayingActivity.start(activity, intent)
+            HomeRelayingActivity.start(activity, intent)
         } catch (_: RpcException) {
             Toast.makeText(context, R.string.error, Toast.LENGTH_SHORT).show()
         }

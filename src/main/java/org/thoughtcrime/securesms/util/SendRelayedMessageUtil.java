@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import org.thoughtcrime.securesms.ConversationListRelayingActivity;
+import com.polli.android.HomeRelayingActivity;
 import org.thoughtcrime.securesms.connect.DcHelper;
 import org.thoughtcrime.securesms.mms.PartAuthority;
 import org.thoughtcrime.securesms.providers.PersistentBlobProvider;
@@ -35,7 +35,7 @@ public class SendRelayedMessageUtil {
   }
 
   public static void immediatelyRelay(Activity activity, final Long[] chatIds) {
-    ConversationListRelayingActivity.finishActivity();
+    HomeRelayingActivity.finishActivity();
     if (isForwarding(activity)) {
       int forwardedMsgAccId = getForwardedMessageAccountId(activity);
       int[] forwardedMessageIDs = getForwardedMessageIDs(activity);

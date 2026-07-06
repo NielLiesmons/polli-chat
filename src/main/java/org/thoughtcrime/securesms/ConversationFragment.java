@@ -51,6 +51,7 @@ import com.b44t.messenger.DcContact;
 import com.b44t.messenger.DcContext;
 import com.b44t.messenger.DcEvent;
 import com.b44t.messenger.DcMsg;
+import com.polli.android.HomeRelayingActivity;
 import com.polli.android.navigation.AppNav;
 import java.io.File;
 import java.util.ArrayList;
@@ -552,7 +553,7 @@ public class ConversationFragment extends MessageSelectorFragment {
     int[] msgIds = DcMsg.msgSetToIds(messageRecords);
     try {
       setForwardingMessageIds(composeIntent, msgIds, rpc.getSelectedAccountId());
-      ConversationListRelayingActivity.start(this, composeIntent);
+      HomeRelayingActivity.start(this, composeIntent);
       getActivity().overridePendingTransition(R.anim.slide_from_right, R.anim.fade_scale_out);
     } catch (RpcException e) {
       Log.e(TAG, "RPC error", e);

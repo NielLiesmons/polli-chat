@@ -30,7 +30,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.pm.ShortcutManagerCompat;
 import com.b44t.messenger.DcContext;
-import com.polli.android.HomeActivity;
+import com.polli.android.HomeRelayingActivity;
 import com.polli.android.navigation.AppNav;
 import com.polli.domain.navigation.ChatIntentExtras;
 import java.util.ArrayList;
@@ -276,18 +276,10 @@ public class ShareActivity extends PassphraseRequiredActionBarActivity
       ShareUtil.setSharedUris(composeIntent, resolvedExtras);
       startActivity(composeIntent);
     } else {
-      if (AppNav.useLabUi()) {
-        composeIntent = getBaseShareIntent(HomeActivity.class);
-      } else {
-        composeIntent = getBaseShareIntent(ConversationListRelayingActivity.class);
-      }
+      composeIntent = getBaseShareIntent(HomeRelayingActivity.class);
       ShareUtil.setSharedUris(composeIntent, resolvedExtras);
       ShareUtil.setIsFromWebxdc(composeIntent, ShareUtil.isFromWebxdc(this));
-      if (AppNav.useLabUi()) {
-        startActivity(composeIntent);
-      } else {
-        ConversationListRelayingActivity.start(this, composeIntent);
-      }
+      HomeRelayingActivity.start(this, composeIntent);
     }
     finish();
   }

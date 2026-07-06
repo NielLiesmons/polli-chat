@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import com.polli.android.HomeActivity
-import org.thoughtcrime.securesms.ConversationListRelayingActivity
+import com.polli.android.HomeRelayingActivity
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.util.ShareUtil
 
@@ -42,7 +42,7 @@ object ShareRelay {
 
     @JvmStatic
     fun finishRelayShell(context: Context) {
-        ConversationListRelayingActivity.finishActivity()
+        HomeRelayingActivity.finishActivity()
         if (context is Activity && context !is HomeActivity) {
             context.finish()
         }
