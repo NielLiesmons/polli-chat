@@ -174,6 +174,8 @@
             android:name="com.polli.android.chat.ChatActivity"
             android:theme="@style/Lab.NoActionBar"
             android:windowSoftInputMode="adjustResize"
+            android:launchMode="singleTask"
+            android:relinquishTaskIdentity="true"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"
             android:parentActivityName="com.polli.android.HomeActivity"
             android:exported="false">
@@ -321,35 +323,12 @@
             android:exported="false" />
 
         <activity
-            android:name=".ConversationActivity"
-            android:windowSoftInputMode="stateUnchanged"
-            android:launchMode="singleTask"
-            android:relinquishTaskIdentity="true"
-            android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"
-            android:parentActivityName="com.polli.android.HomeActivity">
-            <!-- Without relinquishTaskIdentity="true", we would have the following bug: - Directly open
-                a chat via shortcut (by long-pressing on the DeltaChat icon in the launcher) - Press back twice - Reopen
-                DeltaChat from recent apps - Expected: Home shown. Actual: The chat from the beginning is
-                shown again. -->
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.polli.android.HomeActivity" />
-        </activity>
-
-        <activity
             android:name=".GroupCreateActivity"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
 
         <activity
             android:name=".contacts.NewContactActivity"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
-
-        <activity
-            android:name=".NewConversationActivity"
-            android:theme="@style/TextSecure.LightNoActionBar"
-            android:windowSoftInputMode="stateHidden"
-            android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize">
-        </activity>
 
         <activity
             android:name=".ContactMultiSelectionActivity"

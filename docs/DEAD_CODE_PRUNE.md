@@ -16,7 +16,7 @@ Goal: shrink the legacy Android fork surface while keeping the Chatmail engine (
 
 | Feature | Legacy | Polli status | Action |
 |---------|--------|--------------|--------|
-| Chat feed + composer | `ConversationActivity` | `ChatActivity` | **Gated** — legacy redirects when `POLLI_UI` |
+| Chat feed + composer | `ConversationActivity` | `ChatActivity` | **Removed** — Compose chat only |
 | Image editor on attach | `ScribbleActivity` | **Wired** via `ImageEditLauncher` | Compose editor later; keep Java editor until then |
 | Attach draft (preview before send) | `AttachmentManager` | **Wired** — composer preview + caption on send | OK |
 | Gallery / file / contact / location | `AttachmentManager` | Partial in `ChatActivity` | Keep bridging |
@@ -30,7 +30,7 @@ Goal: shrink the legacy Android fork surface while keeping the Chatmail engine (
 
 - [x] Confirm Polli chat bypassed image editor (fixed: `ImageEditLauncher`)
 - [x] Manifest: launcher via `RoutingActivity` → `LauncherActivity` → `HomeActivity`
-- [x] Legacy chat/home redirect to Polli when `POLLI_UI` (`PolliLegacyRedirect`, `ShareRelay`)
+- [x] Legacy chat redirect removed — `ChatActivity` is the only chat host
 - [x] Share intents route to `HomeActivity` / `ChatActivity` with relay support
 - [x] List Java packages with zero references from `com.polli.android` — see [JAVA_INVENTORY.md](JAVA_INVENTORY.md)
 
@@ -38,7 +38,7 @@ Goal: shrink the legacy Android fork surface while keeping the Chatmail engine (
 
 | Target | ~LOC | Prerequisite |
 |--------|------|----------------|
-| `ConversationActivity` + `ConversationFragment` + `ConversationItem` | ~4.3k | Polli chat + attach draft parity |
+| `ConversationActivity` + `ConversationFragment` + `ConversationItem` | ~4.3k | **Removed** |
 | `ConversationListActivity` + archive | ~1k | **Removed** — `HomeActivity` / `ArchiveActivity` only |
 | Java welcome/onboarding duplicates | ~1.5k | Polli onboarding paths verified |
 | `imageeditor/` + `scribbles/` | ~6.7k | **Compose image editor** — do not delete until then |

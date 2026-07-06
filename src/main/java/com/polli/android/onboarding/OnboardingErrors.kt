@@ -17,11 +17,11 @@ object OnboardingErrors {
                 .create()
         dialog.show()
         try {
-            Linkify.addLinks(
-                dialog.findViewById(android.R.id.message) as TextView,
-                Linkify.WEB_URLS or Linkify.EMAIL_ADDRESSES,
-            )
-        } catch (_: NullPointerException) {
+            val messageView = dialog.findViewById<TextView>(android.R.id.message)
+            if (messageView != null) {
+                Linkify.addLinks(messageView, Linkify.WEB_URLS or Linkify.EMAIL_ADDRESSES)
+            }
+        } catch (_: Exception) {
             // Dialog message view missing on some OEM skins.
         }
     }
