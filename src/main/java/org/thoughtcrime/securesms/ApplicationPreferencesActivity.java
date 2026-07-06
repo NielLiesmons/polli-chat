@@ -317,7 +317,7 @@ public class ApplicationPreferencesActivity extends PassphraseRequiredActionBarA
             IntentUtils.showInBrowser(requireActivity(), "https://delta.chat/donate");
             break;
           case PREFERENCE_CATEGORY_HELP:
-            startActivity(new Intent(getActivity(), LocalHelpActivity.class));
+            DcHelper.openHelp(requireActivity(), null);
             break;
           default:
             throw new AssertionError();

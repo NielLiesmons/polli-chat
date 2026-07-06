@@ -51,3 +51,12 @@ No megascale cloud bill required. A space can be served from a small VPS, a home
 | **Platforms** | Android (primary), desktop in progress |
 
 Shared drive, MNS-resolved spaces, and full inbox admission are on the roadmap. The protocol behind Spaces (cryptree state, mail transport, MNS discovery) is documented in [docs/spaces](./docs/spaces/).
+
+## Development
+
+| Doc | Topic |
+|-----|--------|
+| [docs/BUILDING.md](./docs/BUILDING.md) | Build Android + desktop |
+| [docs/ENGINE_RUST.md](./docs/ENGINE_RUST.md) | Rust engine layout (`polli-home`, JSON-RPC) |
+| [docs/DEAD_CODE_PRUNE.md](./docs/DEAD_CODE_PRUNE.md) | Java → Kotlin/KMP migration tracker |
+| [docs/UI_MIGRATION.md](./docs/UI_MIGRATION.md) | Screen-by-screen Compose status |

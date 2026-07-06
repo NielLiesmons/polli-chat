@@ -537,12 +537,6 @@
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
 
         <activity
-            android:name=".LocalHelpActivity"
-            android:theme="@style/TextSecure.LightTheme"
-            android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize">
-        </activity>
-
-        <activity
             android:name=".calls.CallActivity"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden"
             android:launchMode="singleTask"

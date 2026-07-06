@@ -31,7 +31,7 @@ import java.util.Date;
 import java.util.HashMap;
 import org.thoughtcrime.securesms.ApplicationContext;
 import org.thoughtcrime.securesms.BuildConfig;
-import org.thoughtcrime.securesms.LocalHelpActivity;
+import org.thoughtcrime.securesms.util.IntentUtils;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.ShareActivity;
 import org.thoughtcrime.securesms.database.model.ThreadRecord;
@@ -518,11 +518,9 @@ public class DcHelper {
   }
 
   public static void openHelp(Context context, String section) {
-    Intent intent = new Intent(context, LocalHelpActivity.class);
-    if (section != null) {
-      intent.putExtra(LocalHelpActivity.SECTION_EXTRA, section);
-    }
-    context.startActivity(intent);
+    // Bundled Delta Chat help removed — Polli uses in-repo docs (docs/spaces/) until a public site exists.
+    String anchor = section != null ? section : "";
+    IntentUtils.showInBrowser(context, "https://delta.chat/en/help" + anchor);
   }
 
   /**

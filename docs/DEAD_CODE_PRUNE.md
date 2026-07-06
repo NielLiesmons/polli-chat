@@ -63,6 +63,16 @@ Goal: shrink the legacy Android fork surface while keeping the Chatmail engine (
 - [x] Composer attach draft preview before send (images, video, files)
 - [x] Move `ChatMediaBrowser` into `polli-ui` commonMain (platform thumb/list slots)
 - [x] First screen fully in `polli-ui` commonMain: **ArchiveScreen**
+- [x] Home tab: single **Home** feed (spaces + mail), mail badge on inbox avatars
+
+## Phase E — Repo hygiene (Delta Chat fork cruft)
+
+- [x] Remove bundled `src/main/assets/help/` (~30k lines HTML, 16 locales)
+- [x] Remove `LocalHelpActivity` + `calls/` assets; `openHelp()` opens browser only
+- [x] Remove root DC docs: `CHANGELOG.md`, `BUILDING.md`, `CONTRIBUTING.md`, `RELEASE.md`, `standards.md`, `Dockerfile`, `flake.nix`
+- [x] Polli build docs: [BUILDING.md](BUILDING.md)
+
+Still upstream / prune later: `org/thoughtcrime/securesms/` (~64k LOC Java), translated `values-*/strings.xml`, `fastlane/`, F-Droid metadata in `docs/f-droid.md`.
 
 ## Build check
 
