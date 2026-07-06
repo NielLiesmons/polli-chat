@@ -168,7 +168,7 @@ class ChatActivity : BaseComposeActivity() {
                         },
                         onVoiceSent = { uri, _ ->
                             MediaSend.sendVoice(this, chatId, uri, 0)
-                            viewModel.reload()
+                            viewModel.notifyOutboundSent()
                         },
                         pendingAttachment = pendingAttachment,
                         onClearAttachment = { pendingAttachment = null },

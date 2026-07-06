@@ -25,6 +25,24 @@ object PlatformMedia {
         filename: String,
     ): Uri = PersistentBlobProvider.getInstance().create(context, data, mimeType, filename)
 
+    fun createPersistentBlobFromStream(
+        context: Context,
+        inputStream: java.io.InputStream,
+        mimeType: String?,
+        filename: String?,
+        fileSize: Long?,
+    ): Uri =
+        PersistentBlobProvider.getInstance().create(
+            context,
+            inputStream,
+            mimeType ?: "application/octet-stream",
+            filename,
+            fileSize,
+        )
+
+    fun isLocalAttachmentUri(uri: Uri): Boolean =
+        org.thoughtcrime.securesms.mms.PartAuthority.isLocalUri(uri)
+
     fun deletePersistentBlob(context: Context, uri: Uri) {
         PersistentBlobProvider.getInstance().delete(context, uri)
     }

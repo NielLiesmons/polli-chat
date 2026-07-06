@@ -48,6 +48,8 @@ class ChatController(
         private set
     var pendingFirstLoadScroll by mutableStateOf(true)
         private set
+    var composerGeneration by mutableIntStateOf(0)
+        private set
 
     private var showNewMessagesMarker by mutableStateOf(false)
     private var scrollToBottomOnReload = false
@@ -112,10 +114,15 @@ class ChatController(
         persistDraft()
     }
 
+    private fun bumpComposer() {
+        composerGeneration++
+    }
+
     fun setReply(message: ChatMessage?) {
         replyTo = message
         editingMessageId = -1
         persistDraft()
+        bumpComposer()
     }
 
     fun beginEdit(message: ChatMessage) {
@@ -123,10 +130,14 @@ class ChatController(
         draft = message.text
         replyTo = null
         messages.clearDraft(chatId)
+        bumpComposer()
     }
 
     fun cancelEdit() {
+        if (editingMessageId <= 0) return
         editingMessageId = -1
+        draft = messages.getDraft(chatId)
+        bumpComposer()
     }
 
     fun sendReaction(msgId: Int, emoji: String) {
@@ -171,6 +182,7 @@ class ChatController(
             messages.clearDraft(chatId)
             scrollToBottomOnReload = true
             scheduleReload(markRead = true)
+            bumpComposer()
             return
         }
         messages.setDraft(chatId, text, replyTo?.id)
@@ -190,6 +202,7 @@ class ChatController(
         messages.clearDraft(chatId)
         scrollToBottomOnReload = true
         scheduleReload(markRead = true)
+        bumpComposer()
     }
 
     fun deleteMessage(msgId: Int) {
@@ -242,7 +255,7 @@ class ChatController(
     }
 
     private fun persistDraft() {
-        if (chatId <= 0) return
+        if (chatId <= 0 || editingMessageId > 0) return
         val trimmed = draft.trim()
         if (trimmed.isEmpty() && replyTo == null) {
             messages.clearDraft(chatId)

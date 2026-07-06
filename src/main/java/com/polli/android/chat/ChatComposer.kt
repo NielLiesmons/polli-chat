@@ -31,6 +31,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -98,6 +99,8 @@ fun ChatComposerDock(
     modifier: Modifier = Modifier,
     replyQuote: MessageQuote? = null,
     onClearQuote: (() -> Unit)? = null,
+    isEditingMessage: Boolean = false,
+    onCancelEdit: (() -> Unit)? = null,
     pendingAttachment: PendingAttachment? = null,
     onClearAttachment: (() -> Unit)? = null,
     hasPendingAttachment: Boolean = pendingAttachment != null,
@@ -115,8 +118,8 @@ fun ChatComposerDock(
     val focusRequester = remember { FocusRequester() }
     var isFocused by remember { mutableStateOf(false) }
 
-    LaunchedEffect(replyQuote?.msgId) {
-        if (replyQuote != null) {
+    LaunchedEffect(replyQuote?.msgId, isEditingMessage) {
+        if (replyQuote != null || isEditingMessage) {
             focusRequester.requestFocus()
             keyboard?.show()
         }
@@ -129,6 +132,7 @@ fun ChatComposerDock(
     val isMultiline = value.contains('\n')
     val isTall = textFieldHeightPx > tallThresholdPx
     val hasQuote = replyQuote != null
+    val hasEditBanner = isEditingMessage
     val flattenTop = hasQuote || hasPendingAttachment || isMultiline || isTall
     val showSend = value.trim().isNotEmpty() || hasPendingAttachment
     val composerRowExpanded = isMultiline || isTall
@@ -256,12 +260,18 @@ fun ChatComposerDock(
         hazeState = hazeState,
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
+            if (hasEditBanner) {
+                ComposerEditBanner(
+                    modifier = Modifier.padding(start = 7.dp, end = 7.dp, top = 7.dp, bottom = 8.dp),
+                    onCancel = { onCancelEdit?.invoke() },
+                )
+            }
             replyQuote?.let { quote ->
                 Box(
                     modifier = Modifier.padding(
                         start = 7.dp,
                         end = 7.dp,
-                        top = 7.dp,
+                        top = if (hasEditBanner) 0.dp else 7.dp,
                         bottom = if (pendingAttachment != null) 4.dp else 8.dp,
                     ),
                 ) {
@@ -277,7 +287,7 @@ fun ChatComposerDock(
                     modifier = Modifier.padding(
                         start = 7.dp,
                         end = 7.dp,
-                        top = if (hasQuote) 0.dp else 7.dp,
+                        top = if (hasQuote || hasEditBanner) 0.dp else 7.dp,
                         bottom = 8.dp,
                     ),
                 ) {
@@ -295,7 +305,7 @@ fun ChatComposerDock(
                         start = 7.dp,
                         end = 7.dp,
                         bottom = 7.dp,
-                        top = if (hasQuote || pendingAttachment != null) 0.dp else 7.dp,
+                        top = if (hasQuote || pendingAttachment != null || hasEditBanner) 0.dp else 7.dp,
                     ),
                 verticalAlignment = composerRowAlign,
                 horizontalArrangement = Arrangement.spacedBy(7.dp),
@@ -481,6 +491,34 @@ fun ChatComposerDock(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ComposerEditBanner(
+    modifier: Modifier = Modifier,
+    onCancel: () -> Unit,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(PolliColors.White.copy(alpha = 0.08f))
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text = stringResource(R.string.edit_message),
+            color = PolliColors.White85,
+            style = MaterialTheme.typography.labelLarge,
+        )
+        Text(
+            text = stringResource(android.R.string.cancel),
+            color = PolliColors.White66,
+            modifier = Modifier.clickable(onClick = onCancel),
+            style = MaterialTheme.typography.labelMedium,
+        )
     }
 }
 

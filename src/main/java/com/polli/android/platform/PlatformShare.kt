@@ -38,4 +38,16 @@ object PlatformShare {
     fun setSharedText(intent: Intent, text: String?) {
         ShareUtil.setSharedText(intent, text)
     }
+
+    fun getSharedTitle(activity: Activity): String? = ShareUtil.getSharedTitle(activity)
+
+    fun setSharedTitle(intent: Intent, title: String?) {
+        ShareUtil.setSharedTitle(intent, title)
+    }
+
+    fun isFromWebxdc(activity: Activity): Boolean = ShareUtil.isFromWebxdc(activity)
+
+    fun setIsFromWebxdc(intent: Intent, fromWebxdc: Boolean) {
+        ShareUtil.setIsFromWebxdc(intent, fromWebxdc)
+    }
 }

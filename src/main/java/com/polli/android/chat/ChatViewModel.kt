@@ -82,6 +82,13 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         get() = ensureController().pendingFirstLoadScroll
         private set(_) {}
 
+    var composerGeneration: Int
+        get() = ensureController().composerGeneration
+        private set(_) {}
+
+    val isEditingMessage: Boolean
+        get() = ensureController().editingMessageId > 0
+
     fun consumeScrollToBottomOnReload(): Boolean = ensureController().consumeScrollToBottomOnReload()
 
     fun addUnreadBelow(delta: Int) {

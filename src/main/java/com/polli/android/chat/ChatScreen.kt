@@ -174,12 +174,17 @@ fun ChatScreen(
             var voiceLockVisible by remember { mutableStateOf(false) }
             var voiceLockDragY by remember { mutableFloatStateOf(0f) }
             val composerDockHeight = composerChrome.dockHeight
+            val composerGen = viewModel.composerGeneration
 
             ChatFeedEdgeGradients(
                 modifier = Modifier.fillMaxSize(),
                 topChromeClearance = headerClearance,
                 bottomChromeInset = composerChrome.bottomChromeInset,
             )
+
+            // Keep composer in sync when reply/edit state changes.
+            @Suppress("UNUSED_VARIABLE")
+            val composerStateTick = composerGen
 
             ChatComposerDock(
                 modifier = Modifier
@@ -192,6 +197,8 @@ fun ChatScreen(
                 onSend = onSendMessage,
                 replyQuote = viewModel.replyTo?.toReplyQuote(),
                 onClearQuote = { viewModel.setReply(null) },
+                isEditingMessage = viewModel.isEditingMessage,
+                onCancelEdit = { viewModel.cancelEdit() },
                 pendingAttachment = pendingAttachment,
                 onClearAttachment = onClearAttachment,
                 onAttachClick = onAttachClick,
