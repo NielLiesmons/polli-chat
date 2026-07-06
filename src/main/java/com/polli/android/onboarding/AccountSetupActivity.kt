@@ -16,32 +16,33 @@ import com.polli.android.theme.PolliTheme
 import com.polli.android.ui.AppInsets
 import com.polli.ui.screens.AccountSetupScreen
 import androidx.compose.ui.unit.dp
+import com.polli.android.platform.EngineBridge
+import com.polli.android.platform.PlatformDialogs
+import com.polli.android.platform.PlatformThread
+import com.polli.android.platform.LegacyProgressDialog
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.connect.DcEventCenter
-import org.thoughtcrime.securesms.connect.DcHelper
-import org.thoughtcrime.securesms.util.Util
-import org.thoughtcrime.securesms.util.views.ProgressDialog
 import java.util.concurrent.Executors
 
 class AccountSetupActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEventDelegate {
     private val executor = Executors.newSingleThreadExecutor()
-    private var progressDialog: ProgressDialog? = null
+    private var progressDialog: LegacyProgressDialog? = null
     private var cancelled = false
     private lateinit var providerQrData: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         providerQrData = intent.getStringExtra(EXTRA_QR_DATA) ?: DEFAULT_PROVIDER_QR
-        if (DcHelper.getContext(this).isConfigured == 1) {
+        if (EngineBridge.getContext(this).isConfigured == 1) {
             finish()
             return
         }
-        DcHelper.getEventCenter(this).addObserver(DcContext.DC_EVENT_CONFIGURE_PROGRESS, this)
+        EngineBridge.getEventCenter(this).addObserver(DcContext.DC_EVENT_CONFIGURE_PROGRESS, this)
         val prefs = AppPrefs(this)
         setContent {
             PolliTheme(prefs = prefs) {
                 AccountSetupScreen(
-                    initialDisplayName = DcHelper.get(this, DcHelper.CONFIG_DISPLAY_NAME).orEmpty(),
+                    initialDisplayName = EngineBridge.get(this, EngineBridge.CONFIG_DISPLAY_NAME).orEmpty(),
                     topInset = AppInsets.statusBarTop(),
                     bottomInset = AppInsets.navigationBarBottom() + 24.dp,
                     onBack = { onBackPressedDispatcher.onBackPressed() },
@@ -52,7 +53,7 @@ class AccountSetupActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEve
     }
 
     override fun onDestroy() {
-        DcHelper.getEventCenter(this).removeObservers(this)
+        EngineBridge.getEventCenter(this).removeObservers(this)
         executor.shutdown()
         super.onDestroy()
     }
@@ -70,39 +71,39 @@ class AccountSetupActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEve
             return
         }
         executor.execute {
-            DcHelper.set(this, DcHelper.CONFIG_DISPLAY_NAME, name)
-            Util.runOnMain { startQrAccountCreation(providerQrData) }
+            EngineBridge.set(this, EngineBridge.CONFIG_DISPLAY_NAME, name)
+            PlatformThread.runOnMain { startQrAccountCreation(providerQrData) }
         }
     }
 
     private fun startQrAccountCreation(qrCode: String) {
         progressDialog?.dismiss()
         cancelled = false
-        progressDialog = ProgressDialog(this).apply {
+        progressDialog = PlatformDialogs.createProgressDialog(this).apply {
             setMessage(getString(R.string.one_moment))
             setCanceledOnTouchOutside(false)
             setCancelable(false)
             setButton(AlertDialog.BUTTON_NEGATIVE, getString(android.R.string.cancel)) { _, _ ->
                 cancelled = true
-                DcHelper.getContext(this@AccountSetupActivity).stopOngoingProcess()
+                EngineBridge.getContext(this@AccountSetupActivity).stopOngoingProcess()
             }
             show()
         }
-        DcHelper.getEventCenter(this).captureNextError()
+        EngineBridge.captureNextError(this)
         Thread {
-            val dc = DcHelper.getContext(this)
+            val dc = EngineBridge.getContext(this)
             try {
-                DcHelper.getRpc(this).addTransportFromQr(dc.accountId, qrCode)
-                DcHelper.getEventCenter(this).endCaptureNextError()
-                Util.runOnMain {
+                EngineBridge.getRpc(this).addTransportFromQr(dc.accountId, qrCode)
+                EngineBridge.endCaptureNextError(this)
+                PlatformThread.runOnMain {
                     progressDialog?.dismiss()
                     startActivity(AppNav.homeIntentFromWelcome(this))
                     finishAffinity()
                 }
             } catch (e: RpcException) {
-                DcHelper.getEventCenter(this).endCaptureNextError()
+                EngineBridge.endCaptureNextError(this)
                 if (!cancelled) {
-                    Util.runOnMain {
+                    PlatformThread.runOnMain {
                         progressDialog?.dismiss()
                         Toast.makeText(this, e.message ?: getString(R.string.error), Toast.LENGTH_LONG).show()
                     }

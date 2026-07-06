@@ -43,8 +43,8 @@ import com.polli.android.theme.accent
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
 import com.polli.android.ui.SelfAvatar
-import org.thoughtcrime.securesms.connect.DcHelper
-import org.thoughtcrime.securesms.profiles.AvatarHelper
+import com.polli.android.platform.EngineBridge
+import com.polli.android.platform.PlatformAvatars
 import java.io.IOException
 
 class ProfileEditActivity : BaseComposeActivity() {
@@ -81,11 +81,11 @@ class ProfileEditActivity : BaseComposeActivity() {
             val decoded = contentResolver.openInputStream(uri)?.use(BitmapFactory::decodeStream) ?: return
             val scaled = Bitmap.createScaledBitmap(
                 decoded,
-                AvatarHelper.AVATAR_SIZE,
-                AvatarHelper.AVATAR_SIZE,
+                PlatformAvatars.AVATAR_SIZE,
+                PlatformAvatars.AVATAR_SIZE,
                 true,
             )
-            AvatarHelper.setSelfAvatar(this, scaled)
+            PlatformAvatars.setSelfAvatar(this, scaled)
             avatarRevision++
         } catch (_: IOException) {
             // Same failure mode as legacy profile flows — keep existing avatar.
@@ -105,11 +105,11 @@ fun ProfileEditScreen(
     onChangeAvatar: () -> Unit,
 ) {
     val context = LocalContext.current
-    val dc = remember { DcHelper.getContext(context) }
+    val dc = remember { EngineBridge.getContext(context) }
     var displayName by remember {
-        mutableStateOf(dc.getConfig(DcHelper.CONFIG_DISPLAY_NAME))
+        mutableStateOf(dc.getConfig(EngineBridge.CONFIG_DISPLAY_NAME))
     }
-    val addr = dc.getConfig(DcHelper.CONFIG_CONFIGURED_ADDRESS)
+    val addr = dc.getConfig(EngineBridge.CONFIG_CONFIGURED_ADDRESS)
 
     Column(
         modifier = Modifier
@@ -159,7 +159,7 @@ fun ProfileEditScreen(
         Spacer(modifier = Modifier.padding(24.dp))
         TextButton(
             onClick = {
-                dc.setConfig(DcHelper.CONFIG_DISPLAY_NAME, displayName.trim())
+                dc.setConfig(EngineBridge.CONFIG_DISPLAY_NAME, displayName.trim())
                 (context as? ProfileEditActivity)?.finish()
             },
             modifier = Modifier.align(Alignment.End),

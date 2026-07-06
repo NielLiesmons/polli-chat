@@ -40,14 +40,14 @@ import com.polli.android.theme.PolliTheme
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.connect.DcHelper
-import org.thoughtcrime.securesms.qr.QrShowFragment
-import org.thoughtcrime.securesms.qr.RegistrationQrActivity
+import com.polli.android.platform.EngineBridge
+import com.polli.android.platform.LegacyQrShowFragment
+import com.polli.android.platform.LegacyRegistrationQrActivity
 
 class QrHubActivity : BaseAppCompatComposeActivity() {
     private val scanQr = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val data = result.data ?: return@registerForActivityResult
-        val raw = data.getStringExtra(RegistrationQrActivity.QRDATA_EXTRA)
+        val raw = data.getStringExtra(LegacyRegistrationQrActivity.QRDATA_EXTRA)
             ?: IntentIntegrator.parseActivityResult(result.resultCode, data)?.contents
         if (!raw.isNullOrBlank()) {
             QrResultHandler.handle(this, raw)
@@ -69,7 +69,7 @@ class QrHubActivity : BaseAppCompatComposeActivity() {
     }
 
     private fun launchScan() {
-        scanQr.launch(Intent(this, RegistrationQrActivity::class.java))
+        scanQr.launch(Intent(this, LegacyRegistrationQrActivity::class.java))
     }
 
     private fun pasteFromClipboard() {
@@ -100,7 +100,7 @@ class QrHubActivity : BaseAppCompatComposeActivity() {
 fun QrHubScreen(onBack: () -> Unit, onScan: () -> Unit, onPaste: () -> Unit) {
     var tab by remember { mutableIntStateOf(0) }
     val context = LocalContext.current
-    val dc = remember { DcHelper.getContext(context) }
+    val dc = remember { EngineBridge.getContext(context) }
 
     Column(
         modifier = Modifier
@@ -136,7 +136,7 @@ fun QrHubScreen(onBack: () -> Unit, onScan: () -> Unit, onPaste: () -> Unit) {
         when (tab) {
             0 -> {
                 val svg = remember {
-                    runCatching { QrShowFragment.fixSVG(dc.getSecurejoinQrSvg(0)) }.getOrNull()
+                    runCatching { LegacyQrShowFragment.fixSVG(dc.getSecurejoinQrSvg(0)) }.getOrNull()
                 }
                 Box(
                     modifier = Modifier

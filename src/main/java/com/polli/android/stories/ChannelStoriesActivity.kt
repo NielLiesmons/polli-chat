@@ -60,7 +60,7 @@ import com.polli.android.ui.rememberPolliHazeState
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.delay
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.connect.DcHelper
+import com.polli.android.platform.EngineBridge
 
 private const val STORY_SEGMENT_MS = 5_500L
 
@@ -114,7 +114,7 @@ fun ChannelStoriesScreen(
     onClose: () -> Unit,
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
-    val dc = remember { DcHelper.getContext(context) }
+    val dc = remember { EngineBridge.getContext(context) }
     var channelIdx by remember { mutableIntStateOf(startIndex.coerceIn(0, (channelIds.size - 1).coerceAtLeast(0))) }
     var postIdx by remember { mutableIntStateOf(0) }
     var replyDraft by remember { mutableStateOf("") }

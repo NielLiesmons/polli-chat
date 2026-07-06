@@ -34,7 +34,7 @@ import com.polli.android.theme.PolliColors
 import com.polli.android.theme.PolliTheme
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
-import org.thoughtcrime.securesms.connect.DcHelper
+import com.polli.android.platform.EngineBridge
 
 class AppSettingsActivity : BaseComposeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,9 +56,9 @@ class AppSettingsActivity : BaseComposeActivity() {
 @Composable
 fun AppSettingsScreen(onBack: () -> Unit) {
     val context = LocalContext.current
-    val dc = remember { DcHelper.getContext(context) }
+    val dc = remember { EngineBridge.getContext(context) }
     var bccSelf by remember {
-        mutableStateOf(dc.getConfigInt(DcHelper.CONFIG_BCC_SELF) != 0)
+        mutableStateOf(dc.getConfigInt(EngineBridge.CONFIG_BCC_SELF) != 0)
     }
 
     Column(
@@ -82,7 +82,7 @@ fun AppSettingsScreen(onBack: () -> Unit) {
             checked = bccSelf,
             onChecked = {
                 bccSelf = it
-                dc.setConfigInt(DcHelper.CONFIG_BCC_SELF, if (it) 1 else 0)
+                dc.setConfigInt(EngineBridge.CONFIG_BCC_SELF, if (it) 1 else 0)
             },
         )
         Spacer(modifier = Modifier.padding(8.dp))

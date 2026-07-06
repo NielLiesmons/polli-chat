@@ -25,22 +25,23 @@ import com.b44t.messenger.DcEvent
 import com.polli.android.BaseAppCompatComposeActivity
 import com.polli.android.HomeRelayingActivity
 import com.polli.android.media.ChatAllMediaActivity
+import com.polli.android.media.MediaPreviewActivity
 import com.polli.android.navigation.AppNav
 import com.polli.android.newchat.GroupCreateActivity
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.PolliTheme
-import org.thoughtcrime.securesms.ContactMultiSelectionActivity
-import org.thoughtcrime.securesms.ContactSelectionListFragment
-import com.polli.android.media.MediaPreviewActivity
-import org.thoughtcrime.securesms.MuteDialog
+import com.polli.android.platform.EngineBridge
+import com.polli.android.platform.LegacyContactMultiSelectionActivity
+import com.polli.android.platform.LegacyContactSelectionListFragment
+import com.polli.android.platform.LegacyMuteDialog
+import com.polli.android.platform.LegacyQrShowActivity
+import com.polli.android.platform.PlatformClipboard
+import com.polli.android.platform.PlatformLegacyUtil
+import com.polli.android.platform.PlatformMedia
+import com.polli.android.platform.PlatformPrefs
+import com.polli.android.platform.PlatformShare
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.connect.DcEventCenter
-import org.thoughtcrime.securesms.connect.DcHelper
-import org.thoughtcrime.securesms.providers.PersistentBlobProvider
-import org.thoughtcrime.securesms.qr.QrShowActivity
-import org.thoughtcrime.securesms.util.Prefs
-import org.thoughtcrime.securesms.util.ShareUtil
-import org.thoughtcrime.securesms.util.Util
 import java.io.File
 import java.util.Collections
 
@@ -59,11 +60,11 @@ class ProfileDetailActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEv
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val data = result.data ?: return@registerForActivityResult
             if (result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
-            val selected = data.getIntegerArrayListExtra(ContactMultiSelectionActivity.CONTACTS_EXTRA)
+            val selected = data.getIntegerArrayListExtra(LegacyContactMultiSelectionActivity.CONTACTS_EXTRA)
             val deselected =
-                data.getIntegerArrayListExtra(ContactMultiSelectionActivity.DESELECTED_CONTACTS_EXTRA)
+                data.getIntegerArrayListExtra(LegacyContactMultiSelectionActivity.DESELECTED_CONTACTS_EXTRA)
             val chatId = uiState?.chatId ?: return@registerForActivityResult
-            Util.runOnAnyBackgroundThread {
+            PlatformLegacyUtil.runOnAnyBackgroundThread {
                 deselected?.forEach { contactId ->
                     for (memberId in dcContext.getChatContacts(chatId)) {
                         if (memberId == contactId) {
@@ -80,15 +81,15 @@ class ProfileDetailActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEv
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        dcContext = DcHelper.getContext(this)
-        rpc = DcHelper.getRpc(this)
+        dcContext = EngineBridge.getContext(this)
+        rpc = EngineBridge.getRpc(this)
         inputChatId = intent.getIntExtra(CHAT_ID_EXTRA, 0)
         inputContactId = intent.getIntExtra(CONTACT_ID_EXTRA, 0)
         reload()
-        DcHelper.getEventCenter(this).addObserver(DcContext.DC_EVENT_CHAT_MODIFIED, this)
-        DcHelper.getEventCenter(this).addObserver(DcContext.DC_EVENT_CONTACTS_CHANGED, this)
-        DcHelper.getEventCenter(this).addObserver(DcContext.DC_EVENT_MSGS_CHANGED, this)
-        DcHelper.getEventCenter(this).addObserver(DcContext.DC_EVENT_INCOMING_MSG, this)
+        EngineBridge.getEventCenter(this).addObserver(DcContext.DC_EVENT_CHAT_MODIFIED, this)
+        EngineBridge.getEventCenter(this).addObserver(DcContext.DC_EVENT_CONTACTS_CHANGED, this)
+        EngineBridge.getEventCenter(this).addObserver(DcContext.DC_EVENT_MSGS_CHANGED, this)
+        EngineBridge.getEventCenter(this).addObserver(DcContext.DC_EVENT_INCOMING_MSG, this)
         val prefs = AppPrefs(this)
         setContent {
             PolliTheme(prefs = prefs) {
@@ -114,7 +115,7 @@ class ProfileDetailActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEv
                     onStatusLongClick = {
                         val text = state.statusText.orEmpty()
                         if (text.isNotBlank()) {
-                            Util.writeTextToClipboard(this, text)
+                            PlatformClipboard.copyText(this, text)
                             Toast.makeText(this, R.string.copied_to_clipboard, Toast.LENGTH_SHORT).show()
                         }
                     },
@@ -125,7 +126,7 @@ class ProfileDetailActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEv
     }
 
     override fun onDestroy() {
-        DcHelper.getEventCenter(this).removeObservers(this)
+        EngineBridge.getEventCenter(this).removeObservers(this)
         super.onDestroy()
     }
 
@@ -254,7 +255,7 @@ class ProfileDetailActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEv
                     reload()
                 }
                 .show()
-        Util.redPositiveButton(dialog)
+        PlatformLegacyUtil.redPositiveButton(dialog)
     }
 
     private fun onMemberLongClicked(contactId: Int, state: ProfileDetailUiState) {
@@ -285,16 +286,16 @@ class ProfileDetailActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEv
     private fun addMembers(chatId: Int) {
         val preselected = ArrayList(dcContext.getChatContacts(chatId).toList())
         pickMembers.launch(
-            Intent(this, ContactMultiSelectionActivity::class.java).apply {
-                putExtra(ContactSelectionListFragment.PRESELECTED_CONTACTS, preselected)
+            Intent(this, LegacyContactMultiSelectionActivity::class.java).apply {
+                putExtra(LegacyContactSelectionListFragment.PRESELECTED_CONTACTS, preselected)
             },
         )
     }
 
     private fun qrInvite(chatId: Int) {
         startActivity(
-            Intent(this, QrShowActivity::class.java).apply {
-                putExtra(QrShowActivity.CHAT_ID, chatId)
+            Intent(this, LegacyQrShowActivity::class.java).apply {
+                putExtra(LegacyQrShowActivity.CHAT_ID, chatId)
             },
         )
     }
@@ -352,7 +353,7 @@ class ProfileDetailActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEv
             dcContext.setChatMuteDuration(state.chatId, 0)
             reload()
         } else {
-            MuteDialog.show(this) { duration ->
+            LegacyMuteDialog.show(this) { duration ->
                 dcContext.setChatMuteDuration(state.chatId, duration)
                 reload()
             }
@@ -360,8 +361,8 @@ class ProfileDetailActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEv
     }
 
     private fun onSoundSettings(chatId: Int) {
-        var current = Prefs.getChatRingtone(this, dcContext.accountId, chatId)
-        val defaultUri = Prefs.getNotificationRingtone(this)
+        var current = PlatformPrefs.getChatRingtone(this, dcContext.accountId, chatId)
+        val defaultUri = PlatformPrefs.getNotificationRingtone(this)
         if (current == null) current = Settings.System.DEFAULT_NOTIFICATION_URI
         else if (current.toString().isEmpty()) current = null
         val intent =
@@ -380,13 +381,13 @@ class ProfileDetailActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEv
             val state = uiState ?: return@registerForActivityResult
             if (result.resultCode != Activity.RESULT_OK || result.data == null) return@registerForActivityResult
             var value = result.data!!.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
-            val defaultValue = Prefs.getNotificationRingtone(this)
+            val defaultValue = PlatformPrefs.getNotificationRingtone(this)
             if (defaultValue == value) value = null else if (value == null) value = Uri.EMPTY
-            Prefs.setChatRingtone(this, dcContext.accountId, state.chatId, value)
+            PlatformPrefs.setChatRingtone(this, dcContext.accountId, state.chatId, value)
         }
 
     private fun onVibrateSettings(chatId: Int) {
-        val checkedItem = Prefs.getChatVibrate(this, dcContext.accountId, chatId).id
+        val checkedItem = PlatformPrefs.getChatVibrate(this, dcContext.accountId, chatId).id
         val selected = intArrayOf(checkedItem)
         AlertDialog.Builder(this)
             .setTitle(R.string.pref_vibrate)
@@ -394,11 +395,11 @@ class ProfileDetailActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEv
                 selected[0] = which
             }
             .setPositiveButton(R.string.ok) { _, _ ->
-                Prefs.setChatVibrate(
+                PlatformPrefs.setChatVibrate(
                     this,
                     dcContext.accountId,
                     chatId,
-                    Prefs.VibrateState.fromId(selected[0]),
+                    PlatformPrefs.vibrateStateFromId(selected[0]),
                 )
             }
             .setNegativeButton(R.string.cancel, null)
@@ -441,13 +442,13 @@ class ProfileDetailActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEv
         if (contact.isKeyContact) {
             try {
                 val vcard = rpc.makeVcard(rpc.selectedAccountId, Collections.singletonList(contactId)).toByteArray()
-                val uri = PersistentBlobProvider.getInstance().create(this, vcard, "text/vcard", "contact.vcf")
-                ShareUtil.setSharedUris(composeIntent, arrayListOf(uri))
+                val uri = PlatformMedia.createPersistentBlob(this, vcard, "text/vcard", "contact.vcf")
+                PlatformShare.setSharedUris(composeIntent, arrayListOf(uri))
             } catch (_: RpcException) {
                 return
             }
         } else {
-            ShareUtil.setSharedText(composeIntent, contact.addr)
+            PlatformShare.setSharedText(composeIntent, contact.addr)
         }
         HomeRelayingActivity.start(this, composeIntent)
     }
@@ -487,7 +488,7 @@ class ProfileDetailActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEv
                         reload()
                     }
                     .show()
-            Util.redPositiveButton(dialog)
+            PlatformLegacyUtil.redPositiveButton(dialog)
         }
     }
 

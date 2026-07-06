@@ -30,4 +30,12 @@ object PlatformShare {
     fun acquireRelayMessageContent(activity: Activity, intent: Intent) {
         ShareUtil.acquireRelayMessageContent(activity, intent)
     }
+
+    fun setSharedUris(intent: Intent, uris: ArrayList<android.net.Uri>) {
+        ShareUtil.setSharedUris(intent, uris)
+    }
+
+    fun setSharedText(intent: Intent, text: String?) {
+        ShareUtil.setSharedText(intent, text)
+    }
 }

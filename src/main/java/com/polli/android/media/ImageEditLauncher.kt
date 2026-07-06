@@ -6,10 +6,10 @@ import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import org.thoughtcrime.securesms.scribbles.ScribbleActivity
+import com.polli.android.platform.LegacyScribbleActivity
 
 /**
- * Kotlin bridge to Delta Chat's image editor ([ScribbleActivity]).
+ * Kotlin bridge to Delta Chat's image editor ([LegacyScribbleActivity]).
  * Keeps crop/draw/blur/sticker tooling until a Compose editor exists.
  */
 class ImageEditLauncher(
@@ -32,11 +32,11 @@ class ImageEditLauncher(
         }
 
     fun launch(source: Uri, cropAvatar: Boolean = false) {
-        val intent = Intent(activity, ScribbleActivity::class.java).apply {
+        val intent = Intent(activity, LegacyScribbleActivity::class.java).apply {
             setDataAndType(source, "image/*")
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             if (cropAvatar) {
-                putExtra(ScribbleActivity.CROP_AVATAR, true)
+                putExtra(LegacyScribbleActivity.CROP_AVATAR, true)
             }
         }
         launcher.launch(intent)

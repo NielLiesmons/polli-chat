@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import org.thoughtcrime.securesms.connect.DcHelper
+import com.polli.android.platform.EngineBridge
 
 class NoteEditorViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -25,7 +25,7 @@ class NoteEditorViewModel(application: Application) : AndroidViewModel(applicati
 
     fun bind(msgId: Int) {
         this.msgId = msgId
-        val dc = DcHelper.getContext(getApplication())
+        val dc = EngineBridge.getContext(getApplication())
         store = NotesStore(dc)
         body = if (msgId > 0) {
             dc.getMsg(msgId).text?.orEmpty() ?: ""

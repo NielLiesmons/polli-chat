@@ -10,7 +10,7 @@ import com.polli.android.data.engine.PolliRepositories
 import com.polli.core.chat.ChatCategory
 import com.polli.domain.model.InboxItem
 import com.polli.domain.repository.ChatRepository
-import org.thoughtcrime.securesms.connect.DcHelper
+import com.polli.android.platform.EngineBridge
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -45,7 +45,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun updateEmptyHint(loaded: List<InboxItem>, channelRows: List<InboxItem>) {
-        val dc = DcHelper.getContext(getApplication())
+        val dc = EngineBridge.getContext(getApplication())
         val connectivity = dc.connectivity
         val homeCount =
             loaded.count {

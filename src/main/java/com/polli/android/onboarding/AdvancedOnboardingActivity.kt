@@ -30,18 +30,20 @@ import com.polli.android.theme.PolliTheme
 import com.polli.android.ui.AppInsets
 import com.polli.ui.screens.AdvancedOnboardingScreen
 import androidx.compose.ui.unit.dp
+import com.polli.android.platform.EngineBridge
+import com.polli.android.platform.LegacyEditRelayActivity
+import com.polli.android.platform.LegacyLogViewActivity
+import com.polli.android.platform.LegacyProgressDialog
+import com.polli.android.platform.LegacyProxySettingsActivity
+import com.polli.android.platform.LegacyRegistrationQrActivity
+import com.polli.android.platform.LegacyRelayListActivity
+import com.polli.android.platform.PlatformAvatars
+import com.polli.android.platform.PlatformDialogs
+import com.polli.android.platform.PlatformLegacyUtil
+import com.polli.android.platform.PlatformPrefs
+import com.polli.android.platform.PlatformThread
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.connect.DcEventCenter
-import org.thoughtcrime.securesms.connect.DcHelper
-import org.thoughtcrime.securesms.proxy.ProxySettingsActivity
-import org.thoughtcrime.securesms.profiles.AvatarHelper
-import org.thoughtcrime.securesms.qr.RegistrationQrActivity
-import org.thoughtcrime.securesms.relay.EditRelayActivity
-import org.thoughtcrime.securesms.relay.RelayListActivity
-import org.thoughtcrime.securesms.util.IntentUtils
-import org.thoughtcrime.securesms.util.Prefs
-import org.thoughtcrime.securesms.util.Util
-import org.thoughtcrime.securesms.util.views.ProgressDialog
 import java.io.IOException
 import java.security.SecureRandom
 import java.util.concurrent.Executors
@@ -49,7 +51,7 @@ import java.util.concurrent.Executors
 /** Compose advanced onboarding — provider picker, avatar, login/create. Replaces Java InstantOnboardingActivity. */
 class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEventDelegate {
     private val executor = Executors.newSingleThreadExecutor()
-    private var progressDialog: ProgressDialog? = null
+    private var progressDialog: LegacyProgressDialog? = null
     private var cancelled = false
 
     private var providerHost by mutableStateOf(DEFAULT_CHATMAIL_HOST)
@@ -78,7 +80,7 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
 
     private val scanProviderQr = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val data = result.data ?: return@registerForActivityResult
-        val raw = data.getStringExtra(RegistrationQrActivity.QRDATA_EXTRA)
+        val raw = data.getStringExtra(LegacyRegistrationQrActivity.QRDATA_EXTRA)
             ?: IntentIntegrator.parseActivityResult(result.resultCode, data)?.contents
         if (!raw.isNullOrBlank()) {
             setProviderFromQr(raw)
@@ -87,21 +89,21 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (DcHelper.getContext(this).isConfigured == 1) {
+        if (EngineBridge.getContext(this).isConfigured == 1) {
             val uri = intent.data
             if (uri != null) {
                 startActivity(
-                    Intent(this, RelayListActivity::class.java).apply {
-                        putExtra(RelayListActivity.EXTRA_QR_DATA, uri.toString())
+                    Intent(this, LegacyRelayListActivity::class.java).apply {
+                        putExtra(LegacyRelayListActivity.EXTRA_QR_DATA, uri.toString())
                     },
                 )
             }
             finish()
             return
         }
-        DcHelper.getEventCenter(this).addObserver(DcContext.DC_EVENT_CONFIGURE_PROGRESS, this)
+        EngineBridge.getEventCenter(this).addObserver(DcContext.DC_EVENT_CONFIGURE_PROGRESS, this)
         loadExistingAvatar()
-        displayName = DcHelper.get(this, DcHelper.CONFIG_DISPLAY_NAME).orEmpty()
+        displayName = EngineBridge.get(this, EngineBridge.CONFIG_DISPLAY_NAME).orEmpty()
         handleIntent(intent)
         val prefs = AppPrefs(this)
         setContent {
@@ -121,7 +123,7 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
                     onShowOtherOptions = { showOtherOptionsDialog() },
                     onPrivacyPolicyClick = {
                         if (!isDcLogin) {
-                            IntentUtils.showInBrowser(this, "https://$providerHost/privacy.html")
+                            PlatformLegacyUtil.showInBrowser(this, "https://$providerHost/privacy.html")
                         }
                     },
                     onCreate = { name -> createProfile(name) },
@@ -138,13 +140,13 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
 
     override fun onPause() {
         super.onPause()
-        if (DcHelper.getContext(this).isConfigured == 0) {
+        if (EngineBridge.getContext(this).isConfigured == 0) {
             saveDraftProfile()
         }
     }
 
     override fun onDestroy() {
-        DcHelper.getEventCenter(this).removeObservers(this)
+        EngineBridge.getEventCenter(this).removeObservers(this)
         executor.shutdown()
         super.onDestroy()
     }
@@ -157,10 +159,10 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         val proxyItem = menu.findItem(R.id.menu_proxy_settings)
         if (proxyItem != null) {
-            if (TextUtils.isEmpty(DcHelper.get(this, DcHelper.CONFIG_PROXY_URL))) {
+            if (TextUtils.isEmpty(EngineBridge.get(this, EngineBridge.CONFIG_PROXY_URL))) {
                 proxyItem.isVisible = false
             } else {
-                val proxyEnabled = DcHelper.getInt(this, DcHelper.CONFIG_PROXY_ENABLED) == 1
+                val proxyEnabled = EngineBridge.getInt(this, EngineBridge.CONFIG_PROXY_ENABLED) == 1
                 proxyItem.setIcon(
                     if (proxyEnabled) R.drawable.ic_proxy_enabled_24 else R.drawable.ic_proxy_disabled_24,
                 )
@@ -177,11 +179,11 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
                 true
             }
             R.id.menu_proxy_settings -> {
-                startActivity(Intent(this, ProxySettingsActivity::class.java))
+                startActivity(Intent(this, LegacyProxySettingsActivity::class.java))
                 true
             }
             R.id.menu_view_log -> {
-                startActivity(Intent(this, org.thoughtcrime.securesms.LogViewActivity::class.java))
+                startActivity(Intent(this, LegacyLogViewActivity::class.java))
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -195,7 +197,7 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
     }
 
     private fun loadExistingAvatar() {
-        val file = AvatarHelper.getSelfAvatarFile(this)
+        val file = PlatformAvatars.getSelfAvatarFile(this)
         if (file.exists() && file.length() > 0) {
             pendingAvatar = BitmapFactory.decodeFile(file.absolutePath)
         }
@@ -210,12 +212,12 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
 
     private fun saveDraftProfile() {
         if (displayName.isNotBlank()) {
-            DcHelper.set(this, DcHelper.CONFIG_DISPLAY_NAME, displayName)
+            EngineBridge.set(this, EngineBridge.CONFIG_DISPLAY_NAME, displayName)
         }
         if (avatarChanged && pendingAvatar != null) {
             try {
-                AvatarHelper.setSelfAvatar(this, pendingAvatar)
-                Prefs.setProfileAvatarId(this, SecureRandom().nextInt())
+                PlatformAvatars.setSelfAvatar(this, pendingAvatar)
+                PlatformPrefs.setProfileAvatarId(this, SecureRandom().nextInt())
                 avatarChanged = false
             } catch (_: IOException) {
                 // Best-effort draft save on pause.
@@ -236,7 +238,7 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
     }
 
     private fun setProviderFromQr(rawQr: String) {
-        val dc = DcHelper.getContext(this)
+        val dc = EngineBridge.getContext(this)
         when (val state = dc.checkQr(rawQr).state) {
             DcContext.DC_QR_LOGIN -> {
                 isDcLogin = true
@@ -285,15 +287,15 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
                 .setNegativeButton(R.string.cancel, null)
                 .create()
         view.findViewById<android.widget.Button>(R.id.use_other_server)?.setOnClickListener {
-            IntentUtils.showInBrowser(this, INSTANCES_URL)
+            PlatformLegacyUtil.showInBrowser(this, INSTANCES_URL)
             dialog.dismiss()
         }
         view.findViewById<android.widget.Button>(R.id.login_button)?.setOnClickListener {
-            startActivity(Intent(this, EditRelayActivity::class.java))
+            startActivity(Intent(this, LegacyEditRelayActivity::class.java))
             dialog.dismiss()
         }
         view.findViewById<android.widget.Button>(R.id.scan_qr_button)?.setOnClickListener {
-            scanProviderQr.launch(Intent(this, RegistrationQrActivity::class.java))
+            scanProviderQr.launch(Intent(this, LegacyRegistrationQrActivity::class.java))
             dialog.dismiss()
         }
         dialog.show()
@@ -307,18 +309,18 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
         displayName = name
         accountBusy = true
         executor.execute {
-            DcHelper.set(this, DcHelper.CONFIG_DISPLAY_NAME, name)
+            EngineBridge.set(this, EngineBridge.CONFIG_DISPLAY_NAME, name)
             var ok = true
             if (avatarChanged && pendingAvatar != null) {
                 try {
-                    AvatarHelper.setSelfAvatar(this, pendingAvatar)
-                    Prefs.setProfileAvatarId(this, SecureRandom().nextInt())
+                    PlatformAvatars.setSelfAvatar(this, pendingAvatar)
+                    PlatformPrefs.setProfileAvatarId(this, SecureRandom().nextInt())
                 } catch (_: IOException) {
                     ok = false
                 }
             }
             val success = ok
-            Util.runOnMain {
+            PlatformThread.runOnMain {
                 if (success) {
                     startQrAccountCreation(providerQrData)
                 } else {
@@ -333,23 +335,23 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
         progressDialog?.dismiss()
         cancelled = false
         progressDialog =
-            ProgressDialog(this).apply {
+            PlatformDialogs.createProgressDialog(this).apply {
                 setMessage(getString(R.string.one_moment))
                 setCanceledOnTouchOutside(false)
                 setCancelable(false)
                 setButton(AlertDialog.BUTTON_NEGATIVE, getString(android.R.string.cancel)) { _, _ ->
                     cancelled = true
-                    DcHelper.getContext(this@AdvancedOnboardingActivity).stopOngoingProcess()
+                    EngineBridge.getContext(this@AdvancedOnboardingActivity).stopOngoingProcess()
                 }
                 show()
             }
-        DcHelper.getEventCenter(this).captureNextError()
+        EngineBridge.captureNextError(this)
         Thread {
-            val dc = DcHelper.getContext(this)
+            val dc = EngineBridge.getContext(this)
             try {
-                DcHelper.getRpc(this).addTransportFromQr(dc.accountId, qrCode)
-                DcHelper.getEventCenter(this).endCaptureNextError()
-                Util.runOnMain {
+                EngineBridge.getRpc(this).addTransportFromQr(dc.accountId, qrCode)
+                EngineBridge.endCaptureNextError(this)
+                PlatformThread.runOnMain {
                     progressDialog?.dismiss()
                     val home =
                         AppNav.homeIntentFromWelcome(
@@ -360,9 +362,9 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
                     finishAffinity()
                 }
             } catch (e: RpcException) {
-                DcHelper.getEventCenter(this).endCaptureNextError()
+                EngineBridge.endCaptureNextError(this)
                 if (!cancelled) {
-                    Util.runOnMain {
+                    PlatformThread.runOnMain {
                         progressDialog?.dismiss()
                         accountBusy = false
                         OnboardingErrors.maybeShowConfigurationError(this, e.message)

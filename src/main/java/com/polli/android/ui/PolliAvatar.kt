@@ -38,7 +38,7 @@ import com.polli.android.theme.ProfileColors
 import com.polli.core.sigil.SigilIdentity
 import dev.chrisbanes.haze.HazeState
 import org.thoughtcrime.securesms.components.AvatarImageView
-import org.thoughtcrime.securesms.connect.DcHelper
+import com.polli.android.platform.EngineBridge
 
 /**
  * Circular profile picture — Delta Chat photo when one exists on disk, otherwise the contact's
@@ -176,7 +176,7 @@ private fun resolveSigilIdentity(
 ): String {
     sigilIdentity?.trim()?.takeIf { it.isNotEmpty() }?.let { return it }
     try {
-        val dc = dcContext ?: DcHelper.getContext(context)
+        val dc = dcContext ?: EngineBridge.getContext(context)
         if (contactId != null && contactId != 0) {
             dc.getContact(contactId).addr?.trim()?.takeIf { it.isNotEmpty() }?.let { return it }
         }

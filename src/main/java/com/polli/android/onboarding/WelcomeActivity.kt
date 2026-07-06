@@ -9,20 +9,20 @@ import com.google.zxing.integration.android.IntentIntegrator
 import com.polli.android.BaseComposeActivity
 import com.polli.android.navigation.AppNav
 import com.polli.android.permissions.BackgroundSetup
+import com.polli.android.platform.LegacyBackupTransferActivity
+import com.polli.android.platform.LegacyQrExtras
+import com.polli.android.platform.LegacyRegistrationQrActivity
 import com.polli.android.qr.QrResultHandler
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.PolliTheme
 import com.polli.android.ui.AppInsets
 import com.polli.ui.screens.WelcomeScreen
 import androidx.compose.ui.unit.dp
-import com.polli.android.onboarding.AdvancedOnboardingActivity
-import org.thoughtcrime.securesms.qr.BackupTransferActivity
-import org.thoughtcrime.securesms.qr.RegistrationQrActivity
 
 class WelcomeActivity : BaseComposeActivity() {
     private val scanQr = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val data = result.data ?: return@registerForActivityResult
-        val raw = data.getStringExtra(RegistrationQrActivity.QRDATA_EXTRA)
+        val raw = data.getStringExtra(LegacyRegistrationQrActivity.QRDATA_EXTRA)
             ?: IntentIntegrator.parseActivityResult(result.resultCode, data)?.contents
         if (!raw.isNullOrBlank()) {
             QrResultHandler.handle(this, raw)
@@ -43,8 +43,8 @@ class WelcomeActivity : BaseComposeActivity() {
                     onLinkSecondDevice = {
                         BackgroundSetup.requestNotificationsThen(this) {
                             scanQr.launch(
-                                Intent(this, RegistrationQrActivity::class.java).apply {
-                                    putExtra(RegistrationQrActivity.ADD_AS_SECOND_DEVICE_EXTRA, true)
+                                Intent(this, LegacyRegistrationQrActivity::class.java).apply {
+                                    putExtra(LegacyRegistrationQrActivity.ADD_AS_SECOND_DEVICE_EXTRA, true)
                                 },
                             )
                         }
@@ -67,9 +67,9 @@ class WelcomeActivity : BaseComposeActivity() {
         val backupQr = intent?.getStringExtra(BACKUP_QR_EXTRA) ?: return
         intent.removeExtra(BACKUP_QR_EXTRA)
         startActivity(
-            Intent(this, BackupTransferActivity::class.java).apply {
-                putExtra(BackupTransferActivity.TRANSFER_MODE, BackupTransferActivity.TransferMode.RECEIVER_SCAN_QR.getInt())
-                putExtra(BackupTransferActivity.QR_CODE, backupQr)
+            Intent(this, LegacyBackupTransferActivity::class.java).apply {
+                putExtra(LegacyQrExtras.TRANSFER_MODE, LegacyQrExtras.receiverScanQrMode())
+                putExtra(LegacyQrExtras.QR_CODE, backupQr)
             },
         )
     }

@@ -210,7 +210,7 @@ object AppNav {
 
     @JvmStatic
     fun webxdcIntent(context: Context, msgId: Int): Intent {
-        val dc = org.thoughtcrime.securesms.connect.DcHelper.getContext(context)
+        val dc = com.polli.android.platform.EngineBridge.getContext(context)
         return Intent(context, WebxdcActivity::class.java).apply {
             action = Intent.ACTION_VIEW
             putExtra("accountId", dc.accountId)

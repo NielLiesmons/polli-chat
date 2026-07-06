@@ -19,7 +19,7 @@ import com.polli.ui.home.StoryRingEntry
 import com.polli.ui.home.StoryRingStyle
 import com.polli.ui.screens.HomeScreen
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.connect.DcHelper
+import com.polli.android.platform.EngineBridge
 
 /** Android host for the shared [HomeScreen] — supplies engine-backed avatars and story rings. */
 @Composable
@@ -47,7 +47,7 @@ fun AndroidHomeScreen(
         archivedChatsTitle = stringResource(R.string.chat_archived_chats_title),
         notes = notes,
         storyRingLoader = { channels, nowSec ->
-            ChannelStoryRingLogic.buildEntries(DcHelper.getContext(context), channels, nowSec)
+            ChannelStoryRingLogic.buildEntries(EngineBridge.getContext(context), channels, nowSec)
                 .map { it.toSharedStoryRingEntry() }
         },
         onProfileClick = onProfileClick,

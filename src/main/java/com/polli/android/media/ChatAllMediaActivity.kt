@@ -39,7 +39,7 @@ import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
 import com.polli.domain.navigation.ChatIntentExtras
 import com.polli.ui.components.ChatMediaBrowser
-import org.thoughtcrime.securesms.connect.DcHelper
+import com.polli.android.platform.EngineBridge
 
 class ChatAllMediaActivity : BaseComposeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -144,7 +144,7 @@ fun ChatAllMediaScreen(
 @Composable
 fun GalleryThumb(msgId: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val msg = remember(msgId) { DcHelper.getContext(context).getMsg(msgId) }
+    val msg = remember(msgId) { EngineBridge.getContext(context).getMsg(msgId) }
     val file = remember(msgId) { if (msg.isOk && msg.hasFile()) msg.getFileAsFile() else null }
 
     Box(
@@ -171,7 +171,7 @@ fun GalleryThumb(msgId: Int, onClick: () -> Unit, modifier: Modifier = Modifier)
 @Composable
 fun MediaListRow(msgId: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val msg = remember(msgId) { DcHelper.getContext(context).getMsg(msgId) }
+    val msg = remember(msgId) { EngineBridge.getContext(context).getMsg(msgId) }
     val label = remember(msgId) {
         when {
             !msg.isOk -> "Message"

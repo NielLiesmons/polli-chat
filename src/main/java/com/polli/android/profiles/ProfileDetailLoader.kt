@@ -8,8 +8,8 @@ import com.b44t.messenger.DcContext
 import com.b44t.messenger.DcLot
 import chat.delta.rpc.RpcException
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.connect.DcHelper
-import org.thoughtcrime.securesms.util.DateUtils
+import com.polli.android.platform.EngineBridge
+import com.polli.android.platform.PlatformDates
 
 data class ProfileMemberRow(
     val contactId: Int,
@@ -56,7 +56,7 @@ data class ProfileDetailUiState(
 
 object ProfileDetailLoader {
     fun load(context: Context, chatIdIn: Int, contactIdIn: Int): ProfileDetailUiState {
-        val dc = DcHelper.getContext(context)
+        val dc = EngineBridge.getContext(context)
         var chatId = chatIdIn
         var contactId = contactIdIn
         var contactIsBot = false
@@ -197,7 +197,7 @@ object ProfileDetailLoader {
         }
         if (chat != null && chat.isEncrypted) {
             return try {
-                val rpc = DcHelper.getRpc(context)
+                val rpc = EngineBridge.getRpc(context)
                 rpc.getChatDescription(rpc.selectedAccountId, chat.id)?.takeIf { it.isNotBlank() }
             } catch (_: RpcException) {
                 null
@@ -219,7 +219,7 @@ object ProfileDetailLoader {
         } else {
             context.getString(
                 R.string.last_seen_at,
-                DateUtils.getExtendedTimeSpanString(context, lastSeen),
+                PlatformDates.extendedTimeSpan(context, lastSeen),
             )
         }
     }

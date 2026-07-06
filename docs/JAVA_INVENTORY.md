@@ -16,20 +16,29 @@ Cross-reference: references from `com.polli.android` vs legacy-only Java.
 
 Polli hosts: `HomeActivity`, `ChatActivity`, `ArchiveActivity`, Compose `WelcomeActivity`, `NewConversationActivity`, `GroupCreateActivity`, `AccountSetupActivity`, `AdvancedOnboardingActivity`, `ProfileDetailActivity`, `ProfilesActivity`, `NotificationSettingsActivity`, `com.polli.android.webxdc.WebxdcActivity` / `WebxdcStoreActivity`.
 
+**2026-07-07:** Onboarding, profiles, QR, home, notes, and media screens no longer import `DcHelper` directly — all go through `com.polli.android.platform` bridges. Remaining direct legacy imports: `org.thoughtcrime.securesms.R`, `webxdc/*.java`, `PolliShareActivity` → `ShareActivity`.
+
 ## Polli platform bridges (`com.polli.android.platform`)
 
 Kotlin adapters — **only** package that should import legacy Java for new code:
 
 | Bridge | Wraps |
 |--------|--------|
-| `EngineBridge` | `DcHelper` (context, RPC, events, config) |
+| `EngineBridge` | `DcHelper` (context, RPC, events, config, blob copy) |
 | `EngineBlobStore` | blob dir copy |
 | `AttachmentIntents` | share/export attachment |
 | `PlatformMedia` | `MediaUtil`, `PersistentBlobProvider` |
 | `PlatformShare` | `ShareUtil`, `SendRelayedMessageUtil` |
 | `PlatformAudio` | `AudioPlaybackViewModel`, service |
 | `PlatformAttachments` | `AttachmentManager` |
-| `LegacyActivities` | Scribble, QR, contact pickers |
+| `PlatformAvatars` | `AvatarHelper` |
+| `PlatformPrefs` | `Prefs` |
+| `PlatformAccounts` | `AccountManager` |
+| `PlatformDialogs` | `ProgressDialog` |
+| `PlatformLegacyUtil` | `IntentUtils`, `Util` (background thread, browser) |
+| `PlatformDates` | `DateUtils` |
+| `LegacyActivities` | Scribble, QR, contact pickers, proxy, relay |
+| `LegacyQrExtras` | backup transfer intent extras |
 
 ## Polli-referenced (keep — engine / bridge)
 

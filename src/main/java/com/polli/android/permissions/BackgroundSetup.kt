@@ -14,11 +14,11 @@ import chat.delta.rpc.types.SecurejoinUiPath
 import com.polli.domain.navigation.ChatIntentExtras
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.components.reminder.DozeReminder
-import org.thoughtcrime.securesms.connect.DcHelper
+import com.polli.android.platform.EngineBridge
 import org.thoughtcrime.securesms.notifications.FcmReceiveService
 import org.thoughtcrime.securesms.permissions.Permissions
 import org.thoughtcrime.securesms.qr.QrCodeHandler
-import org.thoughtcrime.securesms.util.Prefs
+import com.polli.android.platform.PlatformPrefs
 
 /**
  * Delta Chat background + permission prompts from [org.thoughtcrime.securesms.ConversationListFragment]
@@ -71,9 +71,9 @@ object BackgroundSetup {
     @JvmStatic
     fun requestNotificationsThen(activity: Activity, onContinue: () -> Unit) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            !Prefs.getBooleanPreference(activity, Prefs.ASKED_FOR_NOTIFICATION_PERMISSION, false)
+            !PlatformPrefs.getBooleanPreference(activity, PlatformPrefs.askedForNotificationPermission, false)
         ) {
-            Prefs.setBooleanPreference(activity, Prefs.ASKED_FOR_NOTIFICATION_PERMISSION, true)
+            PlatformPrefs.setBooleanPreference(activity, PlatformPrefs.askedForNotificationPermission, true)
             Permissions.with(activity)
                 .request(Manifest.permission.POST_NOTIFICATIONS)
                 .ifNecessary()
@@ -88,7 +88,7 @@ object BackgroundSetup {
   /** Device-chat taps (battery reminder) — DC [ConversationFragment] path. */
     @JvmStatic
     fun tryHandleDeviceMessageTap(context: Context, msgId: Int): Boolean {
-        val dc = DcHelper.getContext(context)
+        val dc = EngineBridge.getContext(context)
         val msg = dc.getMsg(msgId)
         if (!msg.isOk) return false
         return if (DozeReminder.isDozeReminderMsg(context, msg)) {
@@ -101,14 +101,14 @@ object BackgroundSetup {
 
     private fun promptNotificationsAndBattery(activity: Activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (!Prefs.getBooleanPreference(activity, Prefs.ASKED_FOR_NOTIFICATION_PERMISSION, false)) {
-                Prefs.setBooleanPreference(activity, Prefs.ASKED_FOR_NOTIFICATION_PERMISSION, true)
+            if (!PlatformPrefs.getBooleanPreference(activity, PlatformPrefs.askedForNotificationPermission, false)) {
+                PlatformPrefs.setBooleanPreference(activity, PlatformPrefs.askedForNotificationPermission, true)
                 Permissions.with(activity)
                     .request(Manifest.permission.POST_NOTIFICATIONS)
                     .ifNecessary()
                     .onAllGranted { DozeReminder.maybeAskDirectly(activity) }
                     .onAnyDenied {
-                        val dcContext = DcHelper.getContext(activity)
+                        val dcContext = EngineBridge.getContext(activity)
                         val msg = DcMsg(dcContext, DcMsg.DC_MSG_TEXT)
                         msg.setText(
                             "\uD83D\uDC49 ${activity.getString(R.string.notifications_disabled)} \uD83D\uDC48\n\n" +
@@ -127,7 +127,7 @@ object BackgroundSetup {
 
     private fun addDeviceMessages(activity: Activity, fromWelcome: Boolean) {
         try {
-            val dcContext = DcHelper.getContext(activity)
+            val dcContext = EngineBridge.getContext(activity)
             val deviceMsgLabel = "update_2_0_0_android-h"
             if (!dcContext.wasDeviceMsgEverAdded(deviceMsgLabel)) {
                 val msg = if (!fromWelcome) {
@@ -138,13 +138,13 @@ object BackgroundSetup {
                     null
                 }
                 dcContext.addDeviceMsg(deviceMsgLabel, msg)
-                if (Prefs.getStringPreference(activity, Prefs.LAST_DEVICE_MSG_LABEL, "") == deviceMsgLabel) {
+                if (PlatformPrefs.getStringPreference(activity, PlatformPrefs.lastDeviceMsgLabel, "") == deviceMsgLabel) {
                     val deviceChatId = dcContext.getChatIdByContactId(DcContact.DC_CONTACT_ID_DEVICE)
                     if (deviceChatId != 0) {
                         dcContext.marknoticedChat(deviceChatId)
                     }
                 }
-                Prefs.setStringPreference(activity, Prefs.LAST_DEVICE_MSG_LABEL, deviceMsgLabel)
+                PlatformPrefs.setStringPreference(activity, PlatformPrefs.lastDeviceMsgLabel, deviceMsgLabel)
             }
         } catch (e: Exception) {
             e.printStackTrace()

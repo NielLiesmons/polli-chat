@@ -30,7 +30,7 @@ import com.polli.android.ui.AppInsets
 import com.polli.android.ui.PolliAvatar
 import com.polli.android.ui.RoundBackButton
 import com.polli.android.ui.ShellDivider
-import org.thoughtcrime.securesms.connect.DcHelper
+import com.polli.android.platform.EngineBridge
 import androidx.compose.ui.platform.LocalContext
 
 @Composable
@@ -49,7 +49,7 @@ fun ProfileDetailScreen(
     onRemoveSelectedMembers: () -> Unit = {},
 ) {
     val context = LocalContext.current
-    val dc = androidx.compose.runtime.remember { DcHelper.getContext(context) }
+    val dc = androidx.compose.runtime.remember { EngineBridge.getContext(context) }
 
     Column(
         modifier =
@@ -228,7 +228,7 @@ private fun ProfileMemberRowView(
     onLongClick: () -> Unit,
 ) {
     val context = LocalContext.current
-    val dc = androidx.compose.runtime.remember { DcHelper.getContext(context) }
+    val dc = androidx.compose.runtime.remember { EngineBridge.getContext(context) }
     val isSpecial =
         member.contactId == DcContact.DC_CONTACT_ID_ADD_MEMBER ||
             member.contactId == DcContact.DC_CONTACT_ID_QR_INVITE

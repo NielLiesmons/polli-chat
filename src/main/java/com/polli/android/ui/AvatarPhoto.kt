@@ -2,7 +2,7 @@ package com.polli.android.ui
 
 import android.content.Context
 import com.b44t.messenger.DcContext
-import org.thoughtcrime.securesms.connect.DcHelper
+import com.polli.android.platform.EngineBridge
 import java.io.File
 
 /** Whether Delta Chat has a downloaded profile image on disk for this chat/contact. */
@@ -14,7 +14,7 @@ object AvatarPhoto {
         dcContext: DcContext?,
     ): Boolean {
         try {
-            val dc = dcContext ?: DcHelper.getContext(context)
+            val dc = dcContext ?: EngineBridge.getContext(context)
             if (contactId != null && contactId != 0) {
                 return isValidPath(dc.getContact(contactId).profileImage)
             }

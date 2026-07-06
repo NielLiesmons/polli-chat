@@ -10,16 +10,16 @@ import com.b44t.messenger.DcLot
 import com.polli.android.navigation.AppNav
 import com.polli.android.onboarding.AdvancedOnboardingActivity
 import com.polli.android.onboarding.AccountSetupActivity
+import com.polli.android.platform.EngineBridge
+import com.polli.android.platform.PlatformAccounts
+import com.polli.android.platform.PlatformLegacyUtil
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.connect.AccountManager
-import org.thoughtcrime.securesms.connect.DcHelper
-import org.thoughtcrime.securesms.qr.BackupTransferActivity
 
 object QrResultHandler {
     fun handle(activity: Activity, rawQr: String) {
         val trimmed = rawQr.trim()
         if (trimmed.isEmpty()) return
-        val dc = DcHelper.getContext(activity)
+        val dc = EngineBridge.getContext(activity)
         val parsed = dc.checkQr(trimmed)
         when (parsed.state) {
             DcContext.DC_QR_LOGIN, DcContext.DC_QR_ACCOUNT -> {
@@ -68,12 +68,15 @@ object QrResultHandler {
                     activity.getString(R.string.multidevice_same_network_hint),
             )
             .setPositiveButton(R.string.perm_continue) { _, _ ->
-                AccountManager.getInstance().addAccountFromSecondDevice(activity, rawQr)
+                PlatformAccounts.addAccountFromSecondDevice(activity, rawQr)
             }
             .setNegativeButton(R.string.cancel, null)
             .setCancelable(false)
             .create()
         dialog.show()
-        BackupTransferActivity.appendSSID(activity, dialog.findViewById(android.R.id.message))
+        val messageView = dialog.findViewById<android.widget.TextView>(android.R.id.message)
+        if (messageView != null) {
+            PlatformLegacyUtil.appendBackupTransferSsid(activity, messageView)
+        }
     }
 }

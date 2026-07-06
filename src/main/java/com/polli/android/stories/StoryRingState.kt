@@ -16,7 +16,7 @@ import com.b44t.messenger.DcContext
 import com.b44t.messenger.DcMsg
 import com.polli.domain.model.InboxItem
 import com.polli.android.navigation.AppNav
-import org.thoughtcrime.securesms.connect.DcHelper
+import com.polli.android.platform.EngineBridge
 
 /** Seconds in 24 hours — story rings only highlight posts within this window. */
 const val STORY_RECENT_WINDOW_SEC = 86_400L
@@ -103,7 +103,7 @@ fun rememberStoryRingEntries(
     val lifecycleOwner = LocalLifecycleOwner.current
 
     fun reload() {
-        val dc = DcHelper.getContext(context)
+        val dc = EngineBridge.getContext(context)
         entries = ChannelStoryRingLogic.buildEntries(dc, channels)
     }
 

@@ -41,7 +41,7 @@ import com.polli.android.theme.PolliTheme
 import com.polli.android.theme.accent
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
-import org.thoughtcrime.securesms.connect.DcHelper
+import com.polli.android.platform.EngineBridge
 import org.thoughtcrime.securesms.mms.Slide
 import org.thoughtcrime.securesms.util.SaveAttachmentTask
 import org.thoughtcrime.securesms.util.StorageUtil
@@ -179,7 +179,7 @@ fun MediaPreviewScreen(
             )
             IconButton(onClick = {
                 val id = msgIds[pagerState.currentPage]
-                DcHelper.openForViewOrShare(context, id, Intent.ACTION_SEND)
+                EngineBridge.openForViewOrShare(context, id, Intent.ACTION_SEND)
             }) {
                 PolliIcon(PolliIconName.Options, 22.dp, PolliColors.White85)
             }
@@ -252,7 +252,7 @@ private fun AvatarPreviewScreen(
 @Composable
 private fun MediaPage(msgId: Int) {
     val context = LocalContext.current
-    val msg = remember(msgId) { DcHelper.getContext(context).getMsg(msgId) }
+    val msg = remember(msgId) { EngineBridge.getContext(context).getMsg(msgId) }
 
     if (!msg.isOk || !msg.hasFile()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -268,7 +268,7 @@ private fun MediaPage(msgId: Int) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .clickable { DcHelper.openForViewOrShare(context, msgId, Intent.ACTION_VIEW) },
+                .clickable { EngineBridge.openForViewOrShare(context, msgId, Intent.ACTION_VIEW) },
             contentAlignment = Alignment.Center,
         ) {
             AndroidView(
@@ -301,7 +301,7 @@ private fun saveMessageToDisk(activity: Activity, msgId: Int) {
         return
     }
     SaveAttachmentTask.showWarningDialog(activity) { _, _ ->
-        val dc = DcHelper.getContext(activity)
+        val dc = EngineBridge.getContext(activity)
         val msg = dc.getMsg(msgId)
         if (!msg.isOk || !msg.hasFile()) return@showWarningDialog
         SaveAttachmentTask(activity).executeOnExecutor(

@@ -2,7 +2,7 @@ package com.polli.android.media
 
 import android.content.Context
 import com.b44t.messenger.DcMsg
-import org.thoughtcrime.securesms.connect.DcHelper
+import com.polli.android.platform.EngineBridge
 
 data class MediaGalleryPage(
     val messageIds: IntArray,
@@ -11,7 +11,7 @@ data class MediaGalleryPage(
 
 object MediaGalleryLoad {
     fun galleryForMessage(context: Context, msgId: Int, leftIsRecent: Boolean = true): MediaGalleryPage? {
-        val dc = DcHelper.getContext(context)
+        val dc = EngineBridge.getContext(context)
         val msg = dc.getMsg(msgId)
         if (!msg.isOk) return null
         val raw = dc.getChatMedia(
@@ -34,7 +34,7 @@ object MediaGalleryLoad {
         type2: Int = 0,
         type3: Int = 0,
     ): IntArray {
-        val dc = DcHelper.getContext(context)
+        val dc = EngineBridge.getContext(context)
         return dc.getChatMedia(chatId, type1, type2, type3) ?: intArrayOf()
     }
 }

@@ -55,7 +55,7 @@ import com.polli.android.ui.ShellDivider
 import com.polli.android.ui.rememberPolliHazeState
 import dev.chrisbanes.haze.hazeSource
 import com.polli.ui.theme.AccentThemes
-import org.thoughtcrime.securesms.connect.DcHelper
+import com.polli.android.platform.EngineBridge
 
 class ProfilesActivity : BaseComposeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -98,10 +98,10 @@ fun ProfilesScreen(
     onChatSettingsConsumed: () -> Unit = {},
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
-    val dc = remember { DcHelper.getContext(context) }
-    val accounts = remember { DcHelper.getAccounts(context) }
-    val displayName = dc.getConfig(DcHelper.CONFIG_DISPLAY_NAME).ifBlank { "Profile" }
-    val addr = dc.getConfig(DcHelper.CONFIG_CONFIGURED_ADDRESS)
+    val dc = remember { EngineBridge.getContext(context) }
+    val accounts = remember { EngineBridge.getAccounts(context) }
+    val displayName = dc.getConfig(EngineBridge.CONFIG_DISPLAY_NAME).ifBlank { "Profile" }
+    val addr = dc.getConfig(EngineBridge.CONFIG_CONFIGURED_ADDRESS)
     var showAppearanceModal by remember { mutableStateOf(false) }
     var showChatSettingsModal by remember { mutableStateOf(false) }
     LaunchedEffect(initialChatSettingsOpen) {
@@ -158,8 +158,8 @@ fun ProfilesScreen(
             )
             accounts.getAll().forEach { accountId ->
                 val acc = accounts.getAccount(accountId)
-                val name = acc.getConfig(DcHelper.CONFIG_DISPLAY_NAME)
-                    .ifBlank { acc.getConfig(DcHelper.CONFIG_CONFIGURED_ADDRESS) }
+                val name = acc.getConfig(EngineBridge.CONFIG_DISPLAY_NAME)
+                    .ifBlank { acc.getConfig(EngineBridge.CONFIG_CONFIGURED_ADDRESS) }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -278,9 +278,9 @@ private fun ChatSettingsModal(
     onDismiss: () -> Unit,
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
-    val dc = remember { DcHelper.getContext(context) }
+    val dc = remember { EngineBridge.getContext(context) }
     var bccSelf by remember {
-        mutableStateOf(dc.getConfigInt(DcHelper.CONFIG_BCC_SELF) != 0)
+        mutableStateOf(dc.getConfigInt(EngineBridge.CONFIG_BCC_SELF) != 0)
     }
     var readReceipts by remember {
         mutableStateOf(dc.getConfigInt("mdns_enabled") != 0)
@@ -307,7 +307,7 @@ private fun ChatSettingsModal(
             checked = bccSelf,
             onCheckedChange = {
                 bccSelf = it
-                dc.setConfigInt(DcHelper.CONFIG_BCC_SELF, if (it) 1 else 0)
+                dc.setConfigInt(EngineBridge.CONFIG_BCC_SELF, if (it) 1 else 0)
             },
         )
         Spacer(modifier = Modifier.height(12.dp))

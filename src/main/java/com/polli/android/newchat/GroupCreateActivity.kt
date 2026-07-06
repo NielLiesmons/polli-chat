@@ -47,8 +47,8 @@ import com.polli.android.ui.AppInsets
 import com.polli.android.ui.PolliAvatar
 import com.polli.android.ui.RoundBackButton
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.connect.DcHelper
-import org.thoughtcrime.securesms.profiles.AvatarHelper
+import com.polli.android.platform.EngineBridge
+import com.polli.android.platform.PlatformAvatars
 
 private sealed class GroupCreateMode {
     data class Create(val broadcast: Boolean) : GroupCreateMode()
@@ -88,7 +88,7 @@ class GroupCreateActivity : BaseComposeActivity() {
         val editChatId = intent.getIntExtra(EXTRA_EDIT_CHAT_ID, 0)
         val cloneChatId = intent.getIntExtra(EXTRA_CLONE_CHAT_ID, 0)
         val broadcastExtra = intent.getBooleanExtra(EXTRA_BROADCAST, false)
-        val dc = DcHelper.getContext(this)
+        val dc = EngineBridge.getContext(this)
         val mode: GroupCreateMode =
             when {
                 editChatId != 0 -> {
@@ -126,7 +126,7 @@ class GroupCreateActivity : BaseComposeActivity() {
 
     private fun loadDescription(chatId: Int): String {
         return try {
-            val rpc = DcHelper.getRpc(this)
+            val rpc = EngineBridge.getRpc(this)
             rpc.getChatDescription(rpc.selectedAccountId, chatId).orEmpty()
         } catch (_: RpcException) {
             ""
@@ -146,15 +146,15 @@ class GroupCreateActivity : BaseComposeActivity() {
             Toast.makeText(this, R.string.please_enter_chat_name, Toast.LENGTH_LONG).show()
             return
         }
-        val dc = DcHelper.getContext(this)
-        val rpc = DcHelper.getRpc(this)
+        val dc = EngineBridge.getContext(this)
+        val rpc = EngineBridge.getRpc(this)
         try {
             when (mode) {
                 is GroupCreateMode.Edit -> {
                     dc.setChatName(mode.chatId, trimmed)
                     rpc.setChatDescription(rpc.selectedAccountId, mode.chatId, description.trim())
                     if (avatarChanged && pendingAvatar != null) {
-                        AvatarHelper.setGroupAvatar(this, mode.chatId, pendingAvatar)
+                        PlatformAvatars.setGroupAvatar(this, mode.chatId, pendingAvatar)
                     }
                     setResult(RESULT_OK)
                     finish()
@@ -193,7 +193,7 @@ class GroupCreateActivity : BaseComposeActivity() {
             dc.addContactToChat(chatId, contactId)
         }
         if (avatarChanged && pendingAvatar != null) {
-            AvatarHelper.setGroupAvatar(this, chatId, pendingAvatar)
+            PlatformAvatars.setGroupAvatar(this, chatId, pendingAvatar)
         }
         AppNav.openChat(this, chatId)
         finish()
@@ -232,7 +232,7 @@ private fun GroupCreateScreen(
     onSave: (name: String, description: String) -> Unit,
 ) {
     val context = LocalContext.current
-    val dc = remember { DcHelper.getContext(context) }
+    val dc = remember { EngineBridge.getContext(context) }
     val initialName = when (mode) {
         is GroupCreateMode.Create -> ""
         is GroupCreateMode.Edit -> mode.initialName

@@ -40,7 +40,7 @@ import com.polli.android.theme.PolliTheme
 import com.polli.android.ui.PolliAvatar
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
-import org.thoughtcrime.securesms.connect.DcHelper
+import com.polli.android.platform.EngineBridge
 
 class ContactPickerActivity : BaseComposeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,7 +62,7 @@ class ContactPickerActivity : BaseComposeActivity() {
 @Composable
 private fun ContactPickerScreen(onBack: () -> Unit) {
     val context = LocalContext.current
-    val dc = remember { DcHelper.getContext(context) }
+    val dc = remember { EngineBridge.getContext(context) }
     var query by remember { mutableStateOf("") }
     val contacts = remember(query) { loadContacts(dc, query) }
 

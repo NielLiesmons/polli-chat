@@ -14,7 +14,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import com.b44t.messenger.DcContext
 import com.b44t.messenger.DcEvent
 import org.thoughtcrime.securesms.connect.DcEventCenter
-import org.thoughtcrime.securesms.connect.DcHelper
+import com.polli.android.platform.EngineBridge
 
 @Composable
 fun rememberNotes(): List<Note> {
@@ -24,7 +24,7 @@ fun rememberNotes(): List<Note> {
     val lifecycleOwner = LocalLifecycleOwner.current
 
     fun reload() {
-        val dc = DcHelper.getContext(context)
+        val dc = EngineBridge.getContext(context)
         notes = NotesStore(dc).loadNotes()
     }
 
@@ -37,7 +37,7 @@ fun rememberNotes(): List<Note> {
     }
 
     DisposableEffect(refreshTick) {
-        val center = DcHelper.getEventCenter(context)
+        val center = EngineBridge.getEventCenter(context)
         val delegate = DcEventCenter.DcEventDelegate { event ->
             when (event.id) {
                 DcContext.DC_EVENT_MSGS_CHANGED,

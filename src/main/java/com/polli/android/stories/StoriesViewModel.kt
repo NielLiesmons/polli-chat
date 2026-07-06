@@ -12,7 +12,7 @@ import com.b44t.messenger.DcMsg
 import com.polli.android.stories.ChannelStoryRingLogic
 import kotlinx.coroutines.launch
 import org.thoughtcrime.securesms.connect.DcEventCenter
-import org.thoughtcrime.securesms.connect.DcHelper
+import com.polli.android.platform.EngineBridge
 
 class StoriesViewModel(application: Application) : AndroidViewModel(application), DcEventCenter.DcEventDelegate {
 
@@ -34,13 +34,13 @@ class StoriesViewModel(application: Application) : AndroidViewModel(application)
 
     fun reload() {
         if (chatId <= 0) return
-        val dc = DcHelper.getContext(getApplication())
+        val dc = EngineBridge.getContext(getApplication())
         posts = ChannelStoryRingLogic.recentStoryPosts(dc, chatId)
     }
 
     private fun registerEvents() {
         if (registered) return
-        val center = DcHelper.getEventCenter(getApplication())
+        val center = EngineBridge.getEventCenter(getApplication())
         center.addMultiAccountObserver(DcContext.DC_EVENT_INCOMING_MSG, this)
         center.addObserver(DcContext.DC_EVENT_MSGS_CHANGED, this)
         center.addObserver(DcContext.DC_EVENT_MSG_DELETED, this)
@@ -50,13 +50,13 @@ class StoriesViewModel(application: Application) : AndroidViewModel(application)
 
     private fun unregisterEvents() {
         if (!registered) return
-        DcHelper.getEventCenter(getApplication()).removeObservers(this)
+        EngineBridge.getEventCenter(getApplication()).removeObservers(this)
         registered = false
     }
 
     override fun handleEvent(event: DcEvent) {
         if (event.id == DcContext.DC_EVENT_INCOMING_MSG || event.id == DcContext.DC_EVENT_MSGS_CHANGED) {
-            val msg = DcHelper.getContext(getApplication()).getMsg(event.data1Int)
+            val msg = EngineBridge.getContext(getApplication()).getMsg(event.data1Int)
             if (msg.isOk && msg.chatId == chatId) {
                 viewModelScope.launch { reload() }
             }
