@@ -48,7 +48,7 @@ Goal: shrink the legacy Android fork surface while keeping the Chatmail engine (
 
 | Java screen | Compose target | Module |
 |-------------|----------------|--------|
-| `ProfileActivity` | Profiles detail sheet | `polli-ui` |
+| `ProfileActivity` + `ProfileFragment` | `ProfileDetailActivity` | **Done** |
 | `WebxdcActivity` | Webxdc host | app → `polli-ui` |
 | `ApplicationPreferencesActivity` | Settings depth | app → `polli-ui` |
 | `ScribbleActivity` | Image editor | app → `polli-ui` (long term) |

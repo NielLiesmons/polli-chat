@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.thoughtcrime.securesms.ProfileActivity;
+import com.polli.android.profiles.ProfileDetailActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.connect.DcEventCenter;
 import org.thoughtcrime.securesms.connect.DcHelper;
@@ -119,8 +119,7 @@ public class ReactionsDetailsFragment extends DialogFragment
   }
 
   private void openConversation(int contactId) {
-    Intent intent = new Intent(getContext(), ProfileActivity.class);
-    intent.putExtra(ProfileActivity.CONTACT_ID_EXTRA, contactId);
+    Intent intent = ProfileDetailActivity.intentContact(getContext(), contactId);
     requireContext().startActivity(intent);
   }
 

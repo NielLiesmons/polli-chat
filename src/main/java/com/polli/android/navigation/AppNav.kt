@@ -21,7 +21,7 @@ import org.thoughtcrime.securesms.BuildConfig
 import org.thoughtcrime.securesms.R
 import com.polli.domain.navigation.ChatIntentExtras
 import org.thoughtcrime.securesms.ApplicationPreferencesActivity
-import org.thoughtcrime.securesms.ProfileActivity
+import com.polli.android.profiles.ProfileDetailActivity
 import org.thoughtcrime.securesms.WebxdcActivity
 
 /** Sole routing API — all user-facing navigation goes through here. */
@@ -209,9 +209,11 @@ object AppNav {
 
     @JvmStatic
     fun profileIntent(context: Context, contactId: Int): Intent =
-        Intent(context, ProfileActivity::class.java).apply {
-            putExtra(ProfileActivity.CONTACT_ID_EXTRA, contactId)
-        }
+        ProfileDetailActivity.intentContact(context, contactId)
+
+    @JvmStatic
+    fun chatProfileIntent(context: Context, chatId: Int): Intent =
+        ProfileDetailActivity.intentChat(context, chatId)
 
     @JvmStatic
     fun webxdcIntent(context: Context, msgId: Int): Intent {

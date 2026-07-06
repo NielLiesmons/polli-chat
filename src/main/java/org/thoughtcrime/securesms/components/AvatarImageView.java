@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageView;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import org.thoughtcrime.securesms.ProfileActivity;
+import com.polli.android.profiles.ProfileDetailActivity;
 import org.thoughtcrime.securesms.contacts.avatars.ContactPhoto;
 import org.thoughtcrime.securesms.contacts.avatars.GeneratedContactPhoto;
 import org.thoughtcrime.securesms.mms.GlideRequests;
@@ -66,9 +66,7 @@ public class AvatarImageView extends AppCompatImageView {
       super.setOnClickListener(
           v -> {
             if (recipient.getAddress().isDcContact()) {
-              Intent intent = new Intent(getContext(), ProfileActivity.class);
-              intent.putExtra(
-                  ProfileActivity.CONTACT_ID_EXTRA, recipient.getAddress().getDcContactId());
+              Intent intent = ProfileDetailActivity.intentContact(getContext(), recipient.getAddress().getDcContactId());
               getContext().startActivity(intent);
             }
           });

@@ -18,6 +18,7 @@ package org.thoughtcrime.securesms;
 
 import static org.thoughtcrime.securesms.util.ShareUtil.isRelayingMessageContent;
 
+import com.polli.android.profiles.ProfileDetailActivity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -198,8 +199,7 @@ public class ContactSelectionListFragment extends Fragment
     if (adapter.getActionModeSelection().size() == 1) {
       int contactId = adapter.getActionModeSelection().valueAt(0);
 
-      Intent intent = new Intent(getContext(), ProfileActivity.class);
-      intent.putExtra(ProfileActivity.CONTACT_ID_EXTRA, contactId);
+      Intent intent = ProfileDetailActivity.intentContact(getContext(), contactId);
       getContext().startActivity(intent);
     }
   }

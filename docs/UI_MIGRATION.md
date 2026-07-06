@@ -32,7 +32,7 @@ Branch: `feature/compose-kmp-migration`
 | QR hub | Yes | app | QrActivity |
 | Account setup | Yes | app | AccountSetupActivity + AdvancedOnboardingActivity |
 | Settings depth | No | — | preference fragments |
-| Profile detail | No | — | ProfileActivity |
+| Profile detail | Yes | app | ProfileDetailActivity |
 | Webxdc | No | — | WebxdcActivity |
 | Relay | No | — | RelayListActivity |
 | Calls | No | — | CallActivity |
