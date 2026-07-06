@@ -3,6 +3,7 @@ package com.polli.engine.rpc
 import chat.delta.rpc.Rpc
 import chat.delta.rpc.RpcException
 import com.polli.core.chat.ChatListFlags
+import com.polli.domain.model.ArchiveLinkRules
 import com.polli.domain.model.ArchiveLinkState
 import com.polli.domain.model.InboxItem
 import com.polli.domain.repository.ChatRepository
@@ -26,11 +27,11 @@ class RpcChatRepository(
             val visible = archived.isNotEmpty()
             val unread =
                 if (visible) {
-                    rpc.getFreshMsgCnt(accountId, ARCHIVED_LINK_CHAT_ID).coerceAtLeast(0)
+                    rpc.getFreshMsgCnt(accountId, ArchiveLinkRules.ARCHIVED_LINK_CHAT_ID).coerceAtLeast(0)
                 } else {
                     0
                 }
-            ArchiveLinkState(visible = visible, unreadCount = unread)
+            ArchiveLinkRules.linkState(archived.size, unread)
         } catch (_: RpcException) {
             ArchiveLinkState(visible = false, unreadCount = 0)
         }
@@ -45,8 +46,4 @@ class RpcChatRepository(
 
     override fun observeInbox(onUpdate: () -> Unit): AutoCloseable =
         eventLoop.addListener(onUpdate)
-
-    companion object {
-        private const val ARCHIVED_LINK_CHAT_ID = 6
-    }
 }

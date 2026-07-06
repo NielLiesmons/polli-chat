@@ -5,6 +5,7 @@ import com.b44t.messenger.DcChat
 import com.b44t.messenger.DcContext
 import com.b44t.messenger.DcEvent
 import com.polli.android.bridge.ChatListMapper
+import com.polli.domain.model.ArchiveLinkRules
 import com.polli.domain.model.ArchiveLinkState
 import com.polli.domain.model.InboxItem
 import com.polli.domain.repository.ChatRepository
@@ -24,13 +25,13 @@ class EngineChatRepository(context: Context) : ChatRepository {
     override fun archiveLinkState(): ArchiveLinkState {
         val ctx = DcHelper.getContext(appContext)
         val chatlist = ctx.getChatlist(DcContext.DC_GCL_ARCHIVED_ONLY, null, 0)
-        val visible = chatlist.getCnt() > 0
-        val unread = if (visible) {
+        val cnt = chatlist.getCnt()
+        val unread = if (cnt > 0) {
             ctx.getFreshMsgCount(DcChat.DC_CHAT_ID_ARCHIVED_LINK).coerceAtLeast(0)
         } else {
             0
         }
-        return ArchiveLinkState(visible = visible, unreadCount = unread)
+        return ArchiveLinkRules.linkState(cnt, unread)
     }
 
     override fun getFreshMessageCount(chatId: Int): Int =
