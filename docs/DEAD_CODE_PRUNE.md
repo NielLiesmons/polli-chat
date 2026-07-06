@@ -29,7 +29,7 @@ Goal: shrink the legacy Android fork surface while keeping the Chatmail engine (
 ## Phase A — Inventory
 
 - [x] Confirm Polli chat bypassed image editor (fixed: `ImageEditLauncher`)
-- [x] Manifest: `ConversationListActivity` no longer exported; launcher via `RoutingActivity` → `LauncherActivity`
+- [x] Manifest: launcher via `RoutingActivity` → `LauncherActivity` → `HomeActivity`
 - [x] Legacy chat/home redirect to Polli when `POLLI_UI` (`PolliLegacyRedirect`, `ShareRelay`)
 - [x] Share intents route to `HomeActivity` / `ChatActivity` with relay support
 - [x] List Java packages with zero references from `com.polli.android` — see [JAVA_INVENTORY.md](JAVA_INVENTORY.md)
@@ -39,7 +39,7 @@ Goal: shrink the legacy Android fork surface while keeping the Chatmail engine (
 | Target | ~LOC | Prerequisite |
 |--------|------|----------------|
 | `ConversationActivity` + `ConversationFragment` + `ConversationItem` | ~4.3k | Polli chat + attach draft parity |
-| `ConversationListActivity` + archive | ~1k | `HomeActivity` / `ArchiveActivity` only — archive list **removed** |
+| `ConversationListActivity` + archive | ~1k | **Removed** — `HomeActivity` / `ArchiveActivity` only |
 | Java welcome/onboarding duplicates | ~1.5k | Polli onboarding paths verified |
 | `imageeditor/` + `scribbles/` | ~6.7k | **Compose image editor** — do not delete until then |
 | `calls/` + `webrtc/` | ~5.5k | Product decision + replacement |

@@ -19,7 +19,7 @@ import com.polli.android.stories.StoriesViewModel
 import com.polli.android.theme.LabTheme
 import org.thoughtcrime.securesms.connect.DcHelper
 
-class HomeActivity : BaseComposeActivity() {
+open class HomeActivity : BaseComposeActivity() {
 
     private val storiesViewModel: StoriesViewModel by viewModels()
     private var themeRevision by mutableIntStateOf(0)

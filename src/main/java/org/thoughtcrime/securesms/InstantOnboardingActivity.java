@@ -35,6 +35,7 @@ import com.bumptech.glide.request.transition.Transition;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.polli.android.navigation.AppNav;
+import com.polli.domain.navigation.ChatIntentExtras;
 import java.io.File;
 import java.io.IOException;
 import java.security.SecureRandom;
@@ -494,9 +495,9 @@ public class InstantOnboardingActivity extends BaseActionBarActivity
     }
 
     Intent intent = AppNav.homeIntent(getApplicationContext());
-    intent.putExtra(ConversationListActivity.FROM_WELCOME, true);
+    intent.putExtra(ChatIntentExtras.FROM_WELCOME, true);
     if (isContactInvitation || isGroupInvitation) {
-      intent.putExtra(ConversationListActivity.FROM_WELCOME_RAW_QR, rawQrData);
+      intent.putExtra(ChatIntentExtras.FROM_WELCOME_RAW_QR, rawQrData);
     }
 
     startActivity(intent);

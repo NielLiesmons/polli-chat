@@ -20,7 +20,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.thoughtcrime.securesms.ConversationListActivity;
+import com.polli.android.HomeActivity;
 import org.thoughtcrime.securesms.R;
 
 @Ignore("This is not a test, but a benchmark. Remove the @Ignore to run it.")
@@ -42,7 +42,7 @@ public class EnterChatsBenchmark {
   private static final String TAG = "EnterChatsBenchmark";
 
   @Rule
-  public ActivityScenarioRule<ConversationListActivity> activityRule =
+  public ActivityScenarioRule<HomeActivity> activityRule =
       TestUtils.getOfflineActivityRule(USE_EXISTING_CHATS);
 
   @Test

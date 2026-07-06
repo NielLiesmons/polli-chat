@@ -21,7 +21,6 @@ import org.thoughtcrime.securesms.BuildConfig
 import org.thoughtcrime.securesms.R
 import com.polli.domain.navigation.ChatIntentExtras
 import org.thoughtcrime.securesms.ConversationActivity
-import org.thoughtcrime.securesms.ConversationListActivity
 import org.thoughtcrime.securesms.ApplicationPreferencesActivity
 import org.thoughtcrime.securesms.ProfileActivity
 import org.thoughtcrime.securesms.WebxdcActivity
@@ -37,9 +36,7 @@ object AppNav {
     fun useLabUi(): Boolean = BuildConfig.POLLI_UI
 
     @JvmStatic
-    fun homeActivityClass(): Class<*> {
-        return if (useLabUi()) HomeActivity::class.java else ConversationListActivity::class.java
-    }
+    fun homeActivityClass(): Class<*> = HomeActivity::class.java
 
     @JvmStatic
     fun chatActivityClass(): Class<*> {

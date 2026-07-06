@@ -18,6 +18,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import chat.delta.rpc.Rpc;
@@ -28,7 +29,6 @@ import com.b44t.messenger.DcContext;
 import com.b44t.messenger.DcEvent;
 import java.util.Arrays;
 import org.thoughtcrime.securesms.ConnectivityActivity;
-import org.thoughtcrime.securesms.ConversationListActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.components.AvatarView;
 import org.thoughtcrime.securesms.connect.AccountManager;
@@ -191,7 +191,7 @@ public class AccountSelectionListFragment extends DialogFragment
   }
 
   private void onSetTag(int accountId) {
-    ConversationListActivity activity = (ConversationListActivity) requireActivity();
+    FragmentActivity activity = requireActivity();
     AccountSelectionListFragment.this.dismiss();
 
     DcContext dcContext = DcHelper.getAccounts(activity).getAccount(accountId);
@@ -219,7 +219,7 @@ public class AccountSelectionListFragment extends DialogFragment
 
   private void onDeleteProfile(int accountId) {
     AccountSelectionListFragment.this.dismiss();
-    ConversationListActivity activity = (ConversationListActivity) requireActivity();
+    FragmentActivity activity = requireActivity();
     DcAccounts accounts = DcHelper.getAccounts(activity);
     Rpc rpc = DcHelper.getRpc(activity);
 
@@ -261,7 +261,8 @@ public class AccountSelectionListFragment extends DialogFragment
                 R.string.cancel,
                 (d, which) ->
                     AccountManager.getInstance().showSwitchAccountMenu(activity, selectOnly))
-            .setPositiveButton(R.string.delete, (d2, w2) -> activity.onDeleteProfile(accountId))
+            .setPositiveButton(R.string.delete, (d2, w2) ->
+                AccountManager.getInstance().deleteProfile(activity, accountId, selectOnly))
             .show();
     Util.redPositiveButton(dialog);
   }
@@ -278,13 +279,13 @@ public class AccountSelectionListFragment extends DialogFragment
     @Override
     public void onItemClick(AccountSelectionListItem contact) {
       AccountSelectionListFragment.this.dismiss();
-      ConversationListActivity activity = (ConversationListActivity) requireActivity();
+      FragmentActivity activity = requireActivity();
       int accountId = contact.getAccountId();
       if (accountId == DC_CONTACT_ID_ADD_ACCOUNT) {
         AccountManager.getInstance().switchAccountAndStartActivity(activity, 0);
       } else if (accountId != DcHelper.getAccounts(activity).getSelectedAccount().getAccountId()) {
         AccountManager.getInstance().switchAccount(activity, accountId);
-        activity.onProfileSwitched(accountId);
+        AccountManager.getInstance().onProfileSwitched(activity);
       }
     }
   }

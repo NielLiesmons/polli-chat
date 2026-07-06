@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentActivity;
 import androidx.preference.PreferenceManager;
 import chat.delta.rpc.Rpc;
 import chat.delta.rpc.RpcException;
@@ -13,7 +14,6 @@ import com.b44t.messenger.DcContext;
 import com.polli.android.navigation.AppNav;
 import java.io.File;
 import org.thoughtcrime.securesms.ApplicationContext;
-import org.thoughtcrime.securesms.ConversationListActivity;
 import org.thoughtcrime.securesms.WelcomeActivity;
 import org.thoughtcrime.securesms.accounts.AccountSelectionListFragment;
 
@@ -139,9 +139,35 @@ public class AccountManager {
 
   // ui
 
-  public void showSwitchAccountMenu(ConversationListActivity activity, boolean selectOnly) {
+  public void showSwitchAccountMenu(FragmentActivity activity, boolean selectOnly) {
     AccountSelectionListFragment dialog = AccountSelectionListFragment.newInstance(selectOnly);
-    dialog.show(((FragmentActivity) activity).getSupportFragmentManager(), null);
+    dialog.show(activity.getSupportFragmentManager(), null);
+  }
+
+  /** Reload home after the active profile changes (Polli Compose path). */
+  public void onProfileSwitched(Activity activity) {
+    Intent intent = AppNav.homeIntent(activity.getApplicationContext());
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+    activity.startActivity(intent);
+    activity.finish();
+  }
+
+  public void deleteProfile(Activity activity, int profileId, boolean selectOnly) {
+    DcAccounts accounts = DcHelper.getAccounts(activity);
+    boolean selected = profileId == accounts.getSelectedAccount().getAccountId();
+    DcHelper.getNotificationCenter(activity).removeAllNotifications(profileId);
+    accounts.removeAccount(profileId);
+    if (selected) {
+      DcContext selAcc = accounts.getSelectedAccount();
+      if (selAcc.isOk()) {
+        switchAccount(activity, selAcc.getAccountId());
+        onProfileSwitched(activity);
+      } else {
+        switchAccountAndStartActivity(activity, 0);
+      }
+    } else {
+      showSwitchAccountMenu((FragmentActivity) activity, selectOnly);
+    }
   }
 
   public void addAccountFromSecondDevice(Activity activity, String backupQr) {

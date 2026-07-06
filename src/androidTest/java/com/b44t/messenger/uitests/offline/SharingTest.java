@@ -27,7 +27,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.thoughtcrime.securesms.BuildConfig;
-import org.thoughtcrime.securesms.ConversationListActivity;
+import com.polli.android.HomeActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.ShareActivity;
 import org.thoughtcrime.securesms.connect.DcHelper;
@@ -43,7 +43,7 @@ public class SharingTest {
   private static int createdSingleChatId;
 
   @Rule
-  public final ActivityScenarioRule<ConversationListActivity> activityRule =
+  public final ActivityScenarioRule<HomeActivity> activityRule =
       TestUtils.getOfflineActivityRule(false);
 
   @Before

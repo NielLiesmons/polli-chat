@@ -325,7 +325,7 @@ public class WelcomeActivity extends BaseActionBarActivity
     progressDialog.dismiss();
     Intent intent = AppNav.homeIntent(getApplicationContext());
     if (!org.thoughtcrime.securesms.BuildConfig.POLLI_UI) {
-      intent.putExtra(ConversationListActivity.FROM_WELCOME, true);
+      intent.putExtra(com.polli.domain.navigation.ChatIntentExtras.FROM_WELCOME, true);
     }
     startActivity(intent);
     finish();

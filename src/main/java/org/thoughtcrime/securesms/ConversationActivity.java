@@ -716,7 +716,6 @@ public class ConversationActivity extends PassphraseRequiredActionBarActivity
   private void handleReturnToConversationList(@Nullable Bundle extras) {
     if (switchedProfile) { // force refreshing of chatlist
       if (extras == null) extras = new Bundle();
-      extras.putInt(ConversationListFragment.RELOAD_LIST, 1);
     }
 
     if (attachmentManager.isAttachmentPresent()) {
@@ -1981,9 +1980,7 @@ public class ConversationActivity extends PassphraseRequiredActionBarActivity
             DcHelper.getEventCenter(this).removeObserver(DcContext.DC_EVENT_CONTACTS_CHANGED, this);
 
             DcHelper.getContext(context).blockChat(chatId);
-            Bundle extras = new Bundle();
-            extras.putInt(ConversationListFragment.RELOAD_LIST, 1);
-            handleReturnToConversationList(extras);
+            handleReturnToConversationList(null);
           });
       messageRequestBottomView.setQuestion(null);
     }

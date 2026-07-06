@@ -19,7 +19,7 @@ import androidx.test.espresso.ViewInteraction;
 import androidx.test.espresso.util.TreeIterables;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import org.hamcrest.Matcher;
-import org.thoughtcrime.securesms.ConversationListActivity;
+import com.polli.android.HomeActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.connect.AccountManager;
 import org.thoughtcrime.securesms.connect.DcHelper;
@@ -58,12 +58,12 @@ public class TestUtils {
   }
 
   @NonNull
-  public static ActivityScenarioRule<ConversationListActivity> getOfflineActivityRule(
+  public static ActivityScenarioRule<HomeActivity> getOfflineActivityRule(
       boolean useExistingChats) {
     Intent intent =
         Intent.makeMainActivity(
             new ComponentName(
-                getInstrumentation().getTargetContext(), ConversationListActivity.class));
+                getInstrumentation().getTargetContext(), HomeActivity.class));
     if (!useExistingChats) {
       createOfflineAccount();
     }
