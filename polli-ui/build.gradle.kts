@@ -46,6 +46,7 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation("dev.chrisbanes.haze:haze:1.5.4")
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
         }
         androidMain.dependencies {
             implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
