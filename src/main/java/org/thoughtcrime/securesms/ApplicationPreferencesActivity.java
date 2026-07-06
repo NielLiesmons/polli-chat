@@ -112,8 +112,7 @@ public class ApplicationPreferencesActivity extends PassphraseRequiredActionBarA
           .setMessage(R.string.perm_explain_access_to_notifications_denied)
           .setPositiveButton(
               R.string.perm_continue,
-              (dialog, which) ->
-                  startActivity(Permissions.getApplicationSettingsIntent(this)))
+              (dialog, which) -> startActivity(Permissions.getApplicationSettingsIntent(this)))
           .setNegativeButton(android.R.string.cancel, null)
           .show();
       return;

@@ -26,6 +26,7 @@ import com.b44t.messenger.DcEvent;
 import com.b44t.messenger.DcEventChannel;
 import com.b44t.messenger.DcEventEmitter;
 import com.b44t.messenger.FFITransport;
+import com.polli.ui.theme.PolliUiContextKt;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 import org.thoughtcrime.securesms.calls.CallCoordinator;
@@ -48,7 +49,6 @@ import org.thoughtcrime.securesms.util.Prefs;
 import org.thoughtcrime.securesms.util.SignalProtocolLoggerProvider;
 import org.thoughtcrime.securesms.util.Util;
 import org.thoughtcrime.securesms.webxdc.WebxdcGarbageCollectionWorker;
-import com.polli.ui.theme.PolliUiContextKt;
 
 public class ApplicationContext extends MultiDexApplication {
   private static final String TAG = "ApplicationContext";
