@@ -208,6 +208,7 @@ dependencies {
     implementation project(':polli-core')
     implementation project(':polli-domain')
     implementation project(':polli-ui')
+    implementation project(':polli-engine')
     implementation 'androidx.compose.ui:ui'
     implementation 'androidx.compose.ui:ui-tooling-preview'
     implementation 'androidx.compose.material3:material3'
