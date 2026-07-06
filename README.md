@@ -1,33 +1,53 @@
-## Polli (Android)
+# Polli
 
-Polli is a fork of [Delta Chat Android](https://github.com/deltachat/deltachat-android) with a custom UI layer built on the Delta Chat / Chatmail core.
+![Your Handle. Your Spaces. For Chat, Mail, Drive & More.](assets/branding/readme-hero.png)
 
-Upstream: [deltachat/deltachat-android](https://github.com/deltachat/deltachat-android)  
-This fork: [NielLiesmons/polli-chat](https://github.com/NielLiesmons/polli-chat)
+Polli is a chat-first app for everyday life online: conversations with friends, work in small teams, communities you choose to join, and everything in between. It is designed to feel as immediate and polished as the best messengers, while resting on protocols you can actually own: email, encryption, and open identity, not another walled garden.
 
-For building the app, refer to [BUILDING.md](./BUILDING.md).  
-For Polli UI parity notes, see [docs/POLLI_PARITY.md](./docs/POLLI_PARITY.md).
+---
 
-### App identity
+## Why Polli
 
-| Setting | Value |
-|---------|-------|
-| Display name | Polli |
-| Package ID (FOSS) | `com.polli.chat` |
-| APK base name | `polli` |
+### Beautiful by default
 
-### Launcher icon
+Messaging should be a pleasure to use. Polli puts care into typography, motion, and layout so the app stays out of your way until you need it. Chat is the home screen; everything else flows from there.
 
-Drop your **1024×1024** app icon here (your file is never modified):
+### Private by default, public on your terms
 
-```
-assets/branding/icon-full.png
-```
+Most of what you do is yours: encrypted conversations, shared files, small groups that never needed a stage. When you *do* want reach (a newsletter, a community channel, a space anyone can find), you opt in explicitly. Nothing is public unless you decide it is.
 
-Then regenerate launcher assets:
+### Chat-first, not chat-only
 
-```bash
-./scripts/generate-launcher-icons.sh
-```
+Polli organizes life around **Spaces**: places for a household, a project, a club, or just you. Chat is how you stay in sync; files, tasks, and posts live in the same space without turning the app into a cluttered dashboard. Talk first; structure when you need it.
 
-The script writes legacy mipmaps and adaptive-icon layers from that file exactly as provided (density resize only). Reinstall the app after changing icons (launchers cache aggressively).
+### Built on standards that already exist
+
+Polli does not ask the world to adopt a new network overnight.
+
+- **Chatmail** ([Delta Chat core](https://github.com/chatmail/core)) for encrypted messaging, groups, and delivery that works offline
+- **Email** for federation: anyone can reach a space inbox from a normal mail client
+- **[MNS](https://github.com/mlkut/mns)** names and **sigils** for identity without ICANN squatting
+- **[Cryptree](https://github.com/mlkut/cryptree)** for encrypted shared files and durable space state
+
+Standards mean other clients can participate. Polli is one implementation, not the platform.
+
+### Open-ended and interoperable
+
+Headers, MIME, SMTP, WebDAV: boring on purpose. Content types (chat, tasks, articles, files) ride on mail-shaped transport so routers, filters, and future apps can interoperate without a proprietary SDK.
+
+### Cheap to run, seriously
+
+No megascale cloud bill required. A space can be served from a small VPS, a home box, or a provider you trust. Chatmail already runs lean; state is content-addressed blobs and signed snapshots, not an expensive always-on database cluster. Self-host when you want; pay a few euros when you do not.
+
+---
+
+## What you get today
+
+| Area | Experience |
+|------|------------|
+| **Home** | Spaces (groups), Mail (1:1), Channels (broadcasts / stories) |
+| **Chat** | Composer, voice, attachments, reactions, quotes |
+| **Identity** | MNS sigils for avatars and the Sigils explorer |
+| **Platforms** | Android (primary), desktop in progress |
+
+Shared drive, MNS-resolved spaces, and full inbox admission are on the roadmap. The protocol behind Spaces (cryptree state, mail transport, MNS discovery) is documented in [docs/spaces](./docs/spaces/).
