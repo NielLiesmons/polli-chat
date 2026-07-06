@@ -2,9 +2,11 @@ package com.polli.desktop
 
 import chat.delta.rpc.RpcException
 import chat.delta.rpc.types.EnteredLoginParam
+import com.polli.domain.model.chat.ChatSessionInfo
 import com.polli.domain.repository.ChatRepository
+import com.polli.domain.repository.MessageRepository
+import com.polli.engine.rpc.PolliEngine
 import com.polli.engine.rpc.RpcAccountResolver
-import com.polli.engine.rpc.RpcChatRepository
 import com.polli.engine.rpc.RpcEventLoop
 import com.polli.engine.rpc.RpcProcessLauncher
 import com.polli.engine.rpc.RpcQrHandler
@@ -37,6 +39,32 @@ class DesktopEngine {
 
     var repository: ChatRepository = buildRepository()
         private set
+
+    private var mockMessages: MessageRepository = MockMessageRepository()
+
+    fun messageRepository(): MessageRepository {
+        if (usingMock) return mockMessages
+        return PolliEngine.getOrNull()?.messages ?: mockMessages
+    }
+
+    fun chatSession(chatId: Int): ChatSessionInfo? {
+        if (usingMock) {
+            val item = (repository.loadInbox() + repository.loadArchived()).firstOrNull { it.chatId == chatId }
+            return item?.let {
+                ChatSessionInfo(
+                    chatId = chatId,
+                    name = it.name,
+                    canSend = true,
+                    isEncrypted = true,
+                    isMultiUser = it.category.name == "Space",
+                    isSelfTalk = false,
+                    isOutBroadcast = false,
+                    isInBroadcast = it.category.name == "Channel",
+                )
+            }
+        }
+        return repository.getSession(chatId)
+    }
 
     val needsOnboarding: Boolean
         get() = !usingMock && !isConfigured()
@@ -72,7 +100,8 @@ class DesktopEngine {
         val loop = RpcEventLoop(active.rpc, scope).also { it.start() }
         eventLoop?.close()
         eventLoop = loop
-        val repo = RpcChatRepository(active.rpc, accountId, loop)
+        PolliEngine.bind(active.rpc, accountId, loop)
+        val repo = PolliEngine.get().chat
         val inbox = repo.loadInbox()
         println(
             "[DesktopEngine] accountId=$accountId inbox=${inbox.size} " +

@@ -33,9 +33,9 @@ import com.polli.ui.screens.ArchiveScreen
 import com.polli.ui.screens.HomeScreen
 import com.polli.ui.screens.QrPasteDialog
 import com.polli.ui.screens.WelcomeScreen
-import com.polli.ui.theme.LabColors
-import com.polli.ui.theme.LabDimens
-import com.polli.ui.theme.LabTheme
+import com.polli.ui.theme.PolliColors
+import com.polli.ui.theme.PolliDimens
+import com.polli.ui.theme.PolliTheme
 import com.polli.ui.theme.accent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -93,7 +93,7 @@ fun PolliDesktopApp(engine: DesktopEngine) {
         onDispose { handle.close() }
     }
 
-    LabTheme(prefs = prefs) {
+    PolliTheme(prefs = prefs) {
         when (val step = onboardingStep) {
             is OnboardingStep.Welcome ->
                 WelcomeScreen(
@@ -139,7 +139,7 @@ fun PolliDesktopApp(engine: DesktopEngine) {
                             CircularProgressIndicator(color = accent().solid)
                             Text(
                                 "Transferring backup…\nKeep both devices on the same Wi‑Fi network.",
-                                color = LabColors.White33,
+                                color = PolliColors.White33,
                                 modifier = Modifier.padding(top = 16.dp),
                             )
                         }
@@ -245,9 +245,9 @@ fun PolliDesktopApp(engine: DesktopEngine) {
                                 onBack = { pop() },
                             )
                         is MainRoute.Chat ->
-                            PlaceholderScreen(
-                                title = "Chat #${route.chatId}",
-                                body = "Full chat feed + composer via RPC engine — next slice.",
+                            DesktopChatScreen(
+                                engine = engine,
+                                chatId = route.chatId,
                                 onBack = { pop() },
                             )
                         is MainRoute.NoteEditor ->
@@ -264,7 +264,7 @@ fun PolliDesktopApp(engine: DesktopEngine) {
         setupError?.let { message ->
             Text(
                 text = message,
-                color = LabColors.Rouge,
+                color = PolliColors.Rouge,
                 modifier = Modifier.padding(16.dp),
             )
         }
@@ -323,8 +323,8 @@ private fun PlaceholderScreen(
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
                 text = body,
-                color = LabColors.White33,
-                modifier = Modifier.padding(horizontal = LabDimens.HomeBarPadding),
+                color = PolliColors.White33,
+                modifier = Modifier.padding(horizontal = PolliDimens.HomeBarPadding),
             )
         }
     }
@@ -342,7 +342,7 @@ private fun AdvancedSetupDialog(
 ) {
     androidx.compose.material3.AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Advanced setup", color = LabColors.White85) },
+        title = { Text("Advanced setup", color = PolliColors.White85) },
         text = {
             Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
@@ -365,7 +365,7 @@ private fun AdvancedSetupDialog(
             PolliGhostButton(
                 label = "Manual login",
                 onClick = onManualLogin,
-                color = if (email.isNotBlank() && password.isNotBlank()) LabColors.White85 else LabColors.White16,
+                color = if (email.isNotBlank() && password.isNotBlank()) PolliColors.White85 else PolliColors.White16,
             )
         },
         dismissButton = {

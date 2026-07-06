@@ -3,6 +3,7 @@ package com.polli.desktop
 import com.polli.core.chat.ChatCategory
 import com.polli.domain.model.ArchiveLinkState
 import com.polli.domain.model.InboxItem
+import com.polli.domain.model.chat.ChatSessionInfo
 import com.polli.domain.repository.ChatRepository
 
 /** Fake inbox data for desktop UI shell when the engine is unavailable. */
@@ -82,7 +83,23 @@ class MockChatRepository : ChatRepository {
     override fun getFreshMessageCount(chatId: Int): Int =
         (inboxItems + archivedItems).firstOrNull { it.chatId == chatId }?.unreadCount ?: 0
 
+    override fun getSession(chatId: Int): ChatSessionInfo? {
+        val item = (inboxItems + archivedItems).firstOrNull { it.chatId == chatId } ?: return null
+        return ChatSessionInfo(
+            chatId = chatId,
+            name = item.name,
+            canSend = true,
+            isEncrypted = true,
+            isMultiUser = item.category.name == "Space",
+            isSelfTalk = false,
+            isOutBroadcast = false,
+            isInBroadcast = item.category.name == "Channel",
+        )
+    }
+
     override fun observeInbox(onUpdate: () -> Unit): AutoCloseable = AutoCloseable { }
+
+    override fun createChatByContactId(contactId: Int): Int? = if (contactId > 0) 900 + contactId else null
 
     private fun filter(items: List<InboxItem>, query: String?): List<InboxItem> {
         val q = query?.trim()?.lowercase().orEmpty()
