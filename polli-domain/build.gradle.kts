@@ -29,5 +29,11 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":polli-core"))
         }
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+        }
+        val jvmTest by getting {
+            dependsOn(commonTest.get())
+        }
     }
 }

@@ -14,6 +14,10 @@ interface ChatRepository {
 
     fun getFreshMessageCount(chatId: Int): Int
 
+    fun getSession(chatId: Int): com.polli.domain.model.chat.ChatSessionInfo?
+
+    fun createChatByContactId(contactId: Int): Int?
+
     /** Register for inbox refresh signals; returns a handle to unregister. */
     fun observeInbox(onUpdate: () -> Unit): AutoCloseable
 }
