@@ -83,3 +83,4 @@ Button factories, icon registry, typography scale, and screen transition specs a
 - Use `LabColors` / `LabDimens` — no raw hex or magic dp in feature code.
 - Reuse `ShellDivider`, `AppModal`, `FrostedChromeSurface` instead of one-offs.
 - When adding a new screen section separated by lines, default to `ShellDivider(screenPad = 0.dp)` unless inset dividers match surrounding 14dp content.
+- **No hover background washes** on desktop. Use `Modifier.polliClickable()` (`indication = null`) or `PolliPrimaryButton` / `PolliGhostButton` — never Material `TextButton` or default `clickable` (they paint a gray hover tint). Optional hover feedback is scale only, like Zapstore tab buttons.

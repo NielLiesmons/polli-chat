@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -18,14 +19,10 @@ import com.polli.android.settings.LocalAppPrefs
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 import org.thoughtcrime.securesms.components.audioplay.AudioPlaybackViewModel
-import androidx.compose.ui.geometry.Offset
 
 /**
  * DC [org.thoughtcrime.securesms.ConversationFragment] list host — [RecyclerView] with reverse
  * [LinearLayoutManager], stable ids, and per-row bind. Polli bubbles stay Compose inside recycled views.
- *
- * Open scroll position and adapter data are applied synchronously in [AndroidView] (like DC
- * [initializeListAdapter] + [reloadList]), not in a coroutine after the first empty frame.
  */
 @Composable
 fun ChatFeedRecycler(
@@ -49,16 +46,17 @@ fun ChatFeedRecycler(
     val topPadPx = remember(headerClearance, density) { with(density) { headerClearance.roundToPx() } }
     val bottomPadPx = remember(feedBottomPadding, density) { with(density) { feedBottomPadding.roundToPx() } }
 
-    val adapter = remember(prefs, uiScaleRevision) {
-        PolliChatFeedAdapter(
-            viewModel = viewModel,
-            prefs = prefs,
-            uiScaleRevision = uiScaleRevision,
-            playbackViewModel = playbackViewModel,
-            onOpenMessageOverlay = onOpenMessageOverlay,
-            onQuoteClick = onScrollToMessage,
-        ).also { it.changeData(viewModel.messageIds()) }
-    }
+    val adapter =
+        remember(prefs, uiScaleRevision) {
+            PolliChatFeedAdapter(
+                viewModel = viewModel,
+                prefs = prefs,
+                uiScaleRevision = uiScaleRevision,
+                playbackViewModel = playbackViewModel,
+                onOpenMessageOverlay = onOpenMessageOverlay,
+                onQuoteClick = onScrollToMessage,
+            ).also { it.changeData(viewModel.feedItems) }
+        }
 
     var prevMsgCount by remember { mutableIntStateOf(0) }
     var appliedGeneration by remember { mutableIntStateOf(-1) }
@@ -80,18 +78,20 @@ fun ChatFeedRecycler(
                 }
                 consumeScrollToBottomOnReload() -> {
                     scrollController.scrollToBottom(
-                        animated = (recycler.layoutManager as? LinearLayoutManager)
-                            ?.findFirstVisibleItemPosition()
-                            ?.let { it < 50 } == true,
+                        animated =
+                            (recycler.layoutManager as? LinearLayoutManager)
+                                ?.findFirstVisibleItemPosition()
+                                ?.let { it < 50 } == true,
                     )
                     onScrolledToBottom()
                 }
                 scrollController.isAtChatBottom() -> {
                     if (msgDelta > 0) {
                         scrollController.scrollToBottom(
-                            animated = (recycler.layoutManager as? LinearLayoutManager)
-                                ?.findFirstVisibleItemPosition()
-                                ?.let { it < 50 } == true,
+                            animated =
+                                (recycler.layoutManager as? LinearLayoutManager)
+                                    ?.findFirstVisibleItemPosition()
+                                    ?.let { it < 50 } == true,
                         )
                     }
                     onScrolledToBottom()
@@ -103,32 +103,46 @@ fun ChatFeedRecycler(
     }
 
     fun syncFeed(recycler: RecyclerView) {
-        val ids = viewModel.messageIds()
-        val layoutManager = recycler.layoutManager as? PolliChatLayoutManager
-        if (layoutManager != null) {
-            applyStartingPosition(layoutManager, ids.size)
+        val items = viewModel.feedItems
+        val layoutManager = recycler.layoutManager as? PolliChatLayoutManager ?: return
+        if (viewModel.pendingFirstLoadScroll) {
+            applyStartingPosition(layoutManager, items.size)
         }
-        adapter.changeData(ids)
+        val preserveScroll = !viewModel.pendingFirstLoadScroll
+        val anchor =
+            if (preserveScroll) {
+                ChatFeedScrollAnchor.capture(recycler, layoutManager, adapter.itemCount)
+            } else {
+                null
+            }
+        val changed = adapter.changeData(items)
+        if (changed && anchor != null) {
+            ChatFeedScrollAnchor.restore(layoutManager, anchor, adapter.itemCount)
+        }
         appliedGeneration = reloadGeneration
-        afterFeedSync(recycler, ids.size)
+        afterFeedSync(recycler, items.messageCount())
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
-            modifier = Modifier
-                .fillMaxSize()
-                .hazeSource(state = hazeState),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .hazeSource(state = hazeState),
             factory = { context ->
-                val ids = viewModel.messageIds()
-                val layoutManager = PolliChatLayoutManager(context).also {
-                    applyStartingPosition(it, ids.size)
-                }
-                adapter.changeData(ids)
+                val items = viewModel.feedItems
+                val layoutManager =
+                    PolliChatLayoutManager(context).also {
+                        applyStartingPosition(it, items.size)
+                    }
+                adapter.changeData(items)
                 RecyclerView(context).apply {
                     this.layoutManager = layoutManager
                     itemAnimator = null
                     overScrollMode = RecyclerView.OVER_SCROLL_NEVER
                     clipToPadding = false
+                    setHasFixedSize(true)
+                    setItemViewCacheSize(24)
                     setPadding(0, topPadPx, 0, bottomPadPx)
                     this.adapter = adapter
                     addOnScrollListener(
@@ -143,7 +157,7 @@ fun ChatFeedRecycler(
                     )
                     scrollController.recyclerView = this
                     appliedGeneration = reloadGeneration
-                    afterFeedSync(this, ids.size)
+                    afterFeedSync(this, items.messageCount())
                 }
             },
             update = { recycler ->

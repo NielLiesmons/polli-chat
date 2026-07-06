@@ -23,12 +23,18 @@ android {
     }
 }
 
+compose.resources {
+    publicResClass = true
+    packageOfResClass = "com.polli.ui.resources"
+}
+
 kotlin {
     androidTarget {
         compilations.all {
             kotlinOptions.jvmTarget = "17"
         }
     }
+    jvm()
 
     sourceSets {
         commonMain.dependencies {
@@ -38,9 +44,17 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.material3)
             implementation(compose.ui)
+            implementation(compose.components.resources)
+            implementation("dev.chrisbanes.haze:haze:1.5.4")
         }
         androidMain.dependencies {
             implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+            implementation("androidx.activity:activity-compose:1.9.3")
+        }
+        val jvmMain by getting {
+            dependencies {
+                implementation(compose.desktop.currentOs)
+            }
         }
     }
 }

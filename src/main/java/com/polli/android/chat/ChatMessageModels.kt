@@ -54,7 +54,8 @@ private fun authorColorSeed(dcContext: DcContext, fromId: Int, authorName: Strin
 }
 
 sealed class FeedItem {
-    data class DayMarker(val label: String) : FeedItem()
+    data class DayMarker(val label: String, val dayKey: Long) : FeedItem()
+    data object NewMessages : FeedItem()
     /** Row identity only — grouping is derived per compose from neighbor stubs (DC bind-time pattern). */
     data class Message(val msgId: Int) : FeedItem()
 }

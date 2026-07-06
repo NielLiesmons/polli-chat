@@ -2,7 +2,9 @@ package com.polli.core.chat
 
 /**
  * Maps Chatmail engine chat metadata to Polli home categories.
- * Platform JNI types are adapted to [ChatKind] at the boundary.
+ * Platform JNI / RPC types are adapted to [ChatKind] at the boundary.
+ *
+ * Source of truth: `jni/deltachat-core-rust/polli-home` (Rust). Keep in sync.
  */
 object ChatCategorizer {
     const val CHAT_TYPE_UNDEFINED = 0

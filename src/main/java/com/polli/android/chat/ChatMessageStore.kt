@@ -1,5 +1,6 @@
 package com.polli.android.chat
 
+import android.content.Context
 import com.b44t.messenger.DcContext
 import com.b44t.messenger.DcMsg
 
@@ -38,6 +39,7 @@ class ChatMessageStore {
 
     private val stubById = LinkedHashMap<Int, MessageStub>()
     private var msgIds: IntArray = intArrayOf()
+    private var feedItemsCache: List<FeedItem> = emptyList()
 
     fun getMessage(dc: DcContext, msgId: Int): ChatMessage? {
         synchronized(messageCache) {
@@ -84,23 +86,36 @@ class ChatMessageStore {
         clearMessageCache()
         stubById.clear()
         msgIds = intArrayOf()
+        feedItemsCache = emptyList()
+    }
+
+    fun feedItems(): List<FeedItem> = feedItemsCache
+
+    fun buildFeed(context: Context, dc: DcContext, showNewMessages: Boolean): List<FeedItem> {
+        feedItemsCache = ChatFeedBuilder.build(context, dc, msgIds, showNewMessages)
+        return feedItemsCache
     }
 
     /**
      * Instant feed from [DcContext.getChatMsgs] only. Returns null when the id list is unchanged
-     * so callers can skip a no-op [feedItems] assignment (DC [ConversationAdapter.changeData]).
+     * and the rendered feed matches, so callers can skip a no-op [feedItems] assignment.
      */
-    fun syncFeedIds(dc: DcContext, chatId: Int): List<FeedItem>? {
-        val ids = dc.getChatMsgs(chatId, 0, 0) ?: intArrayOf()
-        if (ids.contentEquals(msgIds)) return null
+    fun syncFeedIds(
+        context: Context,
+        dc: DcContext,
+        chatId: Int,
+        showNewMessages: Boolean,
+    ): List<FeedItem>? {
+        val ids = dc.getChatMsgs(chatId, DcContext.DC_GCM_ADDDAYMARKER, 0) ?: intArrayOf()
+        val nextFeed = ChatFeedBuilder.build(context, dc, ids, showNewMessages)
+        if (ids.contentEquals(msgIds) && nextFeed == feedItemsCache) return null
         msgIds = ids
         val valid = ids.toSet()
         stubById.keys.retainAll(valid)
         pruneCache(valid)
-        return MessageLoader.buildIdFeed(ids)
+        feedItemsCache = nextFeed
+        return feedItemsCache
     }
-
-    fun feedFromCurrentIds(): List<FeedItem> = MessageLoader.buildIdFeed(msgIds)
 
     fun messageIds(): IntArray = msgIds
 
@@ -114,14 +129,14 @@ class ChatMessageStore {
 
     /** Warm stubs for the first paint window around the open scroll position (DC binds ~15 rows). */
     fun preloadStubsAroundDisplayIndex(dc: DcContext, displayIndex: Int, radius: Int = 12) {
-        val ids = msgIds
-        if (ids.isEmpty()) return
-        val chron = (ids.size - 1 - displayIndex.coerceIn(0, ids.size - 1))
-        val from = (chron - radius).coerceAtLeast(0)
-        val to = (chron + radius).coerceAtMost(ids.size - 1)
-        for (i in from..to) {
-            val id = ids[i]
-            if (id > DcMsg.DC_MSG_ID_DAYMARKER) getStub(dc, id)
+        val items = feedItemsCache
+        if (items.isEmpty()) return
+        val center = displayIndex.coerceIn(0, items.lastIndex)
+        val from = (center - radius).coerceAtLeast(0)
+        val to = (center + radius).coerceAtMost(items.lastIndex)
+        for (display in from..to) {
+            val msgId = items.messageIdAtDisplayIndex(display) ?: continue
+            getStub(dc, msgId)
         }
     }
 
@@ -129,8 +144,14 @@ class ChatMessageStore {
      * Fast path for [DcContext.DC_EVENT_INCOMING_MSG]: append when ids grew by one at the tail.
      * Falls back to null so the caller can run [syncFeedIds].
      */
-    fun tryAppendIncoming(dc: DcContext, chatId: Int, msgId: Int): List<FeedItem>? {
-        val newIds = dc.getChatMsgs(chatId, 0, 0) ?: return null
+    fun tryAppendIncoming(
+        context: Context,
+        dc: DcContext,
+        chatId: Int,
+        msgId: Int,
+        showNewMessages: Boolean,
+    ): List<FeedItem>? {
+        val newIds = dc.getChatMsgs(chatId, DcContext.DC_GCM_ADDDAYMARKER, 0) ?: return null
         if (newIds.size != msgIds.size + 1) return null
         for (i in msgIds.indices) {
             if (msgIds[i] != newIds[i]) return null
@@ -138,7 +159,8 @@ class ChatMessageStore {
         if (newIds.last() != msgId) return null
         msgIds = newIds
         getStub(dc, msgId)
-        return MessageLoader.buildIdFeed(newIds)
+        feedItemsCache = ChatFeedBuilder.build(context, dc, newIds, showNewMessages)
+        return feedItemsCache
     }
 
     private fun pruneCache(validIds: Set<Int>) {

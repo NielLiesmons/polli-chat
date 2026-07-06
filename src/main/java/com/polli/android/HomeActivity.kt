@@ -8,7 +8,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.activity.viewModels
-import com.polli.android.home.HomeScreen
+import com.polli.android.home.AndroidHomeScreen
 import com.polli.android.navigation.AppNav
 import com.polli.android.navigation.ShareRelay
 import com.polli.android.onboarding.WelcomeActivity
@@ -37,7 +37,7 @@ class HomeActivity : BaseComposeActivity() {
             val revision = themeRevision
             LabTheme(prefs = prefs, uiScaleRevision = revision) {
                 val dc = DcHelper.getContext(this)
-                HomeScreen(
+                AndroidHomeScreen(
                     profileName = dc.getConfig(DcHelper.CONFIG_DISPLAY_NAME).ifBlank { "Profile" },
                     profileSeed = dc.getConfig(DcHelper.CONFIG_CONFIGURED_ADDRESS).ifBlank { "me" },
                     storiesViewModel = storiesViewModel,
@@ -53,7 +53,6 @@ class HomeActivity : BaseComposeActivity() {
                             AppNav.openChat(this, chatId)
                         }
                     },
-                    onSearch = { /* query applied inside HomeScreen local state */ },
                     onArchiveClick = { AppNav.openArchive(this) },
                     onNewNote = { AppNav.openNewNote(this) },
                     onOpenNote = { msgId -> AppNav.openNoteEditor(this, msgId) },

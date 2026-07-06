@@ -6,42 +6,16 @@ import android.text.TextUtils
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AlertDialog
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import chat.delta.rpc.RpcException
 import com.b44t.messenger.DcContext
 import com.b44t.messenger.DcEvent
 import com.polli.android.BaseAppCompatComposeActivity
 import com.polli.android.navigation.AppNav
 import com.polli.android.settings.AppPrefs
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.accent
 import com.polli.android.theme.LabTheme
 import com.polli.android.ui.AppInsets
-import com.polli.android.ui.LabAvatar
-import com.polli.android.ui.RoundBackButton
+import com.polli.ui.screens.AccountSetupScreen
+import androidx.compose.ui.unit.dp
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.connect.DcEventCenter
 import org.thoughtcrime.securesms.connect.DcHelper
@@ -57,7 +31,7 @@ class AccountSetupActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEve
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        providerQrData = intent.getStringExtra(EXTRA_QR_DATA) ?: "dcaccount:nine.testrun.org"
+        providerQrData = intent.getStringExtra(EXTRA_QR_DATA) ?: DEFAULT_PROVIDER_QR
         if (DcHelper.getContext(this).isConfigured == 1) {
             finish()
             return
@@ -67,6 +41,9 @@ class AccountSetupActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEve
         setContent {
             LabTheme(prefs = prefs) {
                 AccountSetupScreen(
+                    initialDisplayName = DcHelper.get(this, DcHelper.CONFIG_DISPLAY_NAME).orEmpty(),
+                    topInset = AppInsets.statusBarTop(),
+                    bottomInset = AppInsets.navigationBarBottom() + 24.dp,
                     onBack = { onBackPressedDispatcher.onBackPressed() },
                     onCreate = { name -> createProfile(name) },
                 )
@@ -136,72 +113,9 @@ class AccountSetupActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEve
 
     companion object {
         const val EXTRA_QR_DATA = "qr_data"
+        const val DEFAULT_PROVIDER_QR = "dcaccount:nine.testrun.org"
 
         fun intent(context: android.content.Context): Intent =
             Intent(context, AccountSetupActivity::class.java)
-    }
-}
-
-@Composable
-fun AccountSetupScreen(
-    onBack: () -> Unit,
-    onCreate: (String) -> Unit,
-) {
-    val context = LocalContext.current
-    var name by remember {
-        mutableStateOf(DcHelper.get(context, DcHelper.CONFIG_DISPLAY_NAME).orEmpty())
-    }
-    var busy by remember { mutableStateOf(false) }
-    val display = name.ifBlank { "?" }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(LabColors.Black)
-            .padding(top = AppInsets.statusBarTop() + 8.dp)
-            .padding(horizontal = 24.dp)
-            .padding(bottom = AppInsets.navigationBarBottom() + 24.dp),
-    ) {
-        RoundBackButton(onClick = onBack)
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-        Spacer(modifier = Modifier.padding(16.dp))
-        Text("Create account", color = LabColors.White85, style = MaterialTheme.typography.titleLarge)
-        Spacer(modifier = Modifier.padding(20.dp))
-        LabAvatar(name = display, seed = display, size = 88.dp)
-        Spacer(modifier = Modifier.padding(20.dp))
-        OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("Display name") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.colors(
-                focusedTextColor = LabColors.White85,
-                unfocusedTextColor = LabColors.White85,
-                focusedContainerColor = LabColors.Gray33,
-                unfocusedContainerColor = LabColors.Gray33,
-            ),
-        )
-        Spacer(modifier = Modifier.padding(24.dp))
-        if (busy) {
-            CircularProgressIndicator(color = accent().solid, modifier = Modifier.size(32.dp))
-        } else {
-            TextButton(
-                onClick = {
-                    busy = true
-                    onCreate(name.trim())
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(999.dp))
-                    .background(accent().solid),
-            ) {
-                Text("Create", color = LabColors.White)
-            }
-        }
-        }
     }
 }

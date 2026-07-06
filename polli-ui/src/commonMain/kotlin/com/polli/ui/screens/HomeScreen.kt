@@ -1,14 +1,12 @@
-package com.polli.android.home
+package com.polli.ui.screens
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import com.polli.ui.components.polliClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -56,7 +54,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -65,32 +63,44 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import com.polli.domain.model.InboxItem
-import com.polli.android.icons.LabIcon
-import com.polli.android.icons.LabIconName
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabDimens
-import com.polli.android.theme.accent
-import com.polli.android.ui.AppInsets
+import com.polli.ui.components.LabIcon
+import com.polli.ui.components.LabIconName
+import com.polli.ui.theme.LabColors
+import com.polli.ui.theme.LabDimens
+import com.polli.ui.theme.accent
+import com.polli.ui.theme.AppInsets
 import com.polli.ui.components.ArchiveLinkRow
 import com.polli.ui.components.ChatInboxCard
-import com.polli.android.ui.LabAvatar
-import com.polli.android.ui.SelfAvatar
-import com.polli.android.ui.rememberLazyListShowTopFadeDerived
-import com.polli.android.ui.PolliScreenScrim
-import com.polli.android.ui.ShellDivider
-import com.polli.android.ui.rememberPolliHazeState
-import com.polli.android.stories.ChannelStoriesOverlay
-import com.polli.android.stories.StoriesViewModel
-import com.polli.android.stories.StoryLaunchBounds
-import com.polli.android.stories.StoryRingEntry
-import com.polli.android.stories.StoryRingStyle
-import com.polli.android.stories.ChannelStoryRingLogic
-import com.polli.android.stories.rememberStoryRingEntries
-import com.polli.android.stories.StorySession
-import com.polli.android.ui.scrollFadeMask
+import com.polli.ui.components.rememberLazyListShowTopFadeDerived
+import com.polli.ui.components.PolliScreenScrim
+import com.polli.ui.components.rememberPolliHazeState
+import com.polli.ui.components.scrollFadeMask
+import com.polli.ui.components.HomeBackHandler
+import com.polli.ui.components.ProfileAvatar
+import com.polli.ui.components.SelfAvatar
+import com.polli.ui.home.HomeNote
+import com.polli.ui.home.HomeSearchPanelBody
+import com.polli.ui.home.StackedTabAvatars
+import com.polli.ui.home.formatHomeTabUnreadCount
+import com.polli.ui.home.mailUnreadChats
+import com.polli.ui.home.totalUnreadMessages
+import com.polli.ui.home.HomeSearchPanelHeightMeasurer
+import com.polli.ui.home.HomeSearchActionButton
+import com.polli.ui.home.HomeSearchPillSurface
+import com.polli.ui.home.NotesTab
+import com.polli.ui.home.SigilsTab
+import com.polli.ui.home.StoryLaunchBounds
+import com.polli.ui.home.StoryRingEntry
+import com.polli.ui.home.StoryRingLogic
+import com.polli.ui.home.StoryRingStyle
+import com.polli.ui.home.StorySession
+import com.polli.ui.home.rememberArchiveLinkState
+import com.polli.ui.home.rememberInboxItems
+import com.polli.domain.repository.ChatRepository
 import com.polli.core.chat.ChatCategory
+import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
-import org.thoughtcrime.securesms.R
+import androidx.compose.ui.unit.Dp
 
 private val SearchExpandEasing = CubicBezierEasing(0.22f, 1f, 0.36f, 1f)
 private const val SearchExpandDurationMs = 380
@@ -101,20 +111,28 @@ enum class HomeTab { Spaces, Mail, Notes, Sigils }
 fun HomeScreen(
     profileName: String,
     profileSeed: String,
-    items: List<InboxItem>? = null,
-    channels: List<InboxItem>? = null,
-    storiesViewModel: StoriesViewModel? = null,
+    chatRepository: ChatRepository,
+    archivedChatsTitle: String = "Archived chats",
+    notes: List<HomeNote> = emptyList(),
+    storyRingLoader: ((List<InboxItem>, Long) -> List<StoryRingEntry>)? = null,
     spacesEmptyHint: String = "No spaces yet. Your group chats appear here.",
     mailEmptyHint: String = "No mail chats yet.",
     onProfileClick: () -> Unit,
     onPlusClick: () -> Unit,
     onChatClick: (Int) -> Unit,
     onChannelClick: (Int) -> Unit = {},
-    onSearch: (String) -> Unit,
+    onSearch: (String) -> Unit = {},
     onArchiveClick: () -> Unit = {},
     onNewNote: () -> Unit = {},
     onOpenNote: (Int) -> Unit = {},
     shareRelayTitle: String? = null,
+    storiesOverlay: (@Composable (StorySession, () -> Unit) -> Unit)? = null,
+    chatAvatar: @Composable (InboxItem, Dp) -> Unit = { item, size ->
+        ProfileAvatar(name = item.name, seed = item.colorSeed, size = size)
+    },
+    selfAvatar: @Composable (String, Dp, () -> Unit) -> Unit = { name, size, onClick ->
+        SelfAvatar(name = name, size = size, onClick = onClick)
+    },
 ) {
     var searchPanelOpen by remember { mutableStateOf(false) }
     var storySession by remember { mutableStateOf<StorySession?>(null) }
@@ -143,11 +161,20 @@ fun HomeScreen(
         label = "searchExpand",
     )
 
-    val loadedItems = items ?: rememberInboxItems(query)
-    val loadedChannels = channels ?: rememberChannels(loadedItems)
+    val loadedItems = rememberInboxItems(chatRepository, query)
+    val loadedChannels = remember(loadedItems) {
+        loadedItems.filter { it.category == ChatCategory.Channel }
+    }
     val nowSec = remember { System.currentTimeMillis() / 1000 }
-    val storyRingEntries = rememberStoryRingEntries(loadedChannels, refreshKey = storyRingRefreshKey)
-    val archiveLink = rememberArchiveLinkState()
+    val storyRingEntries =
+        storyRingLoader?.invoke(loadedChannels, nowSec)
+            ?: StoryRingLogic.buildEntries(loadedChannels, nowSec)
+    val archiveLink = rememberArchiveLinkState(chatRepository)
+    val mailItems = remember(loadedItems) { loadedItems.filter { it.category == ChatCategory.Mail } }
+    val spaceItems = remember(loadedItems) { loadedItems.filter { it.category == ChatCategory.Space } }
+    val mailUnreadTotal = remember(mailItems) { totalUnreadMessages(mailItems) }
+    val spacesUnreadTotal = remember(spaceItems) { totalUnreadMessages(spaceItems) }
+    val mailUnreadPreview = remember(mailItems) { mailUnreadChats(mailItems) }
 
     fun openSearchPanel() {
         isDraggingExpand = false
@@ -173,7 +200,7 @@ fun HomeScreen(
         }
     }
 
-    BackHandler(enabled = searchPanelOpen || expandProgress > 0.05f) {
+    HomeBackHandler(enabled = searchPanelOpen || expandProgress > 0.05f) {
         closeSearchPanel()
     }
 
@@ -264,22 +291,24 @@ fun HomeScreen(
                     )
                 }
                 if (expandProgress < 0.92f) {
-                    Spacer(modifier = Modifier.height(LabDimens.StoryRowDividerGap))
+                    Spacer(modifier = Modifier.height(LabDimens.HomeChromeGap))
                     Column(modifier = Modifier.fillMaxWidth()) {
                         if (storyRingEntries.isNotEmpty()) {
                             ChannelStoriesRow(
                                 entries = storyRingEntries,
+                                chatAvatar = chatAvatar,
                                 onSelect = { entry, bounds ->
                                     when (entry.style) {
                                         StoryRingStyle.Stale -> onChannelClick(entry.channel.chatId)
                                         else -> {
-                                            val ids = ChannelStoryRingLogic.storyChannelIds(storyRingEntries)
-                                            if (storiesViewModel != null) {
-                                                storySession = StorySession(
-                                                    channelId = entry.channel.chatId,
-                                                    channelIds = ids,
-                                                    launchBounds = bounds,
-                                                )
+                                            val ids = StoryRingLogic.storyChannelIds(storyRingEntries)
+                                            if (storiesOverlay != null) {
+                                                storySession =
+                                                    StorySession(
+                                                        channelId = entry.channel.chatId,
+                                                        channelIds = ids,
+                                                        launchBounds = bounds,
+                                                    )
                                             } else {
                                                 onChannelClick(entry.channel.chatId)
                                             }
@@ -287,8 +316,16 @@ fun HomeScreen(
                                     }
                                 },
                             )
+                            Spacer(modifier = Modifier.height(LabDimens.HomeChromeGap))
                         }
-                        TabRow(active = tab, onSelect = { tab = it })
+                        TabRow(
+                            active = tab,
+                            onSelect = { tab = it },
+                            spacesUnreadCount = spacesUnreadTotal,
+                            mailUnreadCount = mailUnreadTotal,
+                            mailUnreadChats = mailUnreadPreview,
+                            chatAvatar = chatAvatar,
+                        )
                     }
                 }
             }
@@ -306,6 +343,7 @@ fun HomeScreen(
                     SigilsTab()
                 } else if (tab == HomeTab.Notes) {
                     NotesTab(
+                        notes = notes,
                         onNewNote = onNewNote,
                         onOpenNote = onOpenNote,
                     )
@@ -359,7 +397,7 @@ fun HomeScreen(
                             if (showArchiveRow) {
                                 item(key = "archive-link") {
                                     ArchiveLinkRow(
-                                        label = stringResource(R.string.chat_archived_chats_title),
+                                        label = archivedChatsTitle,
                                         unreadCount = archiveLink.unreadCount,
                                         onClick = onArchiveClick,
                                     )
@@ -371,12 +409,7 @@ fun HomeScreen(
                                     onClick = { onChatClick(item.chatId) },
                                     nowSec = nowSec,
                                     avatar = {
-                                        LabAvatar(
-                                            name = item.name,
-                                            seed = item.colorSeed,
-                                            size = LabDimens.AvatarSize,
-                                            chatId = item.chatId,
-                                        )
+                                        chatAvatar(item, LabDimens.AvatarSize)
                                     },
                                 )
                             }
@@ -407,18 +440,13 @@ fun HomeScreen(
                 closeSearchPanel()
                 onNewNote()
             },
+            selfAvatar = selfAvatar,
         )
 
         storySession?.let { session ->
-            storiesViewModel?.let { vm ->
-                ChannelStoriesOverlay(
-                    session = session,
-                    storiesViewModel = vm,
-                    onClose = {
-                        storySession = null
-                        storyRingRefreshKey++
-                    },
-                )
+            storiesOverlay?.invoke(session) {
+                storySession = null
+                storyRingRefreshKey++
             }
         }
     }
@@ -431,7 +459,7 @@ private fun HomeExpandableSearchHeader(
     profileName: String,
     query: String,
     searchPanelOpen: Boolean,
-    hazeState: dev.chrisbanes.haze.HazeState,
+    hazeState: HazeState,
     onProfileClick: () -> Unit,
     onOpenSearch: () -> Unit,
     onCloseSearch: () -> Unit,
@@ -439,6 +467,7 @@ private fun HomeExpandableSearchHeader(
     onPlusClick: () -> Unit,
     focusRequester: FocusRequester,
     onCreateNote: () -> Unit,
+    selfAvatar: @Composable (String, Dp, () -> Unit) -> Unit,
 ) {
     val cornerRadius = lerp(LabDimens.HomeBarHeight / 2, 20.dp, expandProgress)
     val profileSlotWidth = lerp(
@@ -463,14 +492,14 @@ private fun HomeExpandableSearchHeader(
                 modifier = Modifier
                     .width(profileSlotWidth)
                     .height(LabDimens.HomeProfileSize)
-                    .clipToBounds(),
+                    .clipToBounds()
+                    .alpha(profileAlpha),
                 contentAlignment = Alignment.CenterStart,
             ) {
-                SelfAvatar(
-                    name = profileName,
-                    size = LabDimens.HomeProfileSize,
-                    onClick = onProfileClick,
-                    modifier = Modifier.alpha(profileAlpha),
+                selfAvatar(
+                    profileName,
+                    LabDimens.HomeProfileSize,
+                    onProfileClick,
                 )
             }
 
@@ -490,7 +519,7 @@ private fun HomeExpandableSearchHeader(
                             .height(LabDimens.HomeBarHeight)
                             .then(
                                 if (!showField) {
-                                    Modifier.clickable(onClick = onOpenSearch)
+                                    Modifier.polliClickable(onClick = onOpenSearch)
                                 } else {
                                     Modifier
                                 },
@@ -562,37 +591,37 @@ private fun HomeExpandableSearchHeader(
 @Composable
 private fun ChannelStoriesRow(
     entries: List<StoryRingEntry>,
+    chatAvatar: @Composable (InboxItem, Dp) -> Unit,
     onSelect: (StoryRingEntry, StoryLaunchBounds) -> Unit,
 ) {
     if (entries.isEmpty()) return
-    Column(modifier = Modifier.fillMaxWidth()) {
-        ShellDivider(screenPad = 0.dp)
-        Row(
-            modifier = Modifier
+    Row(
+        modifier =
+            Modifier
                 .fillMaxWidth()
                 .padding(
                     start = LabDimens.StoriesRowPaddingStart,
                     end = LabDimens.StoriesRowPadding,
-                    top = LabDimens.StoryRowVerticalPadTop,
-                    bottom = LabDimens.StoryRowVerticalPadBottom,
                 )
                 .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(LabDimens.StoryRingSpacing),
-        ) {
-            entries.forEach { entry ->
-                StoryRing(
-                    entry = entry,
-                    onClick = { bounds -> onSelect(entry, bounds) },
-                )
-            }
+        horizontalArrangement = Arrangement.spacedBy(LabDimens.StoryRingSpacing),
+    ) {
+        entries.forEach { entry ->
+            StoryRing(
+                entry = entry,
+                chatAvatar = chatAvatar,
+                onClick = { bounds -> onSelect(entry, bounds) },
+            )
         }
-        ShellDivider(screenPad = 0.dp)
-        Spacer(modifier = Modifier.height(LabDimens.StoryRowDividerGap))
     }
 }
 
 @Composable
-private fun StoryRing(entry: StoryRingEntry, onClick: (StoryLaunchBounds) -> Unit) {
+private fun StoryRing(
+    entry: StoryRingEntry,
+    chatAvatar: @Composable (InboxItem, Dp) -> Unit,
+    onClick: (StoryLaunchBounds) -> Unit,
+) {
     val channel = entry.channel
     val ringColor = when (entry.style) {
         StoryRingStyle.Unread -> accent().solid
@@ -614,7 +643,7 @@ private fun StoryRing(entry: StoryRingEntry, onClick: (StoryLaunchBounds) -> Uni
             .clip(CircleShape)
             .background(ringColor)
             .padding(LabDimens.StoryRingStroke)
-            .clickable {
+            .polliClickable {
                 launchBounds?.let(onClick)
             },
         contentAlignment = Alignment.Center,
@@ -627,58 +656,126 @@ private fun StoryRing(entry: StoryRingEntry, onClick: (StoryLaunchBounds) -> Uni
                 .padding(LabDimens.StoryRingGap),
             contentAlignment = Alignment.Center,
         ) {
-            LabAvatar(
-                name = channel.name,
-                seed = channel.colorSeed,
-                size = LabDimens.StoryRingInner,
-                chatId = channel.chatId,
-            )
+            chatAvatar(channel, LabDimens.StoryRingInner)
         }
     }
 }
 
 @Composable
-private fun TabRow(active: HomeTab, onSelect: (HomeTab) -> Unit) {
+private fun TabRow(
+    active: HomeTab,
+    onSelect: (HomeTab) -> Unit,
+    spacesUnreadCount: Int,
+    mailUnreadCount: Int,
+    mailUnreadChats: List<InboxItem>,
+    chatAvatar: @Composable (InboxItem, Dp) -> Unit,
+) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
-            .padding(horizontal = LabDimens.HomeBarPadding),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = LabDimens.HomeBarPadding),
         horizontalArrangement = Arrangement.spacedBy(LabDimens.TabGap),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        TabPill("Spaces", active == HomeTab.Spaces) { onSelect(HomeTab.Spaces) }
-        TabPill("Mail", active == HomeTab.Mail) { onSelect(HomeTab.Mail) }
-        TabPill("Notes", active == HomeTab.Notes) { onSelect(HomeTab.Notes) }
-        TabPill("Sigils", active == HomeTab.Sigils) { onSelect(HomeTab.Sigils) }
+        TabPill(
+            label = "Spaces",
+            selected = active == HomeTab.Spaces,
+            onClick = { onSelect(HomeTab.Spaces) },
+            unreadCount = spacesUnreadCount,
+        )
+        TabPill(
+            label = "Mail",
+            selected = active == HomeTab.Mail,
+            onClick = { onSelect(HomeTab.Mail) },
+            unreadCount = mailUnreadCount,
+            unreadAvatars = mailUnreadChats,
+            chatAvatar = chatAvatar,
+        )
+        TabPill(
+            label = "Notes",
+            selected = active == HomeTab.Notes,
+            onClick = { onSelect(HomeTab.Notes) },
+        )
+        TabPill(
+            label = "Sigils",
+            selected = active == HomeTab.Sigils,
+            onClick = { onSelect(HomeTab.Sigils) },
+        )
     }
 }
 
 @Composable
-private fun TabPill(label: String, selected: Boolean, onClick: () -> Unit) {
+private fun TabPill(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    unreadCount: Int = 0,
+    unreadAvatars: List<InboxItem> = emptyList(),
+    chatAvatar: (@Composable (InboxItem, Dp) -> Unit)? = null,
+) {
     val height = if (selected) LabDimens.TabButtonHeight else LabDimens.TabButtonUnselectedHeight
     val hPadding = if (selected) LabDimens.TabButtonHPadding else LabDimens.TabButtonUnselectedHPadding
     val corner = if (selected) 17.dp else LabDimens.TabButtonUnselectedCorner
     val fontSize = if (selected) 14.5.sp else 13.sp
-    val bg = if (selected) {
-        accent().gradientBrush(0.66f)
-    } else {
-        Brush.linearGradient(listOf(LabColors.White8, LabColors.White8))
-    }
+    val bg =
+        if (selected) {
+            accent().gradientBrush(0.66f)
+        } else {
+            Brush.linearGradient(listOf(LabColors.White8, LabColors.White8))
+        }
+    val countLabel = formatHomeTabUnreadCount(unreadCount)
+    val countColor =
+        if (selected) {
+            LabColors.White.copy(alpha = 0.66f)
+        } else {
+            LabColors.White66
+        }
     Box(
-        modifier = Modifier
-            .height(height)
-            .clip(RoundedCornerShape(corner))
-            .background(bg)
-            .clickable(onClick = onClick)
-            .padding(horizontal = hPadding),
+        modifier =
+            Modifier
+                .height(height)
+                .clip(RoundedCornerShape(corner))
+                .background(bg)
+                .polliClickable(onClick = onClick)
+                .padding(horizontal = hPadding),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = label,
-            color = if (selected) LabColors.White else LabColors.White66,
-            fontSize = fontSize,
-            fontWeight = FontWeight.Medium,
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = label,
+                color = if (selected) LabColors.White else LabColors.White66,
+                style =
+                    TextStyle(
+                        fontSize = fontSize,
+                        fontWeight = FontWeight.Medium,
+                        lineHeight = fontSize,
+                    ),
+            )
+            if (unreadAvatars.isNotEmpty() && chatAvatar != null) {
+                StackedTabAvatars(
+                    items = unreadAvatars,
+                    avatarSize = LabDimens.TabMailAvatarSize,
+                    overlap = LabDimens.TabMailAvatarOverlap,
+                    chatAvatar = chatAvatar,
+                )
+            }
+            if (countLabel != null) {
+                Text(
+                    text = countLabel,
+                    color = countColor,
+                    style =
+                        TextStyle(
+                            fontSize = fontSize,
+                            fontWeight = FontWeight.Medium,
+                            lineHeight = fontSize,
+                        ),
+                )
+            }
+        }
     }
 }

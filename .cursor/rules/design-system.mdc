@@ -1,0 +1,68 @@
+---
+description: Design system — accent, dividers, modals, spacing, horizontal scroll rows
+alwaysApply: true
+---
+
+# Polli Chat — Design System
+
+Canonical spec: `spec/guidelines/DESIGN_SYSTEM.md`. Keep both in sync when changing UI conventions.
+
+## Code locations
+
+| What | File |
+|------|------|
+| Colors | `polli-ui/src/commonMain/kotlin/com/polli/ui/theme/LabColors.kt` |
+| Spacing & stroke | `polli-ui/src/commonMain/kotlin/com/polli/ui/theme/LabDimens.kt` |
+| Theme & accent | `polli-ui/.../LabTheme.kt`, `src/.../theme/Accent.kt` |
+| Dividers | `src/.../ui/ShellDivider.kt` |
+| Frosted surfaces & scrim | `src/.../ui/LabBackdrop.kt` |
+| Modals | `src/.../ui/AppModal.kt` |
+
+## Accent color
+
+One user-chosen accent drives the whole app (story rings, tab pills, CTAs). Read via `accent()` / `LocalAccentPalette`. Presets live in `AccentPreset` + `AppPrefs`. Never hardcode blurple hex — use `accent().solid`, `accent().light`, etc.
+
+## Dividers
+
+Use `ShellDivider` everywhere. Spec: **1dp** (`ShellDividerWidth`), color **`LabColors.ShellDivider`** (`White8`). Element borders (inputs, composer) stay **0.33dp** (`ShellBorderWidth`) / **`ShellBorder`** (`White11`).
+
+```kotlin
+ShellDivider(screenPad = 0.dp)   // full-bleed (stories row, profiles list)
+ShellDivider()                   // inset to HomeBarPadding (14dp)
+```
+
+Do not invent one-off divider heights or colors.
+
+## Modals
+
+- **Scrim:** flat dim only — `PolliScreenScrim` / `PolliModalBarrier`. No full-screen blur on the scrim.
+- **Sheet:** `FrostedChromeSurface` + `polliModalSheetHazeStyle()` blur on the sheet only.
+- **Sampling:** wrap scrollable content behind the modal in `.hazeSource(hazeState)` so the sheet frosts what is underneath.
+- **Enter:** sheet slides up from off-screen; quick opacity ramp (see `AppModal`).
+
+## Horizontal scroll rows
+
+Stories row, tab row, and similar rows scroll horizontally. Their **direct parent must not clip** overflow (`clipToBounds()` off on ancestors). Apply horizontal padding on the row itself, not on a clipping wrapper. Full-bleed dividers sit in a sibling `Column` above/below the padded scroll row (see home stories row).
+
+## Spacing
+
+| Context | Value |
+|---------|-------|
+| Screen horizontal padding | 14dp (`HomeBarPadding`) |
+| Section gap (home chrome) | 14dp (`TabSectionGap`) |
+| Stories row vertical pad | 10dp top / 12dp bottom (`StoryRowVerticalPadTop/Bottom`) |
+
+**14dp** is the default horizontal inset. Full-width dividers and images bleed edge-to-edge; padded content uses 14dp on the element or container — not both on the same layer.
+
+## Surfaces
+
+- App background: `LabColors.Black`
+- Frosted panels: `Gray66` + haze (modals, composer)
+- Search chrome: darker `Gray` frost (`polliSearchPanelHazeStyle`)
+
+## General rules
+
+- Never hardcode colors — use `LabColors` tokens.
+- Never add borders to large panel surfaces unless the design system calls for it (inputs/composer use `ShellBorderWidth`).
+- Prefer existing Lab UI composables (`PolliPrimaryButton`, `polliClickable`) over Material `TextButton` / raw `clickable`.
+- **No hover background washes** on desktop — use `polliClickable` (`indication = null`). Hover = scale only if needed, never bg color change.

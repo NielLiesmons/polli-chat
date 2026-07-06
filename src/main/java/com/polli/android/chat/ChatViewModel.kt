@@ -71,6 +71,9 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
     var unreadBelowCount by mutableIntStateOf(0)
         private set
 
+    /** Inline "New messages" pill — hidden after the user scrolls to the bottom. */
+    private var showNewMessagesMarker by mutableStateOf(false)
+
     /** Set before [scheduleReload] when the user sends — feed should stick to bottom after reload. */
     private var scrollToBottomOnReload = false
 
@@ -94,6 +97,15 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
     }
 
     fun onScrolledToBottom() {
+        if (showNewMessagesMarker) {
+            showNewMessagesMarker = false
+            val dc = dcContext
+            val ctx = getApplication<Application>()
+            if (dc != null) {
+                feedItems = store.buildFeed(ctx, dc, showNewMessages = false)
+                reloadGeneration++
+            }
+        }
         clearUnreadBelow()
     }
 
@@ -104,11 +116,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
 
     fun messageIds(): IntArray = store.messageIds()
 
-    fun displayIndexForMsgId(msgId: Int): Int {
-        val ids = messageIds().filter { it > DcMsg.DC_MSG_ID_DAYMARKER }
-        val chron = ids.indexOf(msgId)
-        return if (chron < 0) -1 else ids.size - 1 - chron
-    }
+    fun displayIndexForMsgId(msgId: Int): Int = feedItems.displayIndexForMessage(msgId)
 
     /**
      * Polli grouping for one row — loads at most three stubs (self + neighbors), cached after first read.
@@ -139,20 +147,36 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
             ?: dcContext?.getDraft(chatId)?.text?.orEmpty()
             ?: ""
         val freshMsgs = freshMessageCount(chatId)
-        initialScrollIndex = when {
-            startingPosition >= 0 -> startingPosition
-            freshMsgs > 0 -> freshMsgs - 1
-            else -> 0
-        }
-        highlightScrollIndex = startingPosition.takeIf { it >= 0 } ?: -1
-        pendingFirstLoadScroll = true
+        showNewMessagesMarker = freshMsgs > 0
         registerEvents()
         val dc = dcContext!!
         store.reset()
-        feedItems = store.syncFeedIds(dc, chatId) ?: store.feedFromCurrentIds()
+        feedItems =
+            store.syncFeedIds(ctx, dc, chatId, showNewMessagesMarker)
+                ?: store.buildFeed(ctx, dc, showNewMessagesMarker)
+        initialScrollIndex =
+            resolveInitialScrollIndex(
+                items = feedItems,
+                startingPosition = startingPosition,
+                freshMsgs = freshMsgs,
+            )
+        highlightScrollIndex =
+            if (startingPosition >= 0) {
+                resolveInitialScrollIndex(feedItems, startingPosition, freshMsgs = 0)
+            } else {
+                -1
+            }
+        pendingFirstLoadScroll = true
         store.preloadStubsAroundDisplayIndex(dc, initialScrollIndex)
         reloadGeneration++
-        scheduleReload(markRead = !fromArchived)
+        if (!fromArchived) {
+            viewModelScope.launch(Dispatchers.Main.immediate) {
+                dc.marknoticedChat(chatId)
+            }
+        }
+        viewModelScope.launch(Dispatchers.Default) {
+            store.preloadStubs(dc)
+        }
     }
 
     fun reactionEpochFor(msgId: Int): Int = reactionEpoch[msgId] ?: 0
@@ -160,6 +184,28 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
     fun clearFirstLoadScroll() {
         pendingFirstLoadScroll = false
         highlightScrollIndex = -1
+    }
+
+    private fun resolveInitialScrollIndex(
+        items: List<FeedItem>,
+        startingPosition: Int,
+        freshMsgs: Int,
+    ): Int {
+        val messages = items.filterIsInstance<FeedItem.Message>()
+        if (messages.isEmpty()) return 0
+        val targetMsgId =
+            when {
+                startingPosition >= 0 -> {
+                    val msgIndex = (messages.size - 1 - startingPosition).coerceIn(0, messages.lastIndex)
+                    messages[msgIndex].msgId
+                }
+                freshMsgs > 0 -> {
+                    val msgIndex = (messages.size - freshMsgs).coerceIn(0, messages.lastIndex)
+                    messages[msgIndex].msgId
+                }
+                else -> messages.last().msgId
+            }
+        return items.displayIndexForMessage(targetMsgId).coerceAtLeast(0)
     }
 
     private fun freshMessageCount(chatId: Int): Int = try {
@@ -234,16 +280,19 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
         reloadJob?.cancel()
         reloadJob = viewModelScope.launch {
             val dc = dcContext ?: return@launch
+            val ctx = getApplication<Application>()
             if (markRead) {
                 withContext(Dispatchers.Main.immediate) {
                     dc.marknoticedChat(chatId)
                 }
             }
             if (feedItems.isEmpty()) {
-                feedItems = store.syncFeedIds(dc, chatId) ?: store.feedFromCurrentIds()
+                feedItems =
+                    store.syncFeedIds(ctx, dc, chatId, showNewMessagesMarker)
+                        ?: store.buildFeed(ctx, dc, showNewMessagesMarker)
                 reloadGeneration++
             } else {
-                store.syncFeedIds(dc, chatId)?.let { items ->
+                store.syncFeedIds(ctx, dc, chatId, showNewMessagesMarker)?.let { items ->
                     feedItems = items
                     reloadGeneration++
                 }
@@ -258,15 +307,17 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
         reloadJob?.cancel()
         reloadJob = viewModelScope.launch {
             val dc = dcContext ?: return@launch
+            val ctx = getApplication<Application>()
             if (markRead) {
                 withContext(Dispatchers.Main.immediate) {
                     dc.marknoticedChat(chatId)
                 }
             }
-            val items = withContext(Dispatchers.Default) {
-                store.tryAppendIncoming(dc, chatId, msgId)
-                    ?: store.syncFeedIds(dc, chatId)
-            }
+            val items =
+                withContext(Dispatchers.Default) {
+                    store.tryAppendIncoming(ctx, dc, chatId, msgId, showNewMessagesMarker)
+                        ?: store.syncFeedIds(ctx, dc, chatId, showNewMessagesMarker)
+                }
             if (items != null) {
                 feedItems = items
                 reloadGeneration++
@@ -360,11 +411,8 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
         }
     }
 
-    fun messageIdAtDisplayIndex(displayIndex: Int): Int? {
-        val ids = messageIds().filter { it > DcMsg.DC_MSG_ID_DAYMARKER }
-        val chron = ids.size - 1 - displayIndex
-        return ids.getOrNull(chron)
-    }
+    fun messageIdAtDisplayIndex(displayIndex: Int): Int? =
+        feedItems.messageIdAtDisplayIndex(displayIndex)
 
     fun send() {
         val dc = dcContext ?: return

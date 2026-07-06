@@ -1,6 +1,7 @@
 package com.polli.ui.theme
 
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 /** Layout constants — ported from polli/src/design_system/spacing.rs */
 object LabDimens {
@@ -29,6 +30,8 @@ object LabDimens {
 
     val TabButtonHeight = 34.dp
     val TabButtonHPadding = 15.dp
+    val TabMailAvatarSize = 20.dp
+    val TabMailAvatarOverlap = 6.dp
     val TabButtonUnselectedHeight = 30.dp
     val TabButtonUnselectedHPadding = 13.dp
     val TabButtonUnselectedCorner = 15.dp
@@ -43,10 +46,12 @@ object LabDimens {
     val StoryRingStroke = 2.dp
     val StoryRingGap = 4.dp
     val StoryRingSpacing = 10.dp
+    /** Visual gap between home chrome blocks (header ↔ stories ↔ tabs). */
+    val HomeChromeGap = 16.dp
     val StoryRowVerticalPadTop = 10.dp
     val StoryRowVerticalPadBottom = 10.dp
-    /** Gap from a story-row divider to the adjacent chrome row (header above, tabs below). */
-    val StoryRowDividerGap = 10.dp
+    /** @deprecated Use [HomeChromeGap] — stories row no longer uses hairline dividers. */
+    val StoryRowDividerGap = 16.dp
     val StoryProgressHeight = 2.dp
 
     /** Hairline stroke on inputs, composer chrome, frosted panel borders. */
@@ -107,6 +112,17 @@ object LabDimens {
     val ScrollFadeBottom = 14.dp
     val ScrollFadeTop = 40.dp
     /** Extra reach of chat feed top edge gradient below the header zone. */
+    val ChatFeedDayPillPadTop = 10.dp
+    val ChatFeedDayPillPadBottom = 6.dp
+    val ChatFeedDayPillHPadding = 10.dp
+    val ChatFeedDayPillVPadding = 4.dp
+    val ChatFeedDayPillFontSize = 11.sp
+    val ChatFeedNewPillPadV = 16.dp
+    val ChatFeedNewPillGap = 14.dp
+    val ChatFeedNewPillHPadding = 14.dp
+    val ChatFeedNewPillVPadding = 6.dp
+    val ChatFeedNewPillFontSize = 12.sp
+    val ChatFeedPillRadius = 16.dp
     val ChatFeedTopFadeExtend = 16.dp
     /** Extra reach of chat feed bottom edge gradient above the composer. */
     val ChatFeedBottomFadeExtend = 8.dp

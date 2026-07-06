@@ -23,6 +23,7 @@ kotlin {
             kotlinOptions.jvmTarget = "17"
         }
     }
+    jvm()
 
     sourceSets {
         commonMain.dependencies {

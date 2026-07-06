@@ -10,13 +10,30 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.polli.android.theme.LabColors
 import com.polli.android.theme.LabDimens
 import com.polli.android.theme.ProfileColors
+
+private val ExtensionLabelStyle =
+    TextStyle(
+        fontSize = 10.sp,
+        fontWeight = FontWeight.SemiBold,
+        letterSpacing = 0.15.sp,
+        lineHeight = 15.sp,
+        textAlign = TextAlign.Center,
+        lineHeightStyle =
+            LineHeightStyle(
+                alignment = LineHeightStyle.Alignment.Center,
+                trim = LineHeightStyle.Trim.None,
+            ),
+    )
 
 /** Rounded-square extension badge — port of zaplab_design LabExtensionIcon. */
 @Composable
@@ -42,8 +59,7 @@ fun FileExtensionIcon(
             Text(
                 text = displayText,
                 color = LabColors.White,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
+                style = ExtensionLabelStyle,
             )
         }
         Box(
@@ -56,8 +72,7 @@ fun FileExtensionIcon(
             Text(
                 text = displayText,
                 color = extensionColor.copy(alpha = 0.90f),
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
+                style = ExtensionLabelStyle,
             )
         }
     }
