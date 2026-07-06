@@ -8,7 +8,7 @@ Cross-reference: references from `com.polli.android` vs legacy-only Java.
 - `ConversationListActivity`, archive list, relay list
 - Java `WelcomeActivity`, `NewConversationActivity`
 
-Polli hosts: `HomeActivity`, `ChatActivity`, `ArchiveActivity`, Compose `WelcomeActivity`, `NewConversationActivity`, `GroupCreateActivity`, `AccountSetupActivity`, `AdvancedOnboardingActivity`, `ProfileDetailActivity`.
+Polli hosts: `HomeActivity`, `ChatActivity`, `ArchiveActivity`, Compose `WelcomeActivity`, `NewConversationActivity`, `GroupCreateActivity`, `AccountSetupActivity`, `AdvancedOnboardingActivity`, `ProfileDetailActivity`, `ProfilesActivity`, `NotificationSettingsActivity`.
 
 ## Polli-referenced (keep — engine / bridge)
 
@@ -21,14 +21,13 @@ Polli hosts: `HomeActivity`, `ChatActivity`, `ArchiveActivity`, Compose `Welcome
 | `mms` | `AttachmentManager` bridges |
 | `providers` | Blob / file providers |
 | `notifications` | `NotificationCenter` (uses `AppNav`) |
-| `preferences` | `ApplicationPreferencesActivity` (notification depth) |
+| `preferences` | `NotificationsPreferenceFragment` (hosted by Kotlin `NotificationSettingsActivity`) |
 | `scribbles` | Image editor (`ImageEditLauncher`) |
 
 ## Legacy UI still in tree
 
 | Target | Polli replacement | Status |
 |--------|-------------------|--------|
-| `ApplicationPreferencesActivity` | `ProfilesActivity` | Notification/system prefs bridge |
 | `WebxdcActivity` | — | Java only |
 | `calls/` + `webrtc/` | — | Not in Polli UI |
 

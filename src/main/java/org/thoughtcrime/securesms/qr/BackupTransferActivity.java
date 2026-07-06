@@ -15,7 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import com.polli.android.navigation.AppNav;
-import org.thoughtcrime.securesms.ApplicationPreferencesActivity;
+import com.polli.android.profiles.ProfilesActivity;
 import org.thoughtcrime.securesms.BaseActionBarActivity;
 import org.thoughtcrime.securesms.LogViewActivity;
 import org.thoughtcrime.securesms.R;
@@ -221,7 +221,7 @@ public class BackupTransferActivity extends BaseActionBarActivity {
       // refactorings
       // and needs lots if testing in complicated areas (share ...))
       startActivity(AppNav.homeIntent(getApplicationContext()));
-      startActivity(new Intent(this, ApplicationPreferencesActivity.class));
+      startActivity(ProfilesActivity.intent(getApplicationContext()));
       overridePendingTransition(0, 0);
     }
     finish();

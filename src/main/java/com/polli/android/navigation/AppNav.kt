@@ -20,7 +20,7 @@ import com.polli.android.notes.NoteEditorActivity
 import org.thoughtcrime.securesms.BuildConfig
 import org.thoughtcrime.securesms.R
 import com.polli.domain.navigation.ChatIntentExtras
-import org.thoughtcrime.securesms.ApplicationPreferencesActivity
+import com.polli.android.settings.NotificationSettingsActivity
 import com.polli.android.profiles.ProfileDetailActivity
 import org.thoughtcrime.securesms.WebxdcActivity
 
@@ -46,14 +46,7 @@ object AppNav {
 
     @JvmStatic
     fun openNotificationSettings(context: Context) {
-        context.startActivity(
-            Intent(context, ApplicationPreferencesActivity::class.java).apply {
-                putExtra(
-                    ApplicationPreferencesActivity.EXTRA_OPEN_CATEGORY,
-                    ApplicationPreferencesActivity.CATEGORY_NOTIFICATIONS,
-                )
-            },
-        )
+        context.startActivity(NotificationSettingsActivity.intent(context))
     }
 
     @JvmStatic

@@ -24,8 +24,8 @@ import androidx.core.content.ContextCompat;
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
-import org.thoughtcrime.securesms.ApplicationPreferencesActivity;
 import org.thoughtcrime.securesms.R;
+import androidx.appcompat.app.AppCompatActivity;
 import org.thoughtcrime.securesms.connect.DcHelper;
 import org.thoughtcrime.securesms.connect.KeepAliveService;
 import org.thoughtcrime.securesms.notifications.FcmReceiveService;
@@ -158,7 +158,7 @@ public class NotificationsPreferenceFragment extends ListSummaryPreferenceFragme
   @Override
   public void onResume() {
     super.onResume();
-    ((ApplicationPreferencesActivity) getActivity())
+    ((AppCompatActivity) getActivity())
         .getSupportActionBar()
         .setTitle(R.string.pref_notifications);
 

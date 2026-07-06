@@ -25,7 +25,7 @@ Branch: `feature/compose-kmp-migration`
 | NewConversation | Yes | app | NewConversationActivity |
 | ContactPicker | Yes | app | — |
 | GroupCreate | Yes | app | GroupCreateActivity |
-| AppSettings | Partial | app | ApplicationPreferencesActivity |
+| AppSettings | Yes | app | ProfilesActivity + NotificationSettingsActivity |
 | Onboarding depth | Yes | app | AdvancedOnboardingActivity |
 | Media preview | Yes | app | MediaPreviewActivity |
 | All media | Yes | app | AllMediaActivity |

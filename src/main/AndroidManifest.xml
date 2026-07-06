@@ -333,8 +333,10 @@
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
 
         <activity
-            android:name=".ApplicationPreferencesActivity"
-            android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
+            android:name="com.polli.android.settings.NotificationSettingsActivity"
+            android:theme="@style/TextSecure.LightTheme"
+            android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"
+            android:exported="false" />
 
         <activity
             android:name=".relay.EditRelayActivity"
@@ -457,12 +459,6 @@
         </activity>
 
         <activity
-            android:name=".CreateProfileActivity"
-            android:theme="@style/TextSecure.LightTheme"
-            android:windowSoftInputMode="stateHidden|adjustResize"
-            android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
-
-        <activity
             android:name=".qr.QrActivity"
             android:theme="@style/TextSecure.LightTheme"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
@@ -479,11 +475,6 @@
 
         <activity
             android:name=".qr.BackupTransferActivity"
-            android:theme="@style/TextSecure.LightTheme"
-            android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
-
-        <activity
-            android:name=".preferences.ChatBackgroundActivity"
             android:theme="@style/TextSecure.LightTheme"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
 

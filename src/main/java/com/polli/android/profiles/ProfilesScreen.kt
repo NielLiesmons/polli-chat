@@ -83,6 +83,7 @@ class ProfilesActivity : BaseComposeActivity() {
     companion object {
         const val EXTRA_OPEN_CHAT_SETTINGS = "open_chat_settings"
 
+        @JvmStatic
         fun intent(context: Context): Intent = Intent(context, ProfilesActivity::class.java)
     }
 }
