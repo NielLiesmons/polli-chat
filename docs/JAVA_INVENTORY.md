@@ -49,7 +49,7 @@ Kotlin adapters — **only** package that should import legacy Java for new code
 
 | Target | Polli replacement | Status |
 |--------|-------------------|--------|
-| `ShareActivity` | `HomeRelayingActivity` + `ShareInbound` | Java share target until manifest retarget |
+| `ShareActivity` (Java impl) | `PolliShareActivity` + `HomeRelayingActivity` | Manifest share target now `com.polli.android.share.PolliShareActivity` |
 | `WebViewActivity` | — | Java only (shared WebView base) |
 
 ## Do not delete yet

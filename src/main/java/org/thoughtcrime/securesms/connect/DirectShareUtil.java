@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import org.thoughtcrime.securesms.ShareActivity;
+import com.polli.android.share.PolliShareActivity;
 import org.thoughtcrime.securesms.contacts.avatars.ContactPhoto;
 import org.thoughtcrime.securesms.mms.GlideApp;
 import org.thoughtcrime.securesms.mms.GlideRequest;
@@ -121,10 +121,10 @@ public class DirectShareUtil {
         continue;
       }
 
-      Intent intent = new Intent(context, ShareActivity.class);
+      Intent intent = new Intent(context, PolliShareActivity.class);
       intent.setAction(Intent.ACTION_SEND);
-      intent.putExtra(ShareActivity.EXTRA_ACC_ID, dcContext.getAccountId());
-      intent.putExtra(ShareActivity.EXTRA_CHAT_ID, chat.getId());
+      intent.putExtra(PolliShareActivity.EXTRA_ACC_ID, dcContext.getAccountId());
+      intent.putExtra(PolliShareActivity.EXTRA_CHAT_ID, chat.getId());
 
       Recipient recipient = new Recipient(context, chat);
       Bitmap avatar = getIconForShortcut(context, recipient);

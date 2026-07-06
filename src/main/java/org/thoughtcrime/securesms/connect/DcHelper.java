@@ -33,7 +33,7 @@ import org.thoughtcrime.securesms.ApplicationContext;
 import org.thoughtcrime.securesms.BuildConfig;
 import org.thoughtcrime.securesms.util.IntentUtils;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.ShareActivity;
+import com.polli.android.share.PolliShareActivity;
 import org.thoughtcrime.securesms.database.model.ThreadRecord;
 import org.thoughtcrime.securesms.mms.PartAuthority;
 import org.thoughtcrime.securesms.notifications.NotificationCenter;
@@ -336,7 +336,7 @@ public class DcHelper {
 
   public static void sendToChat(
       Context activity, byte[] data, String mimeType, String fileName, String text) {
-    Intent intent = new Intent(activity, ShareActivity.class);
+    Intent intent = new Intent(activity, PolliShareActivity.class);
     intent.setAction(Intent.ACTION_SEND);
     ShareUtil.setIsFromWebxdc(intent, true);
 
