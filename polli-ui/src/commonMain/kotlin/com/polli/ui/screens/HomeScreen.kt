@@ -80,9 +80,7 @@ import com.polli.ui.components.ProfileAvatar
 import com.polli.ui.components.SelfAvatar
 import com.polli.ui.home.HomeNote
 import com.polli.ui.home.HomeSearchPanelBody
-import com.polli.ui.home.StackedTabAvatars
 import com.polli.ui.home.formatHomeTabUnreadCount
-import com.polli.ui.home.mailUnreadChats
 import com.polli.ui.home.totalUnreadMessages
 import com.polli.ui.home.HomeSearchPanelHeightMeasurer
 import com.polli.ui.home.HomeSearchActionButton
@@ -105,7 +103,7 @@ import androidx.compose.ui.unit.Dp
 private val SearchExpandEasing = CubicBezierEasing(0.22f, 1f, 0.36f, 1f)
 private const val SearchExpandDurationMs = 380
 
-enum class HomeTab { Spaces, Mail, Notes, Sigils }
+enum class HomeTab { Home, Notes, Sigils }
 
 @Composable
 fun HomeScreen(
@@ -115,8 +113,7 @@ fun HomeScreen(
     archivedChatsTitle: String = "Archived chats",
     notes: List<HomeNote> = emptyList(),
     storyRingLoader: ((List<InboxItem>, Long) -> List<StoryRingEntry>)? = null,
-    spacesEmptyHint: String = "No spaces yet. Your group chats appear here.",
-    mailEmptyHint: String = "No mail chats yet.",
+    homeEmptyHint: String = "No chats yet. Your spaces and mail appear here.",
     onProfileClick: () -> Unit,
     onPlusClick: () -> Unit,
     onChatClick: (Int) -> Unit,
@@ -140,7 +137,7 @@ fun HomeScreen(
     var dragExpandProgress by remember { mutableFloatStateOf(0f) }
     var isDraggingExpand by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
-    var tab by remember { mutableStateOf(HomeTab.Spaces) }
+    var tab by remember { mutableStateOf(HomeTab.Home) }
     val listState = rememberLazyListState()
     val showTopFade by rememberLazyListShowTopFadeDerived(listState)
     val focusRequester = remember { FocusRequester() }
@@ -170,11 +167,13 @@ fun HomeScreen(
         storyRingLoader?.invoke(loadedChannels, nowSec)
             ?: StoryRingLogic.buildEntries(loadedChannels, nowSec)
     val archiveLink = rememberArchiveLinkState(chatRepository)
-    val mailItems = remember(loadedItems) { loadedItems.filter { it.category == ChatCategory.Mail } }
-    val spaceItems = remember(loadedItems) { loadedItems.filter { it.category == ChatCategory.Space } }
-    val mailUnreadTotal = remember(mailItems) { totalUnreadMessages(mailItems) }
-    val spacesUnreadTotal = remember(spaceItems) { totalUnreadMessages(spaceItems) }
-    val mailUnreadPreview = remember(mailItems) { mailUnreadChats(mailItems) }
+    val homeItems =
+        remember(loadedItems) {
+            loadedItems.filter {
+                it.category == ChatCategory.Space || it.category == ChatCategory.Mail
+            }
+        }
+    val homeUnreadTotal = remember(homeItems) { totalUnreadMessages(homeItems) }
 
     fun openSearchPanel() {
         isDraggingExpand = false
@@ -321,10 +320,7 @@ fun HomeScreen(
                         TabRow(
                             active = tab,
                             onSelect = { tab = it },
-                            spacesUnreadCount = spacesUnreadTotal,
-                            mailUnreadCount = mailUnreadTotal,
-                            mailUnreadChats = mailUnreadPreview,
-                            chatAvatar = chatAvatar,
+                            homeUnreadCount = homeUnreadTotal,
                         )
                     }
                 }
@@ -348,29 +344,19 @@ fun HomeScreen(
                         onOpenNote = onOpenNote,
                     )
                 } else {
-                    val filtered = loadedItems.filter {
-                        when (tab) {
-                            HomeTab.Spaces -> it.category == ChatCategory.Space
-                            HomeTab.Mail -> it.category == ChatCategory.Mail
-                            HomeTab.Notes, HomeTab.Sigils -> false
-                        }
-                    }
-                    val showArchiveRow = tab == HomeTab.Mail && archiveLink.visible
+                    val filtered = homeItems
+                    val showArchiveRow = tab == HomeTab.Home && archiveLink.visible
                     val showFeed = filtered.isNotEmpty() || showArchiveRow
 
                     if (!showFeed) {
-                        val spaceCount = loadedItems.count { it.category == ChatCategory.Space }
-                        val mailCount = loadedItems.count { it.category == ChatCategory.Mail }
                         val channelCount = loadedItems.count { it.category == ChatCategory.Channel }
-                        val hint = when {
-                            loadedItems.isEmpty() ->
-                                if (tab == HomeTab.Spaces) spacesEmptyHint else mailEmptyHint
-                            tab == HomeTab.Spaces && spaceCount == 0 ->
-                                "No group chats in this tab. ($mailCount direct, $channelCount channel chats in your inbox.)"
-                            tab == HomeTab.Mail && mailCount == 0 ->
-                                "No 1:1 chats in this tab. ($spaceCount groups, $channelCount channel chats in your inbox.)"
-                            else -> if (tab == HomeTab.Spaces) spacesEmptyHint else mailEmptyHint
-                        }
+                        val hint =
+                            when {
+                                loadedItems.isEmpty() -> homeEmptyHint
+                                channelCount > 0 ->
+                                    "No chats yet. Broadcast channels and mailing lists appear in the story row above."
+                                else -> homeEmptyHint
+                            }
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Text(
                                 text = hint,
@@ -665,10 +651,7 @@ private fun StoryRing(
 private fun TabRow(
     active: HomeTab,
     onSelect: (HomeTab) -> Unit,
-    spacesUnreadCount: Int,
-    mailUnreadCount: Int,
-    mailUnreadChats: List<InboxItem>,
-    chatAvatar: @Composable (InboxItem, Dp) -> Unit,
+    homeUnreadCount: Int,
 ) {
     Row(
         modifier =
@@ -680,18 +663,10 @@ private fun TabRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TabPill(
-            label = "Spaces",
-            selected = active == HomeTab.Spaces,
-            onClick = { onSelect(HomeTab.Spaces) },
-            unreadCount = spacesUnreadCount,
-        )
-        TabPill(
-            label = "Mail",
-            selected = active == HomeTab.Mail,
-            onClick = { onSelect(HomeTab.Mail) },
-            unreadCount = mailUnreadCount,
-            unreadAvatars = mailUnreadChats,
-            chatAvatar = chatAvatar,
+            label = "Home",
+            selected = active == HomeTab.Home,
+            onClick = { onSelect(HomeTab.Home) },
+            unreadCount = homeUnreadCount,
         )
         TabPill(
             label = "Notes",
@@ -712,8 +687,6 @@ private fun TabPill(
     selected: Boolean,
     onClick: () -> Unit,
     unreadCount: Int = 0,
-    unreadAvatars: List<InboxItem> = emptyList(),
-    chatAvatar: (@Composable (InboxItem, Dp) -> Unit)? = null,
 ) {
     val height = if (selected) LabDimens.TabButtonHeight else LabDimens.TabButtonUnselectedHeight
     val hPadding = if (selected) LabDimens.TabButtonHPadding else LabDimens.TabButtonUnselectedHPadding
@@ -756,14 +729,6 @@ private fun TabPill(
                         lineHeight = fontSize,
                     ),
             )
-            if (unreadAvatars.isNotEmpty() && chatAvatar != null) {
-                StackedTabAvatars(
-                    items = unreadAvatars,
-                    avatarSize = LabDimens.TabMailAvatarSize,
-                    overlap = LabDimens.TabMailAvatarOverlap,
-                    chatAvatar = chatAvatar,
-                )
-            }
             if (countLabel != null) {
                 Text(
                     text = countLabel,

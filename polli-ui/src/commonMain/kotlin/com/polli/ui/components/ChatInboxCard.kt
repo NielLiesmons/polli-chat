@@ -22,7 +22,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.polli.core.time.RelativeTimeFormat
+import com.polli.core.chat.ChatCategory
 import com.polli.domain.model.InboxItem
+import com.polli.ui.components.InboxAvatarBadge
+import com.polli.ui.components.InboxAvatarWithBadge
 import com.polli.ui.theme.LabColors
 import com.polli.ui.theme.LabDimens
 import com.polli.ui.theme.accent
@@ -42,7 +45,12 @@ fun ChatInboxCard(
     ) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
             Box(modifier = Modifier.width(LabDimens.AvatarSize).padding(top = 2.dp)) {
-                avatar()
+                InboxAvatarWithBadge(
+                    badge = inboxAvatarBadge(item.category),
+                    avatarSize = LabDimens.AvatarSize,
+                ) {
+                    avatar()
+                }
             }
             Column(
                 modifier = Modifier
@@ -113,3 +121,10 @@ private fun inboxPreviewLine(item: InboxItem): String = buildString {
     item.previewAuthor?.let { append("$it: ") }
     append(if (item.preview.isBlank()) "No messages yet" else item.preview)
 }
+
+private fun inboxAvatarBadge(category: ChatCategory): InboxAvatarBadge? =
+    when (category) {
+        ChatCategory.Mail -> InboxAvatarBadge.Mail
+        ChatCategory.Space -> null // spaces emoji badge — coming later
+        else -> null
+    }

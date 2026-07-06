@@ -30,8 +30,10 @@ object LabDimens {
 
     val TabButtonHeight = 34.dp
     val TabButtonHPadding = 15.dp
-    val TabMailAvatarSize = 20.dp
-    val TabMailAvatarOverlap = 6.dp
+    val InboxAvatarBadgeSize = 18.dp
+    val InboxAvatarBadgeInset = 2.dp
+    val InboxAvatarBadgeIconSize = 12.dp
+    val InboxAvatarBadgeBorder = 0.33.dp
     val TabButtonUnselectedHeight = 30.dp
     val TabButtonUnselectedHPadding = 13.dp
     val TabButtonUnselectedCorner = 15.dp
