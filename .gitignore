@@ -47,7 +47,5 @@ jni/armeabi
 jni/armeabi-v7a
 jni/arm64-v8a
 
-*~
-
-dist/
+.kotlin/
 *.apk
