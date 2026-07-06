@@ -11,9 +11,9 @@ import com.polli.android.notes.rememberNotes
 import com.polli.android.stories.ChannelStoriesOverlay
 import com.polli.android.stories.ChannelStoryRingLogic
 import com.polli.android.stories.StoriesViewModel
-import com.polli.android.ui.LabAvatar
+import com.polli.android.ui.PolliAvatar
 import com.polli.android.ui.SelfAvatar
-import com.polli.android.theme.LabDimens
+import com.polli.android.theme.PolliDimens
 import com.polli.ui.home.HomeNote
 import com.polli.ui.home.StoryRingEntry
 import com.polli.ui.home.StoryRingStyle
@@ -81,7 +81,7 @@ fun AndroidHomeScreen(
                 null
             },
         chatAvatar = { item, size ->
-            LabAvatar(
+            PolliAvatar(
                 name = item.name,
                 seed = item.colorSeed,
                 size = size,

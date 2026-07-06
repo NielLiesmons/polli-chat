@@ -11,6 +11,7 @@ import chat.delta.rpc.Rpc;
 import chat.delta.rpc.RpcException;
 import com.b44t.messenger.DcAccounts;
 import com.b44t.messenger.DcContext;
+import com.polli.android.engine.PolliEngineHost;
 import com.polli.android.navigation.AppNav;
 import java.io.File;
 import org.thoughtcrime.securesms.ApplicationContext;
@@ -26,6 +27,7 @@ public class AccountManager {
   private void resetDcContext(Context context) {
     ApplicationContext appContext = (ApplicationContext) context.getApplicationContext();
     appContext.setDcContext(ApplicationContext.getDcAccounts().getSelectedAccount());
+    PolliEngineHost.onAccountSwitch(appContext.getDcContext().getAccountId());
     DcHelper.setStockTranslations(context);
     DirectShareUtil.resetAllShortcuts(appContext);
   }

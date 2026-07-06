@@ -9,10 +9,10 @@ import androidx.compose.runtime.remember
 import com.polli.android.navigation.AppNav
 import com.polli.android.navigation.ShareRelay
 import com.polli.android.settings.AppPrefs
-import com.polli.android.theme.LabDimens
-import com.polli.android.theme.LabTheme
+import com.polli.android.theme.PolliDimens
+import com.polli.android.theme.PolliTheme
 import com.polli.android.ui.AppInsets
-import com.polli.android.ui.LabAvatar
+import com.polli.android.ui.PolliAvatar
 import com.polli.android.ui.RoundBackButton
 import com.polli.ui.screens.ArchiveScreen
 
@@ -22,7 +22,7 @@ class ArchiveActivity : ComponentActivity() {
         enableEdgeToEdge()
         val prefs = AppPrefs(this)
         setContent {
-            LabTheme(prefs = prefs) {
+            PolliTheme(prefs = prefs) {
                 ArchiveHost(
                     onBack = { finish() },
                     onOpenChat = { chatId ->
@@ -50,10 +50,10 @@ private fun ArchiveHost(onBack: () -> Unit, onOpenChat: (Int) -> Unit) {
         topInset = AppInsets.statusBarTop(),
         backButton = { RoundBackButton(onClick = onBack) },
         avatar = { item ->
-            LabAvatar(
+            PolliAvatar(
                 name = item.name,
                 seed = item.colorSeed,
-                size = LabDimens.AvatarSize,
+                size = PolliDimens.AvatarSize,
                 chatId = item.chatId,
             )
         },

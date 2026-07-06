@@ -26,6 +26,7 @@ import com.b44t.messenger.DcEvent;
 import com.b44t.messenger.DcEventChannel;
 import com.b44t.messenger.DcEventEmitter;
 import com.b44t.messenger.FFITransport;
+import com.polli.android.engine.PolliEngineHost;
 import com.polli.ui.theme.PolliUiContextKt;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
@@ -243,6 +244,7 @@ public class ApplicationContext extends MultiDexApplication {
               }
               dcContext = dcAccounts.getSelectedAccount();
               notificationCenter = new NotificationCenter(this);
+              PolliEngineHost.bindEngine(rpc, dcContext.getAccountId());
 
               isInitialized = true;
               initLock.notifyAll();

@@ -16,7 +16,7 @@ import com.polli.android.permissions.BackgroundSetup
 import com.polli.android.profiles.ProfilesActivity
 import com.polli.android.settings.AppPrefs
 import com.polli.android.stories.StoriesViewModel
-import com.polli.android.theme.LabTheme
+import com.polli.android.theme.PolliTheme
 import org.thoughtcrime.securesms.connect.DcHelper
 
 open class HomeActivity : BaseComposeActivity() {
@@ -35,7 +35,7 @@ open class HomeActivity : BaseComposeActivity() {
         setContent {
             val prefs = remember { AppPrefs(this@HomeActivity) }
             val revision = themeRevision
-            LabTheme(prefs = prefs, uiScaleRevision = revision) {
+            PolliTheme(prefs = prefs, uiScaleRevision = revision) {
                 val dc = DcHelper.getContext(this)
                 AndroidHomeScreen(
                     profileName = dc.getConfig(DcHelper.CONFIG_DISPLAY_NAME).ifBlank { "Profile" },
