@@ -3,7 +3,6 @@ package com.polli.android.navigation
 import android.app.Activity
 import android.content.Intent
 import android.widget.Toast
-import com.polli.android.home.ArchiveActivity
 import com.polli.domain.navigation.ChatIntentExtras
 import org.thoughtcrime.securesms.ConversationActivity
 import org.thoughtcrime.securesms.R
@@ -49,15 +48,6 @@ object PolliLegacyRedirect {
             activity.intent?.extras?.let { putExtras(it) }
         }
         activity.startActivity(forward)
-        activity.finish()
-        return true
-    }
-
-    @JvmStatic
-    fun redirectArchiveListToPolli(activity: Activity): Boolean {
-        if (!AppNav.useLabUi()) return false
-        if (ShareUtil.isRelayingMessageContent(activity)) return false
-        activity.startActivity(Intent(activity, ArchiveActivity::class.java))
         activity.finish()
         return true
     }

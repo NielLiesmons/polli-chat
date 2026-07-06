@@ -22,7 +22,6 @@ import org.thoughtcrime.securesms.R
 import com.polli.domain.navigation.ChatIntentExtras
 import org.thoughtcrime.securesms.ConversationActivity
 import org.thoughtcrime.securesms.ConversationListActivity
-import org.thoughtcrime.securesms.ConversationListArchiveActivity
 import org.thoughtcrime.securesms.ApplicationPreferencesActivity
 import org.thoughtcrime.securesms.ProfileActivity
 import org.thoughtcrime.securesms.WebxdcActivity
@@ -152,13 +151,8 @@ object AppNav {
     }
 
     @JvmStatic
-    fun archiveIntent(context: Context): Intent {
-        return if (useLabUi()) {
-            Intent(context, ArchiveActivity::class.java)
-        } else {
-            Intent(context, ConversationListArchiveActivity::class.java)
-        }
-    }
+    fun archiveIntent(context: Context): Intent =
+        Intent(context, ArchiveActivity::class.java)
 
     @JvmStatic
     fun openArchive(context: Context) {

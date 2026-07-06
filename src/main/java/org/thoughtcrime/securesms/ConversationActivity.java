@@ -729,7 +729,7 @@ public class ConversationActivity extends PassphraseRequiredActionBarActivity
     boolean archived = getIntent().getBooleanExtra(FROM_ARCHIVED_CHATS_EXTRA, false);
     Intent intent;
     if (archived) {
-      intent = new Intent(this, ConversationListArchiveActivity.class);
+      intent = AppNav.archiveIntent(this);
     } else {
       intent = AppNav.homeIntent(this);
     }

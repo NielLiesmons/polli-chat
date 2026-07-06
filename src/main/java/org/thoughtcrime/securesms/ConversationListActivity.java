@@ -658,7 +658,7 @@ public class ConversationListActivity extends PassphraseRequiredActionBarActivit
 
   @Override
   public void onSwitchToArchive() {
-    Intent intent = new Intent(this, ConversationListArchiveActivity.class);
+    Intent intent = AppNav.archiveIntent(this);
     if (isRelayingMessageContent(this)) {
       acquireRelayMessageContent(this, intent);
     }
