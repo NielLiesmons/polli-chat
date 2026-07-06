@@ -399,11 +399,6 @@
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
 
         <activity
-            android:name=".BlockedContactsActivity"
-            android:theme="@style/TextSecure.LightTheme"
-            android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
-
-        <activity
             android:name=".scribbles.ScribbleActivity"
             android:theme="@style/TextSecure.ScribbleTheme"
             android:windowSoftInputMode="stateHidden"
@@ -471,18 +466,6 @@
             android:name="com.polli.android.webxdc.WebxdcStoreActivity"
             android:theme="@style/TextSecure.LightTheme"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize|uiMode">
-        </activity>
-
-        <activity
-            android:name=".FullMsgActivity"
-            android:theme="@style/TextSecure.LightTheme"
-            android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize">
-        </activity>
-
-        <activity
-            android:name=".ConnectivityActivity"
-            android:theme="@style/TextSecure.LightTheme"
-            android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize">
         </activity>
 
         <service
