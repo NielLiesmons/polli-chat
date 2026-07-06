@@ -39,7 +39,7 @@ import java.util.List;
 import org.thoughtcrime.securesms.BaseActionBarActivity;
 import org.thoughtcrime.securesms.LogViewActivity;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.WelcomeActivity;
+import com.polli.android.onboarding.OnboardingErrors;
 import org.thoughtcrime.securesms.connect.DcEventCenter;
 import org.thoughtcrime.securesms.connect.DcHelper;
 import org.thoughtcrime.securesms.permissions.Permissions;
@@ -539,7 +539,7 @@ public class EditRelayActivity extends BaseActionBarActivity
                   Util.runOnMain(
                       () -> {
                         progressDialog.dismiss();
-                        WelcomeActivity.maybeShowConfigurationError(this, e.getMessage());
+                        OnboardingErrors.maybeShowConfigurationError(this, e.getMessage());
                       });
                 }
               }

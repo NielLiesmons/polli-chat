@@ -14,7 +14,7 @@ import com.b44t.messenger.DcContext;
 import com.polli.android.navigation.AppNav;
 import java.io.File;
 import org.thoughtcrime.securesms.ApplicationContext;
-import org.thoughtcrime.securesms.WelcomeActivity;
+import com.polli.android.onboarding.WelcomeActivity;
 import org.thoughtcrime.securesms.accounts.AccountSelectionListFragment;
 
 public class AccountManager {

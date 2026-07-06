@@ -15,7 +15,8 @@ import com.polli.android.theme.LabTheme
 import com.polli.android.ui.AppInsets
 import com.polli.ui.screens.WelcomeScreen
 import androidx.compose.ui.unit.dp
-import org.thoughtcrime.securesms.WelcomeActivity as DcWelcomeActivity
+import org.thoughtcrime.securesms.InstantOnboardingActivity
+import org.thoughtcrime.securesms.qr.BackupTransferActivity
 import org.thoughtcrime.securesms.qr.RegistrationQrActivity
 
 class WelcomeActivity : BaseComposeActivity() {
@@ -30,6 +31,7 @@ class WelcomeActivity : BaseComposeActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        handleBackupQrExtra(intent)
         val prefs = AppPrefs(this)
         setContent {
             LabTheme(prefs = prefs) {
@@ -48,14 +50,33 @@ class WelcomeActivity : BaseComposeActivity() {
                         }
                     },
                     onAdvancedSetup = {
-                        startActivity(Intent(this, DcWelcomeActivity::class.java))
+                        startActivity(Intent(this, InstantOnboardingActivity::class.java))
                     },
                 )
             }
         }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleBackupQrExtra(intent)
+    }
+
+    private fun handleBackupQrExtra(intent: Intent?) {
+        val backupQr = intent?.getStringExtra(BACKUP_QR_EXTRA) ?: return
+        intent.removeExtra(BACKUP_QR_EXTRA)
+        startActivity(
+            Intent(this, BackupTransferActivity::class.java).apply {
+                putExtra(BackupTransferActivity.TRANSFER_MODE, BackupTransferActivity.TransferMode.RECEIVER_SCAN_QR.getInt())
+                putExtra(BackupTransferActivity.QR_CODE, backupQr)
+            },
+        )
+    }
+
     companion object {
+        const val BACKUP_QR_EXTRA = "backup_qr_extra"
+
         fun intent(context: Context): Intent =
             Intent(context, WelcomeActivity::class.java)
     }

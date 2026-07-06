@@ -341,12 +341,6 @@
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
 
         <activity
-            android:name=".WelcomeActivity"
-            android:launchMode="singleTop"
-            android:theme="@style/TextSecure.LightNoActionBar"
-            android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
-
-        <activity
             android:name=".relay.EditRelayActivity"
             android:launchMode="singleTask"
             android:windowSoftInputMode="stateUnchanged"

@@ -35,6 +35,7 @@ import com.bumptech.glide.request.transition.Transition;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.polli.android.navigation.AppNav;
+import com.polli.android.onboarding.OnboardingErrors;
 import com.polli.domain.navigation.ChatIntentExtras;
 import java.io.File;
 import java.io.IOException;
@@ -486,7 +487,7 @@ public class InstantOnboardingActivity extends BaseActionBarActivity
         Log.w(TAG, e);
       }
     }
-    WelcomeActivity.maybeShowConfigurationError(this, data2);
+    OnboardingErrors.maybeShowConfigurationError(this, data2);
   }
 
   private void progressSuccess() {

@@ -20,7 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.thoughtcrime.securesms.BuildConfig;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.WelcomeActivity;
+import com.polli.android.onboarding.WelcomeActivity;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
