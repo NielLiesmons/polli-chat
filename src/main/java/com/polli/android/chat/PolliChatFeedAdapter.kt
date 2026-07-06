@@ -12,8 +12,12 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.polli.domain.model.chat.ChatMessage
+import com.polli.domain.model.chat.FeedItem
+import com.polli.domain.model.chat.displayIndexForMessage
+import com.polli.domain.model.chat.stableRowId
 import com.polli.android.settings.AppPrefs
-import com.polli.android.theme.LabTheme
+import com.polli.android.theme.PolliTheme
 import com.polli.ui.components.chat.ChatDayMarkerPill
 import com.polli.ui.components.chat.ChatNewMessagesPill
 import org.thoughtcrime.securesms.R
@@ -175,7 +179,7 @@ class PolliChatFeedAdapter(
 
         init {
             composeView.setContent {
-                LabTheme(prefs = prefs, uiScaleRevision = uiScaleRevision) {
+                PolliTheme(prefs = prefs, uiScaleRevision = uiScaleRevision) {
                     when (val item = boundItem) {
                         is FeedItem.DayMarker -> ChatDayMarkerPill(label = item.label)
                         FeedItem.NewMessages -> ChatNewMessagesPill(label = newMessagesLabel)

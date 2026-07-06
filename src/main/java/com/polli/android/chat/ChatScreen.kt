@@ -1,5 +1,7 @@
 package com.polli.android.chat
 
+import com.polli.domain.model.chat.ChatActionContext
+import com.polli.domain.model.chat.ChatMessage
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -40,9 +42,9 @@ import com.polli.core.chat.ChatDetailTab
 import com.polli.core.chat.tabsForChat
 import com.polli.android.media.ChatMediaTabPanel
 import com.polli.android.navigation.AppNav
-import com.polli.android.theme.LabColors
+import com.polli.android.theme.PolliColors
 import com.polli.ui.components.ChatComingSoonTab
-import com.polli.android.theme.LabDimens
+import com.polli.android.theme.PolliDimens
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.ChatFeedEdgeGradients
 import com.polli.android.ui.rememberComposerChromeLayout
@@ -59,6 +61,7 @@ fun ChatScreen(
     chatTitle: String,
     chatSeed: String,
     chatId: Int,
+    chatSession: ChatActionContext,
     isGroup: Boolean,
     isBroadcast: Boolean,
     onBack: () -> Unit,
@@ -90,7 +93,7 @@ fun ChatScreen(
     val scrollController = remember { ChatRecyclerController() }
     val showScrollToBottom by scrollController.showScrollToBottom
     val headerClearance = if (isGroup && !isBroadcast) {
-        LabDimens.GroupHeaderClearance + AppInsets.statusBarTop()
+        PolliDimens.GroupHeaderClearance + AppInsets.statusBarTop()
     } else {
         AppInsets.statusBarTop() + 52.dp
     }
@@ -102,14 +105,12 @@ fun ChatScreen(
         pagerState.animateScrollToPage(idx)
     }
 
-    val actionExecutor = remember(chatId) {
+    val actionExecutor = remember(chatId, chatSession) {
         MessageActionExecutor(
             context = context,
             chatId = chatId,
-            onReply = { dcMsg ->
-                viewModel.getChatMessage(dcMsg.id)?.let { viewModel.setReply(it) }
-            },
-            onEdit = viewModel::beginEdit,
+            onReply = { viewModel.setReply(it) },
+            onEdit = { viewModel.beginEdit(it) },
             onDeleted = viewModel::reload,
         )
     }
@@ -132,7 +133,7 @@ fun ChatScreen(
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(LabColors.Black)
+            .background(PolliColors.Black)
             .onGloballyPositioned { composerChrome.onRootPositioned(it) },
     ) {
         if (useGroupPager) {
@@ -210,8 +211,8 @@ fun ChatScreen(
                         .align(Alignment.BottomEnd)
                         .imePadding()
                         .padding(
-                            end = LabDimens.HomeBarPadding - 2.dp,
-                            bottom = composerDockHeight + LabDimens.ChatScrollFabGapAboveComposer,
+                            end = PolliDimens.HomeBarPadding - 2.dp,
+                            bottom = composerDockHeight + PolliDimens.ChatScrollFabGapAboveComposer,
                         ),
                 )
             }
@@ -233,8 +234,8 @@ fun ChatScreen(
                     .align(Alignment.BottomEnd)
                     .imePadding()
                     .padding(
-                        end = LabDimens.HomeBarPadding - 2.dp,
-                        bottom = composerDockHeight + LabDimens.ChatScrollFabGapAboveComposer,
+                        end = PolliDimens.HomeBarPadding - 2.dp,
+                        bottom = composerDockHeight + PolliDimens.ChatScrollFabGapAboveComposer,
                     ),
             )
         }

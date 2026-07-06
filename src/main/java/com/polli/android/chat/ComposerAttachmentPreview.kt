@@ -18,9 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.bumptech.glide.Glide
-import com.polli.android.icons.LabIcon
-import com.polli.android.icons.LabIconName
-import com.polli.android.theme.LabColors
+import com.polli.android.icons.PolliIcon
+import com.polli.android.icons.PolliIconName
+import com.polli.android.theme.PolliColors
 
 @Composable
 fun ComposerAttachmentPreview(
@@ -31,7 +31,7 @@ fun ComposerAttachmentPreview(
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
-            .background(LabColors.White16)
+            .background(PolliColors.White16)
             .padding(horizontal = 10.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -54,15 +54,15 @@ fun ComposerAttachmentPreview(
                 modifier = Modifier
                     .size(44.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(LabColors.White16),
+                    .background(PolliColors.White16),
                 contentAlignment = Alignment.Center,
             ) {
-                LabIcon(LabIconName.Options, 20.dp, LabColors.White66)
+                PolliIcon(PolliIconName.Options, 20.dp, PolliColors.White66)
             }
         }
         Text(
             text = attachment.label,
-            color = LabColors.White85,
+            color = PolliColors.White85,
             fontSize = 14.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -77,7 +77,7 @@ fun ComposerAttachmentPreview(
                 .clickable(onClick = onClear),
             contentAlignment = Alignment.Center,
         ) {
-            LabIcon(LabIconName.Cross, 14.dp, LabColors.White33)
+            PolliIcon(PolliIconName.Cross, 14.dp, PolliColors.White33)
         }
     }
 }

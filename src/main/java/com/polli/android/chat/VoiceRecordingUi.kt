@@ -34,10 +34,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.polli.android.icons.LabIcon
-import com.polli.android.icons.LabIconName
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabDimens
+import com.polli.android.icons.PolliIcon
+import com.polli.android.icons.PolliIconName
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliDimens
 import com.polli.android.theme.accent
 import com.polli.android.theme.rougeGradient
 import org.thoughtcrime.securesms.R
@@ -70,12 +70,12 @@ internal fun VoiceRecordingInline(
         if (cancelled) {
             Box(
                 modifier = Modifier
-                    .size(LabDimens.ChatComposerPlusSize)
+                    .size(PolliDimens.ChatComposerPlusSize)
                     .clip(CircleShape)
                     .background(rougeGradient()),
                 contentAlignment = Alignment.Center,
             ) {
-                LabIcon(LabIconName.Cross, 16.dp, LabColors.White66)
+                PolliIcon(PolliIconName.Cross, 16.dp, PolliColors.White66)
             }
         } else {
             Row(
@@ -86,7 +86,7 @@ internal fun VoiceRecordingInline(
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
                     text = formatVoiceRecordTime(ms),
-                    color = LabColors.White85,
+                    color = PolliColors.White85,
                     fontSize = 15.sp,
                 )
             }
@@ -95,7 +95,7 @@ internal fun VoiceRecordingInline(
         if (locked) {
             Text(
                 text = stringResource(R.string.cancel),
-                color = LabColors.White66,
+                color = PolliColors.White66,
                 fontSize = 14.sp,
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
@@ -148,10 +148,10 @@ private fun SlideToCancelHint(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        LabIcon(LabIconName.ChevronLeft, 12.dp, LabColors.White33)
+        PolliIcon(PolliIconName.ChevronLeft, 12.dp, PolliColors.White33)
         Text(
             text = stringResource(R.string.chat_record_slide_to_cancel),
-            color = LabColors.White33,
+            color = PolliColors.White33,
             fontSize = 13.sp,
         )
     }
@@ -181,16 +181,16 @@ internal fun VoiceLockPill(
         modifier = modifier
             .alpha(alpha)
             .offset { IntOffset(0, enterOffset.roundToInt()) }
-            .width(LabDimens.ChatFloatingChromeSize)
+            .width(PolliDimens.ChatFloatingChromeSize)
             .height(64.dp)
             .clip(RoundedCornerShape(20.dp))
-            .background(LabColors.Gray)
-            .border(LabDimens.ShellBorderWidth, LabColors.ShellBorder, RoundedCornerShape(20.dp))
+            .background(PolliColors.Gray)
+            .border(PolliDimens.ShellBorderWidth, PolliColors.ShellBorder, RoundedCornerShape(20.dp))
             .padding(top = 8.dp, bottom = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically),
     ) {
-        LabIcon(LabIconName.ArrowUp, 16.dp, LabColors.White66.copy(alpha = 0.6f + progress * 0.4f))
-        LabIcon(LabIconName.Lock, 18.dp, LabColors.White85.copy(alpha = 0.65f + progress * 0.35f))
+        PolliIcon(PolliIconName.ArrowUp, 16.dp, PolliColors.White66.copy(alpha = 0.6f + progress * 0.4f))
+        PolliIcon(PolliIconName.Lock, 18.dp, PolliColors.White85.copy(alpha = 0.65f + progress * 0.35f))
     }
 }

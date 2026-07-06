@@ -1,5 +1,6 @@
 package com.polli.android.chat
 
+import com.polli.domain.model.chat.OutgoingState
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -15,10 +16,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.polli.android.icons.LabIcon
-import com.polli.android.icons.LabIconName
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabDimens
+import com.polli.android.icons.PolliIcon
+import com.polli.android.icons.PolliIconName
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliDimens
 
 /** Inside bubble — incoming author + timestamp row (polli message_bubble.rs). */
 @Composable
@@ -32,7 +33,7 @@ fun IncomingBubbleHeader(
         modifier = Modifier
             .fillMaxWidth()
             .width(IntrinsicSize.Max)
-            .padding(horizontal = LabDimens.ChatBubbleInsetH)
+            .padding(horizontal = PolliDimens.ChatBubbleInsetH)
             .padding(bottom = 2.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
@@ -55,14 +56,14 @@ fun IncomingBubbleHeader(
             if (isEdited) {
                 Text(
                     "Edited",
-                    color = LabColors.White33,
+                    color = PolliColors.White33,
                     fontSize = 11.sp,
                     lineHeight = 11.sp,
                 )
             }
             Text(
                 timestamp,
-                color = LabColors.White33,
+                color = PolliColors.White33,
                 fontSize = 11.sp,
                 lineHeight = 11.sp,
             )
@@ -82,10 +83,10 @@ fun OutgoingBubbleMetaRow(
             .fillMaxWidth()
             .width(IntrinsicSize.Max)
             .padding(
-                horizontal = LabDimens.ChatBubbleInsetH,
-                vertical = LabDimens.ChatBubbleMetaRowPaddingV,
+                horizontal = PolliDimens.ChatBubbleInsetH,
+                vertical = PolliDimens.ChatBubbleMetaRowPaddingV,
             )
-            .offset(y = LabDimens.ChatBubbleMetaRowMarginTop),
+            .offset(y = PolliDimens.ChatBubbleMetaRowMarginTop),
         horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -94,33 +95,33 @@ fun OutgoingBubbleMetaRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (isEdited) {
-                Text("Edited", color = LabColors.White33, fontSize = 11.sp, lineHeight = 11.sp)
+                Text("Edited", color = PolliColors.White33, fontSize = 11.sp, lineHeight = 11.sp)
             }
-            Text(timestamp, color = LabColors.White66, fontSize = 11.sp, lineHeight = 11.sp)
+            Text(timestamp, color = PolliColors.White66, fontSize = 11.sp, lineHeight = 11.sp)
             when (state) {
                 OutgoingState.Sending -> Text(
                     "…",
-                    color = LabColors.White66.copy(alpha = 0.8f),
+                    color = PolliColors.White66.copy(alpha = 0.8f),
                     fontSize = 11.sp,
                     lineHeight = 11.sp,
                 )
-                OutgoingState.Sent -> LabIcon(
-                    LabIconName.Check,
+                OutgoingState.Sent -> PolliIcon(
+                    PolliIconName.Check,
                     11.dp,
-                    LabColors.White66,
+                    PolliColors.White66,
                 )
                 OutgoingState.Read -> Row {
-                    LabIcon(LabIconName.Check, 11.dp, LabColors.White66)
-                    LabIcon(
-                        LabIconName.Check,
+                    PolliIcon(PolliIconName.Check, 11.dp, PolliColors.White66)
+                    PolliIcon(
+                        PolliIconName.Check,
                         11.dp,
-                        LabColors.White66,
+                        PolliColors.White66,
                         modifier = Modifier.offset(x = (-3).dp),
                     )
                 }
                 OutgoingState.Failed -> Text(
                     "!",
-                    color = LabColors.Destructive,
+                    color = PolliColors.Destructive,
                     fontSize = 11.sp,
                     lineHeight = 11.sp,
                 )

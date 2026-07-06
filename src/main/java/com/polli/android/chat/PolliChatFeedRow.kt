@@ -1,5 +1,6 @@
 package com.polli.android.chat
 
+import com.polli.domain.model.chat.ChatMessage
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset

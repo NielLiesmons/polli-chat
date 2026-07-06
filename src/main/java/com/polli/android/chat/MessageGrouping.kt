@@ -1,5 +1,8 @@
 package com.polli.android.chat
 
+import com.polli.domain.model.chat.FeedItem
+import com.polli.domain.model.chat.MessageStub
+
 /** Same author, same direction, ≤21 min gap → stack (polli parity). */
 const val GROUP_MAX_GAP_SECS: Long = 21 * 60
 

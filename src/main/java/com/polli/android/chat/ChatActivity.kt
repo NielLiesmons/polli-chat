@@ -21,7 +21,8 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.polli.android.BaseComposeActivity
 import com.polli.android.media.ImageEditLauncher
 import com.polli.android.settings.AppPrefs
-import com.polli.android.theme.LabTheme
+import com.polli.android.theme.PolliTheme
+import com.polli.android.data.engine.PolliRepositories
 import com.polli.domain.navigation.ChatIntentExtras
 import org.thoughtcrime.securesms.AttachContactActivity
 import org.thoughtcrime.securesms.R
@@ -90,15 +91,22 @@ class ChatActivity : BaseComposeActivity() {
             finish()
             return
         }
-        val dc = DcHelper.getContext(this)
-        val chat = dc.getChat(chatId)
+        val sessionInfo = PolliRepositories.chat(this).getSession(chatId)
+        if (sessionInfo == null) {
+            finish()
+            return
+        }
         val draftText = intent.getStringExtra(ChatIntentExtras.DRAFT_TEXT)
         val startingPosition = intent.getIntExtra(ChatIntentExtras.STARTING_POSITION, -1)
         val fromArchived = intent.getBooleanExtra(ChatIntentExtras.FROM_ARCHIVED, false)
         val prefs = AppPrefs(this)
 
         playbackViewModel.setQueueProvider(
-            ChatAudioQueueProvider(this, chatId, dc.accountId),
+            ChatAudioQueueProvider(
+                this,
+                chatId,
+                PolliRepositories.accounts(this).selectedAccountId,
+            ),
         )
         initializeMediaController()
 
@@ -116,17 +124,20 @@ class ChatActivity : BaseComposeActivity() {
             stageAttachment = { uri, mime -> stageAttachment(uri, mime) },
         )
 
+        val session = sessionInfo.toActionContext()
+
         setContent {
             val revision = themeRevision
-            LabTheme(prefs = prefs, uiScaleRevision = revision) {
+            PolliTheme(prefs = prefs, uiScaleRevision = revision) {
                 CompositionLocalProvider(LocalChatAudioPlayback provides playbackViewModel) {
                     ChatScreen(
                         viewModel = viewModel,
-                        chatTitle = chat.name ?: "Chat",
-                        chatSeed = chat.name ?: chatId.toString(),
+                        chatTitle = sessionInfo.name,
+                        chatSeed = sessionInfo.name.ifBlank { chatId.toString() },
                         chatId = chatId,
-                        isGroup = chat.isMultiUser,
-                        isBroadcast = chat.isOutBroadcast || chat.isInBroadcast,
+                        chatSession = session,
+                        isGroup = sessionInfo.isMultiUser,
+                        isBroadcast = sessionInfo.isBroadcast,
                         uiScaleRevision = revision,
                         playbackViewModel = playbackViewModel,
                         showAttachModal = showAttachModal,

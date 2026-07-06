@@ -9,84 +9,82 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.b44t.messenger.DcContext
-import com.b44t.messenger.DcEvent
-import com.b44t.messenger.DcMsg
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.thoughtcrime.securesms.connect.DcEventCenter
-import org.thoughtcrime.securesms.connect.DcHelper
-import chat.delta.rpc.RpcException
+import com.polli.android.data.engine.PolliRepositories
+import com.polli.domain.model.chat.ChatMessage
+import com.polli.domain.model.chat.FeedItem
+import com.polli.domain.model.chat.displayIndexForMessage
+import com.polli.domain.model.chat.messageIdAtDisplayIndex
+import com.polli.ui.chat.ChatController
+import org.thoughtcrime.securesms.util.DateUtils
 
-data class ReactionPulse(
-    val msgId: Int,
-    val emoji: String,
-)
+/**
+ * Android lifecycle wrapper around shared [ChatController] (polli-ui).
+ * Rich RecyclerView feed + overlays stay in [com.polli.android.chat.ChatScreen].
+ */
+class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
-class ChatViewModel(application: Application) : AndroidViewModel(application), DcEventCenter.DcEventDelegate {
+    private val app = application
+    private lateinit var controller: ChatController
 
     var chatId by mutableIntStateOf(-1)
         private set
-    var feedItems by mutableStateOf<List<FeedItem>>(emptyList())
-        private set
-    var draft by mutableStateOf("")
-        private set
-    var replyTo by mutableStateOf<ChatMessage?>(null)
-        private set
     var overlayAnchor by mutableStateOf<BubbleOverlayAnchor?>(null)
         private set
-    var highlightId by mutableIntStateOf(-1)
-        private set
-
-    /** Bumped on feed structure changes so scroll logic can preserve position or stick to bottom. */
-    var reloadGeneration by mutableIntStateOf(0)
-        private set
-
-    /** Per-message reaction refresh — avoids reloading the whole feed (DC bumps one row). */
-    val reactionEpoch: SnapshotStateMap<Int, Int> = mutableStateMapOf()
-
-    /** Per-message content refresh (read receipts, delivery, edits). */
-    val messageEpoch: SnapshotStateMap<Int, Int> = mutableStateMapOf()
-
-    /** One-shot pop animation target after sending a reaction. */
-    var reactionPulse by mutableStateOf<ReactionPulse?>(null)
-        private set
-
-    /** Display index (newest = 0) to open at — DC starting position / fresh-msg boundary. */
-    var initialScrollIndex by mutableIntStateOf(0)
-        private set
-
     var highlightScrollIndex by mutableIntStateOf(-1)
         private set
-
     var editingMsgId by mutableIntStateOf(-1)
         private set
-
-    var pendingFirstLoadScroll by mutableStateOf(true)
-        private set
-
     var unreadBelowCount by mutableIntStateOf(0)
         private set
 
-    /** Inline "New messages" pill — hidden after the user scrolls to the bottom. */
-    private var showNewMessagesMarker by mutableStateOf(false)
+    val reactionEpoch: SnapshotStateMap<Int, Int> = mutableStateMapOf()
+    val messageEpoch: SnapshotStateMap<Int, Int> = mutableStateMapOf()
 
-    /** Set before [scheduleReload] when the user sends — feed should stick to bottom after reload. */
-    private var scrollToBottomOnReload = false
-
-    private val store = ChatMessageStore()
-    private var dcContext: DcContext? = null
-    private var registered = false
-    private var reloadJob: Job? = null
-
-    fun consumeScrollToBottomOnReload(): Boolean {
-        if (!scrollToBottomOnReload) return false
-        scrollToBottomOnReload = false
-        return true
+    private fun ensureController(): ChatController {
+        if (!::controller.isInitialized) {
+            controller =
+                ChatController(
+                    messages = PolliRepositories.messages(app),
+                    scope = viewModelScope,
+                    formatDayLabel = { ts -> DateUtils.getRelativeDate(app, ts * 1000) },
+                )
+        }
+        return controller
     }
+
+    var feedItems: List<FeedItem>
+        get() = ensureController().feedItems
+        private set(_) {}
+
+    var draft: String
+        get() = ensureController().draft
+        private set(_) {}
+
+    var replyTo: ChatMessage?
+        get() = ensureController().replyTo
+        private set(_) {}
+
+    var highlightId: Int
+        get() = ensureController().highlightId
+        private set(_) {}
+
+    var reloadGeneration: Int
+        get() = ensureController().reloadGeneration
+        private set(_) {}
+
+    var reactionPulse: com.polli.ui.chat.ReactionPulse?
+        get() = ensureController().reactionPulse
+        private set(_) {}
+
+    var initialScrollIndex: Int
+        get() = ensureController().initialScrollIndex
+        private set(_) {}
+
+    var pendingFirstLoadScroll: Boolean
+        get() = ensureController().pendingFirstLoadScroll
+        private set(_) {}
+
+    fun consumeScrollToBottomOnReload(): Boolean = ensureController().consumeScrollToBottomOnReload()
 
     fun addUnreadBelow(delta: Int) {
         if (delta > 0) unreadBelowCount += delta
@@ -97,39 +95,22 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
     }
 
     fun onScrolledToBottom() {
-        if (showNewMessagesMarker) {
-            showNewMessagesMarker = false
-            val dc = dcContext
-            val ctx = getApplication<Application>()
-            if (dc != null) {
-                feedItems = store.buildFeed(ctx, dc, showNewMessages = false)
-                reloadGeneration++
-            }
-        }
         clearUnreadBelow()
     }
 
-    fun getChatMessage(msgId: Int): ChatMessage? {
-        val dc = dcContext ?: return null
-        return store.getMessage(dc, msgId)
-    }
-
-    fun messageIds(): IntArray = store.messageIds()
+    fun getChatMessage(msgId: Int): ChatMessage? = ensureController().getChatMessage(msgId)
 
     fun displayIndexForMsgId(msgId: Int): Int = feedItems.displayIndexForMessage(msgId)
 
-    /**
-     * Polli grouping for one row — loads at most three stubs (self + neighbors), cached after first read.
-     */
     fun layoutForMessage(
         msgId: Int,
         olderMsgId: Int?,
         newerMsgId: Int?,
     ): MessageGroupLayout {
-        val dc = dcContext ?: return MessageGroupLayout()
-        val self = store.getStub(dc, msgId) ?: return MessageGroupLayout()
-        val olderStub = olderMsgId?.let { store.getStub(dc, it) }
-        val newerStub = newerMsgId?.let { store.getStub(dc, it) }
+        val c = ensureController()
+        val self = c.getStub(msgId) ?: return MessageGroupLayout()
+        val olderStub = olderMsgId?.let { c.getStub(it) }
+        val newerStub = newerMsgId?.let { c.getStub(it) }
         return layoutBetweenNeighbors(olderStub, self, newerStub)
     }
 
@@ -139,231 +120,27 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
         startingPosition: Int = -1,
         fromArchived: Boolean = false,
     ) {
-        if (this.chatId == chatId && registered) return
         this.chatId = chatId
-        val ctx = getApplication<Application>()
-        dcContext = DcHelper.getContext(ctx)
-        draft = initialDraft?.takeIf { it.isNotBlank() }
-            ?: dcContext?.getDraft(chatId)?.text?.orEmpty()
-            ?: ""
-        val freshMsgs = freshMessageCount(chatId)
-        showNewMessagesMarker = freshMsgs > 0
-        registerEvents()
-        val dc = dcContext!!
-        store.reset()
-        feedItems =
-            store.syncFeedIds(ctx, dc, chatId, showNewMessagesMarker)
-                ?: store.buildFeed(ctx, dc, showNewMessagesMarker)
-        initialScrollIndex =
-            resolveInitialScrollIndex(
-                items = feedItems,
-                startingPosition = startingPosition,
-                freshMsgs = freshMsgs,
-            )
-        highlightScrollIndex =
-            if (startingPosition >= 0) {
-                resolveInitialScrollIndex(feedItems, startingPosition, freshMsgs = 0)
-            } else {
-                -1
-            }
-        pendingFirstLoadScroll = true
-        store.preloadStubsAroundDisplayIndex(dc, initialScrollIndex)
-        reloadGeneration++
-        if (!fromArchived) {
-            viewModelScope.launch(Dispatchers.Main.immediate) {
-                dc.marknoticedChat(chatId)
-            }
-        }
-        viewModelScope.launch(Dispatchers.Default) {
-            store.preloadStubs(dc)
+        ensureController().bind(chatId, initialDraft, startingPosition, fromArchived)
+        if (startingPosition >= 0) {
+            val rows = feedItems.filterIsInstance<FeedItem.Message>()
+            val chronIdx = (rows.size - 1 - startingPosition).coerceIn(0, rows.lastIndex)
+            highlightScrollIndex = displayIndexForMsgId(rows[chronIdx].msgId)
         }
     }
 
     fun reactionEpochFor(msgId: Int): Int = reactionEpoch[msgId] ?: 0
 
     fun clearFirstLoadScroll() {
-        pendingFirstLoadScroll = false
+        ensureController().clearFirstLoadScroll()
         highlightScrollIndex = -1
     }
 
-    private fun resolveInitialScrollIndex(
-        items: List<FeedItem>,
-        startingPosition: Int,
-        freshMsgs: Int,
-    ): Int {
-        val messages = items.filterIsInstance<FeedItem.Message>()
-        if (messages.isEmpty()) return 0
-        val targetMsgId =
-            when {
-                startingPosition >= 0 -> {
-                    val msgIndex = (messages.size - 1 - startingPosition).coerceIn(0, messages.lastIndex)
-                    messages[msgIndex].msgId
-                }
-                freshMsgs > 0 -> {
-                    val msgIndex = (messages.size - freshMsgs).coerceIn(0, messages.lastIndex)
-                    messages[msgIndex].msgId
-                }
-                else -> messages.last().msgId
-            }
-        return items.displayIndexForMessage(targetMsgId).coerceAtLeast(0)
-    }
-
-    private fun freshMessageCount(chatId: Int): Int = try {
-        val rpc = DcHelper.getRpc(getApplication())
-        rpc.getFreshMsgCnt(rpc.selectedAccountId, chatId) ?: 0
-    } catch (_: RpcException) {
-        0
-    }
-
-    private fun registerEvents() {
-        if (registered) return
-        val center = DcHelper.getEventCenter(getApplication())
-        center.addMultiAccountObserver(DcContext.DC_EVENT_INCOMING_MSG, this)
-        center.addMultiAccountObserver(DcContext.DC_EVENT_MSGS_CHANGED, this)
-        center.addMultiAccountObserver(DcContext.DC_EVENT_MSG_READ, this)
-        center.addMultiAccountObserver(DcContext.DC_EVENT_MSG_DELIVERED, this)
-        center.addMultiAccountObserver(DcContext.DC_EVENT_MSG_FAILED, this)
-        center.addMultiAccountObserver(DcContext.DC_EVENT_CHAT_MODIFIED, this)
-        center.addMultiAccountObserver(DcContext.DC_EVENT_CONTACTS_CHANGED, this)
-        center.addMultiAccountObserver(DcContext.DC_EVENT_CHAT_EPHEMERAL_TIMER_MODIFIED, this)
-        center.addMultiAccountObserver(DcContext.DC_EVENT_REACTIONS_CHANGED, this)
-        registered = true
-    }
-
-    private fun unregisterEvents() {
-        if (!registered) return
-        DcHelper.getEventCenter(getApplication()).removeObservers(this)
-        registered = false
-    }
-
-    override fun handleEvent(event: DcEvent) {
-        when (event.id) {
-            DcContext.DC_EVENT_INCOMING_MSG -> {
-                if (event.data1Int == chatId) {
-                    scheduleAppend(event.data2Int, markRead = true)
-                }
-            }
-            DcContext.DC_EVENT_MSGS_CHANGED -> {
-                if (event.data1Int == 0 || event.data1Int == chatId) {
-                    scheduleReload(markRead = false)
-                }
-            }
-            DcContext.DC_EVENT_MSG_READ,
-            DcContext.DC_EVENT_MSG_DELIVERED,
-            DcContext.DC_EVENT_MSG_FAILED,
-            -> {
-                if (event.data1Int == chatId) {
-                    invalidateMessage(event.data2Int)
-                }
-            }
-            DcContext.DC_EVENT_CHAT_MODIFIED -> {
-                if (event.data1Int == chatId) {
-                    scheduleReload(markRead = false)
-                }
-            }
-            DcContext.DC_EVENT_CONTACTS_CHANGED,
-            DcContext.DC_EVENT_CHAT_EPHEMERAL_TIMER_MODIFIED,
-            -> scheduleReload(markRead = false)
-            DcContext.DC_EVENT_REACTIONS_CHANGED -> {
-                if (event.data1Int == chatId) {
-                    bumpReactionEpoch(event.data2Int)
-                }
-            }
-        }
-    }
-
-    fun reload(markRead: Boolean = true) {
-        scheduleReload(markRead)
-    }
-
-    private fun scheduleReload(markRead: Boolean) {
-        reloadJob?.cancel()
-        reloadJob = viewModelScope.launch {
-            val dc = dcContext ?: return@launch
-            val ctx = getApplication<Application>()
-            if (markRead) {
-                withContext(Dispatchers.Main.immediate) {
-                    dc.marknoticedChat(chatId)
-                }
-            }
-            if (feedItems.isEmpty()) {
-                feedItems =
-                    store.syncFeedIds(ctx, dc, chatId, showNewMessagesMarker)
-                        ?: store.buildFeed(ctx, dc, showNewMessagesMarker)
-                reloadGeneration++
-            } else {
-                store.syncFeedIds(ctx, dc, chatId, showNewMessagesMarker)?.let { items ->
-                    feedItems = items
-                    reloadGeneration++
-                }
-            }
-            withContext(Dispatchers.Default) {
-                store.preloadStubs(dc)
-            }
-        }
-    }
-
-    private fun scheduleAppend(msgId: Int, markRead: Boolean) {
-        reloadJob?.cancel()
-        reloadJob = viewModelScope.launch {
-            val dc = dcContext ?: return@launch
-            val ctx = getApplication<Application>()
-            if (markRead) {
-                withContext(Dispatchers.Main.immediate) {
-                    dc.marknoticedChat(chatId)
-                }
-            }
-            val items =
-                withContext(Dispatchers.Default) {
-                    store.tryAppendIncoming(ctx, dc, chatId, msgId, showNewMessagesMarker)
-                        ?: store.syncFeedIds(ctx, dc, chatId, showNewMessagesMarker)
-                }
-            if (items != null) {
-                feedItems = items
-                reloadGeneration++
-            }
-            withContext(Dispatchers.Default) {
-                store.preloadStubs(dc)
-            }
-        }
-    }
-
-    private fun invalidateMessage(msgId: Int) {
-        store.invalidateMessage(msgId)
-        store.invalidateStub(msgId)
-        messageEpoch[msgId] = (messageEpoch[msgId] ?: 0) + 1
-    }
-
-    private     fun bumpReactionEpoch(msgId: Int) {
-        MessageReactions.invalidateSummary(msgId)
-        reactionEpoch[msgId] = (reactionEpoch[msgId] ?: 0) + 1
-    }
-
-    fun updateDraft(text: String) {
-        draft = text
-        persistDraft()
-    }
-
-    private fun persistDraft() {
-        val dc = dcContext ?: return
-        val trimmed = draft.trim()
-        if (trimmed.isEmpty() && replyTo == null) {
-            dc.setDraft(chatId, null)
-            return
-        }
-        val msg = DcMsg(dc, DcMsg.DC_MSG_TEXT)
-        msg.setText(trimmed)
-        replyTo?.let { reply ->
-            val quoted = dc.getMsg(reply.id)
-            if (quoted.isOk) msg.setQuote(quoted)
-        }
-        dc.setDraft(chatId, msg)
-    }
+    fun updateDraft(text: String) = ensureController().updateDraft(text)
 
     fun setReply(message: ChatMessage?) {
-        replyTo = message
+        ensureController().setReply(message)
         overlayAnchor = null
-        persistDraft()
     }
 
     fun showOverlay(message: ChatMessage, tapX: Float, tapY: Float) {
@@ -375,76 +152,41 @@ class ChatViewModel(application: Application) : AndroidViewModel(application), D
     }
 
     fun sendReaction(msgId: Int, emoji: String) {
-        val app = getApplication<Application>()
-        MessageReactions.sendReaction(app, msgId, emoji)
-        reactionPulse = ReactionPulse(msgId, emoji)
-        bumpReactionEpoch(msgId)
-        viewModelScope.launch {
-            delay(700)
-            if (reactionPulse?.msgId == msgId && reactionPulse?.emoji == emoji) {
-                reactionPulse = null
-            }
-        }
+        ensureController().sendReaction(msgId, emoji)
+        MessageReactions.invalidateSummary(msgId)
+        reactionEpoch[msgId] = (reactionEpoch[msgId] ?: 0) + 1
     }
 
-    fun beginEdit(msg: DcMsg) {
+    fun beginEdit(msg: ChatMessage) {
         editingMsgId = msg.id
-        draft = msg.text?.orEmpty() ?: ""
-        replyTo = null
+        ensureController().updateDraft(msg.text)
+        ensureController().setReply(null)
         overlayAnchor = null
-        persistDraft()
     }
 
-    fun highlightMessage(msgId: Int) {
-        highlightId = msgId
-        viewModelScope.launch {
-            delay(1600)
-            if (highlightId == msgId) highlightId = -1
-        }
-    }
+    fun highlightMessage(msgId: Int) = ensureController().highlightMessage(msgId)
 
     fun jumpToMessage(msgId: Int, onScroll: (displayIndex: Int) -> Unit) {
-        val idx = displayIndexForMsgId(msgId)
-        if (idx >= 0) {
-            onScroll(idx)
-            highlightMessage(msgId)
-        }
+        val idx = ensureController().jumpToMessage(msgId)
+        if (idx >= 0) onScroll(idx)
     }
 
     fun messageIdAtDisplayIndex(displayIndex: Int): Int? =
         feedItems.messageIdAtDisplayIndex(displayIndex)
 
-    fun send() {
-        val dc = dcContext ?: return
-        val text = draft.trim()
-        if (text.isEmpty()) return
-        val msg = DcMsg(dc, DcMsg.DC_MSG_TEXT)
-        msg.setText(text)
-        replyTo?.let { reply ->
-            val quoted = dc.getMsg(reply.id)
-            if (quoted.isOk) msg.setQuote(quoted)
-        }
-        dc.sendMsg(chatId, msg)
-        clearAfterSend()
-    }
+    fun send() = ensureController().send()
 
-    fun clearAfterSend() {
-        draft = ""
-        replyTo = null
-        dcContext?.setDraft(chatId, null)
-        scrollToBottomOnReload = true
-        scheduleReload(markRead = true)
-    }
+    fun clearAfterSend() = ensureController().clearAfterSend()
 
     fun deleteMessage(msgId: Int) {
-        dcContext?.deleteMsgs(intArrayOf(msgId))
+        ensureController().deleteMessage(msgId)
         overlayAnchor = null
-        scheduleReload(markRead = false)
     }
 
+    fun reload(markRead: Boolean = true) = ensureController().reload(markRead)
+
     override fun onCleared() {
-        unregisterEvents()
-        persistDraft()
+        if (::controller.isInitialized) controller.dispose()
         super.onCleared()
     }
 }

@@ -28,10 +28,10 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.polli.android.icons.LabIcon
-import com.polli.android.icons.LabIconName
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabDimens
+import com.polli.android.icons.PolliIcon
+import com.polli.android.icons.PolliIconName
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliDimens
 import com.polli.android.theme.accent
 import com.polli.android.ui.FrostedCircleButton
 import dev.chrisbanes.haze.HazeState
@@ -107,7 +107,7 @@ fun rememberShowChatScrollToBottom(listState: LazyListState) = remember {
 }
 
 /**
- * Scroll-to-bottom — frosted circle sized with [LabDimens.ChatFloatingChromeSize] (header chrome family).
+ * Scroll-to-bottom — frosted circle sized with [PolliDimens.ChatFloatingChromeSize] (header chrome family).
  */
 @Composable
 fun ChatScrollToBottomButton(
@@ -129,10 +129,10 @@ fun ChatScrollToBottomButton(
                 onClick = onClick,
                 hazeState = hazeState,
                 modifier = Modifier
-                    .size(LabDimens.ChatFloatingChromeSize)
+                    .size(PolliDimens.ChatFloatingChromeSize)
                     .semantics { this.contentDescription = contentDescription },
             ) {
-                LabIcon(LabIconName.ArrowDown, 18.dp, LabColors.White33)
+                PolliIcon(PolliIconName.ArrowDown, 18.dp, PolliColors.White33)
             }
             if (unreadCount > 0) {
                 val label = if (unreadCount > 99) "99+" else unreadCount.toString()
@@ -163,7 +163,7 @@ fun ChatScrollToBottomButton(
                         text = label,
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Medium,
-                            color = LabColors.White,
+                            color = PolliColors.White,
                         ),
                         maxLines = 1,
                     )

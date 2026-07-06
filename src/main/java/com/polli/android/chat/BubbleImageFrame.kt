@@ -19,8 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabDimens
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliDimens
 import java.io.File
 
 private val IMAGE_CORNER = 8.dp
@@ -41,7 +41,7 @@ fun aspectRatioFromFile(file: File): Float? {
 
 /**
  * Bubble media image: full [contentWidth], height from aspect ratio (capped).
- * Image is fit-center inside the frame; letterbox gaps use [LabColors.Black16].
+ * Image is fit-center inside the frame; letterbox gaps use [PolliColors.Black16].
  */
 @Composable
 fun BubbleImageFrame(
@@ -69,7 +69,7 @@ fun BubbleImageFrame(
             .width(contentWidth)
             .height(frameHeight)
             .clip(RoundedCornerShape(IMAGE_CORNER))
-            .background(LabColors.Black16)
+            .background(PolliColors.Black16)
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
         contentAlignment = Alignment.Center,
     ) {
@@ -124,7 +124,7 @@ fun BubbleVideoThumbnailFrame(
             .width(contentWidth)
             .height(frameHeight)
             .clip(RoundedCornerShape(IMAGE_CORNER))
-            .background(LabColors.Black16)
+            .background(PolliColors.Black16)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
@@ -154,12 +154,12 @@ fun BubbleVideoThumbnailFrame(
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .background(LabColors.Black.copy(alpha = 0.15f)),
+                .background(PolliColors.Black.copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center,
         ) {
             androidx.compose.material3.Text(
                 text = "▶",
-                color = LabColors.White85,
+                color = PolliColors.White85,
                 style = androidx.compose.material3.MaterialTheme.typography.titleLarge,
             )
         }
@@ -169,5 +169,5 @@ fun BubbleVideoThumbnailFrame(
 /** Landscape hugs width; portrait uses same width with taller (capped) height. */
 private fun bubbleImageHeight(contentWidth: Dp, aspectRatio: Float): Dp {
     val naturalHeight = contentWidth / aspectRatio
-    return minOf(naturalHeight, LabDimens.ChatBubbleImageMaxHeight)
+    return minOf(naturalHeight, PolliDimens.ChatBubbleImageMaxHeight)
 }

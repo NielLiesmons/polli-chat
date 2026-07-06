@@ -30,9 +30,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabDimens
-import com.polli.android.ui.LabAvatar
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliDimens
+import com.polli.android.ui.PolliAvatar
 
 /** Telegram-style reaction row inside a message bubble — polli reaction_pills.rs */
 @Composable
@@ -44,7 +44,7 @@ fun ReactionPillsRow(
 ) {
     if (reactions.isEmpty()) return
     Row(
-        modifier = modifier.padding(top = LabDimens.ChatReactionRowTop),
+        modifier = modifier.padding(top = PolliDimens.ChatReactionRowTop),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         reactions.forEach { reaction ->
@@ -88,7 +88,7 @@ private fun ReactionPill(
                 scaleY = scale.value
             }
             .clip(RoundedCornerShape(999.dp))
-            .background(LabColors.White8)
+            .background(PolliColors.White8)
             .then(
                 if (onReactionClick != null) {
                     Modifier.clickable { onReactionClick(reaction.emoji) }
@@ -113,7 +113,7 @@ private fun ReactionPill(
                 contentAlignment = Alignment.CenterStart,
             ) {
                 reaction.reactors.forEachIndexed { index, reactor ->
-                    LabAvatar(
+                    PolliAvatar(
                         name = reactor.name,
                         seed = reactor.contactId.toString(),
                         size = avatarSize,
@@ -127,7 +127,7 @@ private fun ReactionPill(
         } else {
             Text(
                 text = reaction.count.toString(),
-                color = LabColors.White66,
+                color = PolliColors.White66,
                 fontSize = 11.sp,
                 lineHeight = 11.sp,
             )
@@ -151,13 +151,13 @@ fun BubbleReactionPicker(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = LabDimens.ChatRowPaddingH),
+                .padding(horizontal = PolliDimens.ChatRowPaddingH),
             horizontalAlignment = if (alignEnd) Alignment.End else Alignment.Start,
         ) {
             Row(
                 modifier = Modifier
                     .clip(RoundedCornerShape(20.dp))
-                    .background(LabColors.Gray66)
+                    .background(PolliColors.Gray66)
                     .padding(horizontal = 8.dp, vertical = 6.dp),
                 horizontalArrangement = Arrangement.spacedBy(2.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -180,7 +180,7 @@ fun BubbleReactionPicker(
                 modifier = Modifier
                     .padding(top = 6.dp)
                     .clip(RoundedCornerShape(14.dp))
-                    .background(LabColors.Gray33)
+                    .background(PolliColors.Gray33)
                     .padding(horizontal = 4.dp, vertical = 2.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
@@ -202,7 +202,7 @@ private fun BubbleActionChip(label: String, onClick: () -> Unit) {
     ) {
         Text(
             text = label,
-            color = LabColors.White85,
+            color = PolliColors.White85,
             style = MaterialTheme.typography.labelSmall,
             textAlign = TextAlign.Center,
         )

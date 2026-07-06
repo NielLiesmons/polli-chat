@@ -9,13 +9,15 @@ import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
-import com.b44t.messenger.DcContext
-import com.b44t.messenger.DcMsg
+import com.polli.android.data.engine.PolliRepositories
 import com.polli.android.navigation.AppNav
 import com.polli.android.HomeRelayingActivity
+import com.polli.android.platform.AttachmentIntents
+import com.polli.domain.model.chat.ChatActionContext
+import com.polli.domain.model.chat.ChatMessage
+import com.polli.domain.model.chat.ChatMessageRules
 import org.thoughtcrime.securesms.R
 import com.polli.android.webxdc.WebxdcActivity
-import org.thoughtcrime.securesms.connect.DcHelper
 import org.thoughtcrime.securesms.util.ShareUtil.setForwardingMessageIds
 import org.thoughtcrime.securesms.util.Util
 import chat.delta.rpc.RpcException
@@ -45,21 +47,22 @@ data class MessageAction(
 )
 
 object MessageActions {
-    fun available(context: Context, chatId: Int, msgId: Int): List<MessageAction> {
-        val dc = DcHelper.getContext(context)
-        val msg = dc.getMsg(msgId)
-        if (!msg.isOk) return emptyList()
-        val chat = dc.getChat(chatId)
+    fun available(
+        context: Context,
+        session: ChatActionContext,
+        msgId: Int,
+    ): List<MessageAction> {
+        val msg = PolliRepositories.messages(context).getMessage(msgId) ?: return emptyList()
         val actions = mutableListOf<MessageAction>()
 
-        if (chat.canSend() && ChatMessageRules.canReplyToMsg(msg)) {
+        if (session.canSend && ChatMessageRules.canReplyToMsg(msg)) {
             actions += MessageAction(
                 MessageActionId.Reply,
                 R.string.notify_reply_button,
                 R.drawable.ic_polli_reply,
             )
         }
-        if (chat.isEncrypted && chat.canSend() && ChatMessageRules.canEditMsg(msg)) {
+        if (session.isEncrypted && session.canSend && ChatMessageRules.canEditMsg(msg)) {
             actions += MessageAction(
                 MessageActionId.Edit,
                 R.string.edit_message,
@@ -71,7 +74,7 @@ object MessageActions {
             R.string.menu_copy_text_to_clipboard,
             R.drawable.ic_content_copy_white_24dp,
         )
-        if (msg.hasFile()) {
+        if (msg.hasAttachment) {
             actions += MessageAction(
                 MessageActionId.Share,
                 R.string.menu_share,
@@ -83,22 +86,27 @@ object MessageActions {
             R.string.menu_forward,
             R.drawable.ic_forward_white_24dp,
         )
-        if (chat.isMultiUser && !msg.isOutgoing && ChatMessageRules.canReplyToMsg(msg)) {
+        if (session.isMultiUser && !msg.isOutgoing && ChatMessageRules.canReplyToMsg(msg)) {
             actions += MessageAction(
                 MessageActionId.ReplyPrivately,
                 R.string.reply_privately,
                 R.drawable.ic_polli_reply,
             )
         }
-        if (msg.canSave() && !chat.isSelfTalk) {
-            val saved = msg.savedMsgId != 0
+        if (msg.savedMessageId > 0) {
             actions += MessageAction(
-                if (saved) MessageActionId.Unsave else MessageActionId.Save,
-                if (saved) R.string.unsave else R.string.save,
-                if (saved) R.drawable.baseline_bookmark_remove_24 else R.drawable.baseline_bookmark_border_24,
+                MessageActionId.Unsave,
+                R.string.unsave,
+                R.drawable.baseline_bookmark_remove_24,
+            )
+        } else if ((msg.hasAttachment || msg.text.isNotBlank()) && !msg.isInfo && !session.isSelfTalk) {
+            actions += MessageAction(
+                MessageActionId.Save,
+                R.string.save,
+                R.drawable.baseline_bookmark_border_24,
             )
         }
-        if (msg.hasFile()) {
+        if (msg.hasAttachment) {
             actions += MessageAction(
                 MessageActionId.ExportAttachment,
                 R.string.menu_export_attachments,
@@ -117,7 +125,7 @@ object MessageActions {
                 R.drawable.ic_swap_vert_24dp,
             )
         }
-        if (msg.type == DcMsg.DC_MSG_WEBXDC) {
+        if (msg.viewType == "Webxdc") {
             actions += MessageAction(
                 MessageActionId.AddToHomeScreen,
                 R.string.add_to_home_screen,
@@ -134,42 +142,30 @@ object MessageActions {
     }
 }
 
-/** Message action visibility rules (formerly legacy ConversationFragment). */
-object ChatMessageRules {
-    fun canReplyToMsg(msg: DcMsg): Boolean = !msg.isInfo
-
-    fun canEditMsg(msg: DcMsg): Boolean =
-        msg.isOutgoing &&
-            !msg.isInfo &&
-            msg.type != DcMsg.DC_MSG_CALL &&
-            !msg.hasHtml() &&
-            !msg.text.isNullOrEmpty()
-}
-
 class MessageActionExecutor(
     private val context: Context,
     private val chatId: Int,
-    private val onReply: (DcMsg) -> Unit,
-    private val onEdit: (DcMsg) -> Unit,
+    private val onReply: (ChatMessage) -> Unit,
+    private val onEdit: (ChatMessage) -> Unit,
     private val onDeleted: () -> Unit,
 ) {
+    private val messages get() = PolliRepositories.messages(context)
+
     fun run(actionId: MessageActionId, msgId: Int) {
-        val dc = DcHelper.getContext(context)
-        val msg = dc.getMsg(msgId)
-        if (!msg.isOk) return
+        val msg = messages.getMessage(msgId) ?: return
         when (actionId) {
             MessageActionId.Reply -> onReply(msg)
             MessageActionId.Copy -> copyMessage(msg)
-            MessageActionId.Share -> DcHelper.openForViewOrShare(context, msgId, Intent.ACTION_SEND)
-            MessageActionId.Forward -> forwardMessage(msg)
+            MessageActionId.Share -> AttachmentIntents.share(context, msgId)
+            MessageActionId.Forward -> forwardMessage(msgId)
             MessageActionId.Edit -> onEdit(msg)
-            MessageActionId.ReplyPrivately -> replyPrivately(dc, msg)
-            MessageActionId.Save -> toggleSave(msg, save = true)
-            MessageActionId.Unsave -> toggleSave(msg, save = false)
+            MessageActionId.ReplyPrivately -> replyPrivately(msgId)
+            MessageActionId.Save -> messages.saveMessage(msgId)
+            MessageActionId.Unsave -> messages.unsaveMessage(msg.savedMessageId)
             MessageActionId.ExportAttachment ->
-                DcHelper.openForViewOrShare(context, msgId, Intent.ACTION_VIEW)
-            MessageActionId.Info -> showInfo(dc, msgId)
-            MessageActionId.Resend -> dc.resendMsgs(intArrayOf(msgId))
+                AttachmentIntents.openForView(context, msgId)
+            MessageActionId.Info -> showInfo(msgId)
+            MessageActionId.Resend -> messages.resendMessages(intArrayOf(msgId))
             MessageActionId.AddToHomeScreen -> {
                 val activity = context as? Activity
                 if (activity != null) {
@@ -177,27 +173,27 @@ class MessageActionExecutor(
                 }
             }
             MessageActionId.Delete -> {
-                dc.deleteMsgs(intArrayOf(msgId))
+                messages.deleteMessages(intArrayOf(msgId))
                 onDeleted()
             }
         }
     }
 
-    private fun copyMessage(msg: DcMsg) {
-        val text = msg.text?.trim().orEmpty()
+    private fun copyMessage(msg: ChatMessage) {
+        val text = msg.text.trim()
         if (text.isEmpty()) return
         Util.writeTextToClipboard(context, text)
         Toast.makeText(context, R.string.copied_to_clipboard, Toast.LENGTH_SHORT).show()
     }
 
-    private fun forwardMessage(msg: DcMsg) {
+    private fun forwardMessage(msgId: Int) {
         val activity = context as? Activity ?: return
         try {
             val intent = Intent()
             setForwardingMessageIds(
                 intent,
-                intArrayOf(msg.id),
-                DcHelper.getRpc(context).selectedAccountId,
+                intArrayOf(msgId),
+                PolliRepositories.accounts(context).selectedAccountId,
             )
             HomeRelayingActivity.start(activity, intent)
         } catch (_: RpcException) {
@@ -205,31 +201,18 @@ class MessageActionExecutor(
         }
     }
 
-    private fun replyPrivately(dc: DcContext, msg: DcMsg) {
-        val privateChatId = dc.createChatByContactId(msg.fromId)
-        val replyMsg = DcMsg(dc, DcMsg.DC_MSG_TEXT)
-        replyMsg.setQuote(msg)
-        dc.setDraft(privateChatId, replyMsg)
+    private fun replyPrivately(msgId: Int) {
+        val msg = messages.getMessage(msgId) ?: return
+        val privateChatId = PolliRepositories.chat(context).createChatByContactId(msg.authorId) ?: return
+        messages.setDraft(privateChatId, "", quotedMessageId = msgId)
         AppNav.openChatWithExtras(context, privateChatId)
     }
 
-    private fun toggleSave(msg: DcMsg, save: Boolean) {
-        try {
-            val rpc = DcHelper.getRpc(context)
-            if (save) {
-                rpc.saveMsgs(rpc.selectedAccountId, Collections.singletonList(msg.id))
-            } else {
-                rpc.deleteMessages(rpc.selectedAccountId, Collections.singletonList(msg.savedMsgId))
-            }
-        } catch (_: RpcException) {
-            Toast.makeText(context, R.string.error, Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun showInfo(dc: DcContext, msgId: Int) {
+    private fun showInfo(msgId: Int) {
         val activity = context as? Activity ?: return
+        val info = messages.getMessageInfo(msgId) ?: return
         val view = LayoutInflater.from(context).inflate(R.layout.message_details_view, null)
-        view.findViewById<TextView>(R.id.details_text).text = dc.getMsgInfo(msgId)
+        view.findViewById<TextView>(R.id.details_text).text = info
         AlertDialog.Builder(activity)
             .setView(view)
             .setPositiveButton(android.R.string.ok, null)

@@ -27,7 +27,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
-import com.polli.android.theme.LabColors
+import com.polli.android.theme.PolliColors
 import com.polli.android.theme.accent
 import kotlin.math.hypot
 
@@ -40,7 +40,7 @@ fun MessageBubbleText(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    val bodyColor = if (isOutgoing) LabColors.White else LabColors.White85
+    val bodyColor = if (isOutgoing) PolliColors.White else PolliColors.White85
     val linkColor = if (isOutgoing) Color.White.copy(alpha = 0.92f) else accent().light
     val emojiOnly = remember(text) { EmojiText.isEmojiOnlyShortText(text) }
     val parts = remember(text) { MessageLinkify.splitMessageParts(text) }

@@ -16,9 +16,9 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import com.polli.android.theme.LabColors
+import com.polli.android.theme.PolliColors
 
-private val HighlightBandColor = LabColors.White8
+private val HighlightBandColor = PolliColors.White8
 
 /**
  * Full-width white band behind a bubble row — draws edge-to-edge without changing layout or alignment.

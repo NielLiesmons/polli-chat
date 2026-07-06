@@ -40,27 +40,27 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.polli.android.icons.LabIcon
-import com.polli.android.icons.LabIconName
-import com.polli.android.theme.LabColors
+import com.polli.android.icons.PolliIcon
+import com.polli.android.icons.PolliIconName
+import com.polli.android.theme.PolliColors
 import com.polli.android.theme.accent
-import com.polli.android.theme.LabDimens
+import com.polli.android.theme.PolliDimens
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.FrostedCircleButton
-import com.polli.android.ui.LabAvatar
+import com.polli.android.ui.PolliAvatar
 import com.polli.android.ui.RoundBackButton
 import com.polli.core.chat.ChatDetailTab
 import com.polli.core.chat.tabsForChat
 import dev.chrisbanes.haze.HazeState
 
-private val TAB_SELECTED_HEIGHT = LabDimens.TabButtonHeight
-private val TAB_UNSELECTED_HEIGHT = LabDimens.TabButtonUnselectedHeight
+private val TAB_SELECTED_HEIGHT = PolliDimens.TabButtonHeight
+private val TAB_UNSELECTED_HEIGHT = PolliDimens.TabButtonUnselectedHeight
 private val TAB_SELECTED_FONT = 14.5.sp
 private val TAB_UNSELECTED_FONT = 13.sp
-private val TAB_SELECTED_H_PADDING = LabDimens.TabButtonHPadding
-private val TAB_UNSELECTED_H_PADDING = LabDimens.TabButtonUnselectedHPadding
+private val TAB_SELECTED_H_PADDING = PolliDimens.TabButtonHPadding
+private val TAB_UNSELECTED_H_PADDING = PolliDimens.TabButtonUnselectedHPadding
 private val TAB_SELECTED_CORNER = 17.dp
-private val TAB_UNSELECTED_CORNER = LabDimens.TabButtonUnselectedCorner
+private val TAB_UNSELECTED_CORNER = PolliDimens.TabButtonUnselectedCorner
 
 private data class TabLayoutInRow(val leftPx: Float, val widthPx: Float)
 
@@ -105,15 +105,15 @@ internal fun ChatHeaderTitleRow(
     hazeState: HazeState? = null,
     modifier: Modifier = Modifier,
 ) {
-    val sideInset = LabDimens.DetailBackButtonSize + LabDimens.HomeBarPadding
+    val sideInset = PolliDimens.DetailBackButtonSize + PolliDimens.HomeBarPadding
 
     Box(
         modifier = modifier
             .fillMaxWidth()
             .padding(
                 top = AppInsets.statusBarTop() + 6.dp,
-                start = LabDimens.HomeBarPadding,
-                end = LabDimens.HomeBarPadding,
+                start = PolliDimens.HomeBarPadding,
+                end = PolliDimens.HomeBarPadding,
                 bottom = 6.dp,
             ),
     ) {
@@ -137,7 +137,7 @@ internal fun ChatHeaderTitleRow(
         }
         Text(
             text = title,
-            color = LabColors.White85,
+            color = PolliColors.White85,
             style = TextStyle(
                 fontSize = 15.sp,
                 lineHeight = 20.sp,
@@ -160,7 +160,7 @@ internal fun ChatHeaderAvatarButton(
     chatId: Int,
     hazeState: HazeState? = null,
 ) {
-    val buttonSize = LabDimens.DetailBackButtonSize
+    val buttonSize = PolliDimens.DetailBackButtonSize
     val avatarSize = buttonSize - 4.dp
     if (hazeState != null) {
         FrostedCircleButton(
@@ -168,7 +168,7 @@ internal fun ChatHeaderAvatarButton(
             hazeState = hazeState,
             modifier = Modifier.size(buttonSize),
         ) {
-            LabAvatar(
+            PolliAvatar(
                 name = name,
                 seed = seed,
                 size = avatarSize,
@@ -180,10 +180,10 @@ internal fun ChatHeaderAvatarButton(
             modifier = Modifier
                 .size(buttonSize)
                 .clip(CircleShape)
-                .background(LabColors.Gray66),
+                .background(PolliColors.Gray66),
             contentAlignment = Alignment.Center,
         ) {
-            LabAvatar(
+            PolliAvatar(
                 name = name,
                 seed = seed,
                 size = avatarSize,
@@ -227,14 +227,14 @@ private fun ChatHeaderTabRow(
             modifier = Modifier
                 .horizontalScroll(scrollState)
                 .onGloballyPositioned { rowCoords = it }
-                .padding(bottom = LabDimens.TabSectionGap),
+                .padding(bottom = PolliDimens.TabSectionGap),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Spacer(Modifier.width(edgePad.coerceAtLeast(48.dp)))
 
             tabs.forEachIndexed { index, tab ->
                 if (index > 0) {
-                    Spacer(Modifier.width(LabDimens.ChatHeaderTabGap))
+                    Spacer(Modifier.width(PolliDimens.ChatHeaderTabGap))
                 }
 
                 val tabModifier = Modifier.onGloballyPositioned { coords ->
@@ -278,8 +278,8 @@ private fun ChatHeaderSearchPill(
         modifier = modifier
             .size(width = width, height = height)
             .clip(shape)
-            .background(LabColors.Gray33)
-            .border(LabDimens.ShellBorderWidth, LabColors.ShellBorder, shape)
+            .background(PolliColors.Gray33)
+            .border(PolliDimens.ShellBorderWidth, PolliColors.ShellBorder, shape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -287,10 +287,10 @@ private fun ChatHeaderSearchPill(
             ),
         contentAlignment = Alignment.Center,
     ) {
-        LabIcon(
-            LabIconName.Search,
-            LabDimens.HomeSearchGlyphSize,
-            LabColors.White33,
+        PolliIcon(
+            PolliIconName.Search,
+            PolliDimens.HomeSearchGlyphSize,
+            PolliColors.White33,
         )
     }
 }
@@ -317,8 +317,8 @@ private fun ChatHeaderTabPill(
                     Modifier.background(accent().gradientBrush(0.66f))
                 } else {
                     Modifier
-                        .background(LabColors.Gray66)
-                        .border(LabDimens.ShellBorderWidth, LabColors.ShellBorder, shape)
+                        .background(PolliColors.Gray66)
+                        .border(PolliDimens.ShellBorderWidth, PolliColors.ShellBorder, shape)
                 },
             )
             .clickable(
@@ -331,7 +331,7 @@ private fun ChatHeaderTabPill(
     ) {
         Text(
             text = label,
-            color = if (selected) LabColors.White else LabColors.White66,
+            color = if (selected) PolliColors.White else PolliColors.White66,
             fontSize = fontSize,
             fontWeight = FontWeight.Medium,
             maxLines = 1,

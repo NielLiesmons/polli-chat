@@ -1,5 +1,6 @@
 package com.polli.android.chat
 
+import com.polli.domain.model.chat.ChatMessage
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -37,8 +38,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabDimens
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliDimens
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.FrostedChromeSurface
 import com.polli.android.ui.PolliModalBarrier
@@ -60,8 +61,8 @@ private val ReactionsPanelWidth = ActionsPanelWidth + 80.dp
 private val PanelGap = 8.dp
 private val ReactionsPanelHeight = 52.dp
 private val EdgePad = 16.dp
-private val OverlayShellBg = LabColors.Gray66
-private val OverlayShellBorder = LabColors.ShellBorder
+private val OverlayShellBg = PolliColors.Gray66
+private val OverlayShellBorder = PolliColors.ShellBorder
 
 /**
  * Reactions row is anchored to the tap point. Actions sit above or below it — never shifting reactions.
@@ -250,11 +251,11 @@ private fun OverlayTextRow(
 ) {
     Text(
         text = label,
-        color = if (destructive) LabColors.Destructive else LabColors.White85,
+        color = if (destructive) PolliColors.Destructive else PolliColors.White85,
         fontSize = 15.sp,
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = LabDimens.ChatBubbleInsetH, vertical = 12.dp),
+            .padding(horizontal = PolliDimens.ChatBubbleInsetH, vertical = 12.dp),
     )
 }

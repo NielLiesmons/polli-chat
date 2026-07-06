@@ -1,5 +1,7 @@
 package com.polli.android.chat
 
+import com.polli.domain.model.chat.ChatMessage
+import com.polli.domain.model.chat.MessageQuote
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,8 +30,8 @@ import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabDimens
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliDimens
 import com.polli.android.theme.ProfileColors
 
 enum class QuotedMessageStyle { Composer, InIncomingBubble, InOutgoingBubble }
@@ -57,9 +59,9 @@ fun QuotedMessageBlock(
 
     val (accent, nameColor) = quoteColors(quote, style)
     val (bg, previewColor) = when (style) {
-        QuotedMessageStyle.Composer -> LabColors.White8 to LabColors.White66
-        QuotedMessageStyle.InIncomingBubble -> LabColors.Black33 to LabColors.White66
-        QuotedMessageStyle.InOutgoingBubble -> LabColors.Black33 to LabColors.White85
+        QuotedMessageStyle.Composer -> PolliColors.White8 to PolliColors.White66
+        QuotedMessageStyle.InIncomingBubble -> PolliColors.Black33 to PolliColors.White66
+        QuotedMessageStyle.InOutgoingBubble -> PolliColors.Black33 to PolliColors.White85
     }
     val bodyPad = when (style) {
         QuotedMessageStyle.Composer ->
@@ -69,7 +71,7 @@ fun QuotedMessageBlock(
     }
     val marginBottom = when (style) {
         QuotedMessageStyle.Composer -> 0.dp
-        else -> LabDimens.ChatQuoteMarginBottom
+        else -> PolliDimens.ChatQuoteMarginBottom
     }
 
     val shell = Modifier
@@ -92,7 +94,7 @@ fun QuotedMessageBlock(
             )
             Text(
                 text = "×",
-                color = LabColors.White33,
+                color = PolliColors.White33,
                 fontSize = 22.sp,
                 lineHeight = 22.sp,
                 modifier = Modifier
@@ -126,7 +128,7 @@ fun QuotedMessageBlock(
             if (onClear != null) {
                 Text(
                     text = "×",
-                    color = LabColors.White33,
+                    color = PolliColors.White33,
                     fontSize = 20.sp,
                     lineHeight = 20.sp,
                     modifier = Modifier
@@ -171,7 +173,7 @@ private fun QuoteBodyRow(
 private fun QuoteAccentBar(accent: Color) {
     Box(
         modifier = Modifier
-            .width(LabDimens.ChatQuoteAccentWidth)
+            .width(PolliDimens.ChatQuoteAccentWidth)
             .fillMaxHeight()
             .background(accent),
     )
@@ -219,7 +221,7 @@ private fun quoteColors(quote: MessageQuote, style: QuotedMessageStyle): Pair<Co
     if (style == QuotedMessageStyle.InOutgoingBubble) {
         return name to name
     }
-    if (seed.isBlank()) return LabColors.White33 to LabColors.White33
+    if (seed.isBlank()) return PolliColors.White33 to PolliColors.White33
     val accent = ProfileColors.stringToColor(seed).copy(alpha = 0.85f)
     return accent to name
 }

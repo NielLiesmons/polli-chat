@@ -15,9 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.polli.android.icons.LabIcon
-import com.polli.android.icons.LabIconName
-import com.polli.android.theme.LabColors
+import com.polli.android.icons.PolliIcon
+import com.polli.android.icons.PolliIconName
+import com.polli.android.theme.PolliColors
 import com.polli.android.ui.AppModal
 import com.polli.android.ui.ModalSectionLabel
 import dev.chrisbanes.haze.HazeState
@@ -36,19 +36,19 @@ fun ComposerAttachModal(
     AppModal(onDismiss = onClose, hazeState = hazeState) {
         ModalSectionLabel("Share")
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            AttachActionRow(icon = LabIconName.Camera, label = "Camera", onClick = onCamera)
-            AttachActionRow(icon = LabIconName.Plus, label = "Gallery", onClick = onGallery)
-            AttachActionRow(icon = LabIconName.Options, label = "File", onClick = onBrowse)
-            AttachActionRow(icon = LabIconName.Play, label = "Video", onClick = onVideo)
-            AttachActionRow(icon = LabIconName.EmojiFill, label = "Contact", onClick = onContact)
-            AttachActionRow(icon = LabIconName.ArrowUp, label = "Location", onClick = onLocation)
+            AttachActionRow(icon = PolliIconName.Camera, label = "Camera", onClick = onCamera)
+            AttachActionRow(icon = PolliIconName.Plus, label = "Gallery", onClick = onGallery)
+            AttachActionRow(icon = PolliIconName.Options, label = "File", onClick = onBrowse)
+            AttachActionRow(icon = PolliIconName.Play, label = "Video", onClick = onVideo)
+            AttachActionRow(icon = PolliIconName.EmojiFill, label = "Contact", onClick = onContact)
+            AttachActionRow(icon = PolliIconName.ArrowUp, label = "Location", onClick = onLocation)
         }
     }
 }
 
 @Composable
 private fun AttachActionRow(
-    icon: LabIconName,
+    icon: PolliIconName,
     label: String,
     onClick: () -> Unit,
 ) {
@@ -56,13 +56,13 @@ private fun AttachActionRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(LabColors.Gray33)
+            .background(PolliColors.Gray33)
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        LabIcon(icon, 18.dp, LabColors.White66)
-        Text(label, color = LabColors.White85, fontSize = 15.sp)
+        PolliIcon(icon, 18.dp, PolliColors.White66)
+        Text(label, color = PolliColors.White85, fontSize = 15.sp)
     }
 }

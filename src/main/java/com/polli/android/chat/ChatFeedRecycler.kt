@@ -1,5 +1,7 @@
 package com.polli.android.chat
 
+import com.polli.domain.model.chat.ChatMessage
+import com.polli.domain.model.chat.messageCount
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable

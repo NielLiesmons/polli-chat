@@ -1,5 +1,6 @@
 package com.polli.android.chat
 
+import com.polli.domain.model.chat.ChatMessage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,11 +24,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.polli.android.theme.LabColors
+import com.polli.android.theme.PolliColors
 import com.polli.android.theme.accent
-import com.polli.android.theme.LabDimens
+import com.polli.android.theme.PolliDimens
 import com.polli.android.theme.ProfileColors
-import com.polli.android.ui.LabAvatar
+import com.polli.android.ui.PolliAvatar
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -41,7 +42,7 @@ fun chatBubbleLaneMaxWidth(
     trailingReserved: Dp = 0.dp,
 ): Dp {
     val available = screenWidth - startGutter - endGutter - leadingReserved - trailingReserved
-    return (available * LabDimens.ChatBubbleMaxWidthFraction).coerceAtLeast(0.dp)
+    return (available * PolliDimens.ChatBubbleMaxWidthFraction).coerceAtLeast(0.dp)
 }
 
 @Composable
@@ -59,7 +60,7 @@ fun MessageBubble(
     val bg = if (message.isOutgoing) {
         accent().gradientBrush()
     } else {
-        Brush.linearGradient(listOf(LabColors.Gray66, LabColors.Gray66))
+        Brush.linearGradient(listOf(PolliColors.Gray66, PolliColors.Gray66))
     }
     val reactions = remember(message.id, reactionReloadKey) {
         MessageReactions.loadReactionSummary(context, message.id)
@@ -79,7 +80,7 @@ fun MessageBubble(
         !hasQuote &&
         !hasAttachment
     ) {
-        LabDimens.ChatBubbleStackedIncomingTopExtra
+        PolliDimens.ChatBubbleStackedIncomingTopExtra
     } else {
         0.dp
     }
@@ -87,18 +88,18 @@ fun MessageBubble(
     val shellPadding = PaddingValues(
         top = when {
             message.isOutgoing && textOnlyOutgoing ->
-                LabDimens.ChatBubblePaddingV + LabDimens.ChatBubbleTextOnlyExtraTop
-            message.isOutgoing -> LabDimens.ChatBubblePaddingV
-            else -> LabDimens.ChatBubblePaddingV + stackedExtra
+                PolliDimens.ChatBubblePaddingV + PolliDimens.ChatBubbleTextOnlyExtraTop
+            message.isOutgoing -> PolliDimens.ChatBubblePaddingV
+            else -> PolliDimens.ChatBubblePaddingV + stackedExtra
         },
         bottom = when {
-            message.isOutgoing -> LabDimens.ChatBubbleOutgoingShellBottom
-            else -> LabDimens.ChatBubblePaddingV + LabDimens.ChatBubbleIncomingBottomExtra
+            message.isOutgoing -> PolliDimens.ChatBubbleOutgoingShellBottom
+            else -> PolliDimens.ChatBubblePaddingV + PolliDimens.ChatBubbleIncomingBottomExtra
         },
     )
 
-    val insetH = LabDimens.ChatBubbleInsetH
-    val richContentPadH = LabDimens.ChatQuoteBubblePadH
+    val insetH = PolliDimens.ChatBubbleInsetH
+    val richContentPadH = PolliDimens.ChatQuoteBubblePadH
     val richContentWidth = maxBubbleWidth - richContentPadH * 2
     val quoteStyle = when {
         message.isOutgoing -> QuotedMessageStyle.InOutgoingBubble
@@ -136,7 +137,7 @@ fun MessageBubble(
                 QuotedMessageBlock(
                     quote = quote,
                     style = quoteStyle,
-                    modifier = Modifier.padding(horizontal = LabDimens.ChatQuoteBubblePadH),
+                    modifier = Modifier.padding(horizontal = PolliDimens.ChatQuoteBubblePadH),
                     onClick = onQuoteClick?.let { cb -> { cb(quote.msgId) } },
                 )
             }
@@ -197,14 +198,14 @@ fun OutgoingMessageRow(
     onQuoteClick: (Int) -> Unit,
 ) {
     val screenWidth = com.polli.ui.theme.layoutScreenWidthDp()
-    val rowStart = LabDimens.ChatRowPaddingH + LabDimens.ChatRowOutgoingExtraStart
-    val rowEnd = LabDimens.ChatRowPaddingH
+    val rowStart = PolliDimens.ChatRowPaddingH + PolliDimens.ChatRowOutgoingExtraStart
+    val rowEnd = PolliDimens.ChatRowPaddingH
     val maxBubbleWidth = chatBubbleLaneMaxWidth(
         screenWidth = screenWidth,
         startGutter = rowStart,
         endGutter = rowEnd,
     )
-    val rowTop = if (layout.isFirstInStack) LabDimens.ChatRowTop else LabDimens.ChatRowTopCollapsed
+    val rowTop = if (layout.isFirstInStack) PolliDimens.ChatRowTop else PolliDimens.ChatRowTopCollapsed
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -249,9 +250,9 @@ fun SingleIncomingMessageRow(
     onQuoteClick: (Int) -> Unit,
 ) {
     val screenWidth = com.polli.ui.theme.layoutScreenWidthDp()
-    val rowPad = LabDimens.ChatRowPaddingH
-    val incomingRight = LabDimens.ChatRowIncomingRight
-    val rowTop = if (layout.isFirstInStack) LabDimens.ChatRowTop else LabDimens.ChatRowTopCollapsed
+    val rowPad = PolliDimens.ChatRowPaddingH
+    val incomingRight = PolliDimens.ChatRowIncomingRight
+    val rowTop = if (layout.isFirstInStack) PolliDimens.ChatRowTop else PolliDimens.ChatRowTopCollapsed
     val showAvatar = layout.isLastInStack
     val maxBubbleWidth = chatBubbleLaneMaxWidth(
         screenWidth = screenWidth,
@@ -273,15 +274,15 @@ fun SingleIncomingMessageRow(
             verticalAlignment = Alignment.Bottom,
         ) {
             if (showAvatar) {
-                LabAvatar(
+                PolliAvatar(
                     name = message.authorName,
                     seed = message.authorKey,
-                    size = LabDimens.ChatAvatarSize,
+                    size = PolliDimens.ChatAvatarSize,
                     contactId = message.authorId,
                 )
-                Spacer(modifier = Modifier.width(LabDimens.ChatAvatarGap))
+                Spacer(modifier = Modifier.width(PolliDimens.ChatAvatarGap))
             } else {
-                Spacer(modifier = Modifier.width(LabDimens.ChatIncomingGroupAvatarOffset))
+                Spacer(modifier = Modifier.width(PolliDimens.ChatIncomingGroupAvatarOffset))
             }
             BubbleSwiper(
                 modifier = Modifier
@@ -309,8 +310,8 @@ fun SingleIncomingMessageRow(
 
 @Composable
 private fun bubbleShape(isOutgoing: Boolean, isLastInStack: Boolean): RoundedCornerShape {
-    val full = LabDimens.ChatBubbleRadius
-    val tail = LabDimens.ChatBubbleTailRadius
+    val full = PolliDimens.ChatBubbleRadius
+    val tail = PolliDimens.ChatBubbleTailRadius
     return if (isOutgoing) {
         if (isLastInStack) {
             RoundedCornerShape(topStart = full, topEnd = full, bottomEnd = tail, bottomStart = full)

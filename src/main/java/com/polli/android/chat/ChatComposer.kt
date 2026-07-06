@@ -1,5 +1,6 @@
 package com.polli.android.chat
 
+import com.polli.domain.model.chat.MessageQuote
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -56,11 +57,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.polli.android.icons.LabIcon
-import com.polli.android.icons.LabIconName
-import com.polli.android.theme.LabColors
+import com.polli.android.icons.PolliIcon
+import com.polli.android.icons.PolliIconName
+import com.polli.android.theme.PolliColors
 import com.polli.android.theme.accent
-import com.polli.android.theme.LabDimens
+import com.polli.android.theme.PolliDimens
 import com.polli.android.ui.FrostedChromeSurface
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.composerTextFadeMask
@@ -86,8 +87,8 @@ private const val VOICE_LOCK_DRAG_PX = 120f
 private const val VOICE_MIN_MS = 1000L
 private const val VOICE_MIN_BYTES = 800L
 private const val COMPOSER_SCROLL_FADE_THRESHOLD = 4
-private val ComposerShellBg = LabColors.Gray66
-private val ComposerShellBorder = LabColors.ShellBorder
+private val ComposerShellBg = PolliColors.Gray66
+private val ComposerShellBorder = PolliColors.ShellBorder
 
 @Composable
 fun ChatComposerDock(
@@ -133,7 +134,7 @@ fun ChatComposerDock(
     val composerRowExpanded = isMultiline || isTall
     val composerRowAlign = if (composerRowExpanded) Alignment.Bottom else Alignment.CenterVertically
     val composerFieldAlign = if (composerRowExpanded) Alignment.BottomStart else Alignment.CenterStart
-    val pillRadius = LabDimens.ChatComposerMinHeight / 2
+    val pillRadius = PolliDimens.ChatComposerMinHeight / 2
     val shellShape = if (flattenTop) {
         RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = pillRadius, bottomEnd = pillRadius)
     } else {
@@ -236,19 +237,19 @@ fun ChatComposerDock(
     }
 
     val dockBottomPad = if (keyboardVisible) {
-        LabDimens.ChatComposerKeyboardGap
+        PolliDimens.ChatComposerKeyboardGap
     } else {
-        maxOf(LabDimens.ChatComposerDockBottomMin, bottomInset)
+        maxOf(PolliDimens.ChatComposerDockBottomMin, bottomInset)
     }
 
     // Blinking caret when unfocused — do NOT auto-open keyboard on launch.
     FrostedChromeSurface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = LabDimens.ChatComposerDockHPadding)
+            .padding(horizontal = PolliDimens.ChatComposerDockHPadding)
             .padding(bottom = dockBottomPad)
             .wrapContentHeight()
-            .heightIn(min = LabDimens.ChatComposerMinHeight),
+            .heightIn(min = PolliDimens.ChatComposerMinHeight),
         shape = shellShape,
         tint = ComposerShellBg,
         borderColor = ComposerShellBorder,
@@ -289,7 +290,7 @@ fun ChatComposerDock(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = LabDimens.ChatComposerMinHeight - 14.dp)
+                    .heightIn(min = PolliDimens.ChatComposerMinHeight - 14.dp)
                     .padding(
                         start = 7.dp,
                         end = 7.dp,
@@ -314,9 +315,9 @@ fun ChatComposerDock(
                 } else {
                     Box(
                         modifier = Modifier
-                            .size(LabDimens.ChatComposerPlusSize)
+                            .size(PolliDimens.ChatComposerPlusSize)
                             .clip(CircleShape)
-                            .background(LabColors.White16)
+                            .background(PolliColors.White16)
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
@@ -325,7 +326,7 @@ fun ChatComposerDock(
                             ),
                         contentAlignment = Alignment.Center,
                     ) {
-                        LabIcon(LabIconName.Plus, 18.dp, LabColors.White66)
+                        PolliIcon(PolliIconName.Plus, 18.dp, PolliColors.White66)
                     }
                     Box(
                         modifier = Modifier
@@ -354,8 +355,8 @@ fun ChatComposerDock(
                             onTextLayout = { layout: TextLayoutResult ->
                                 textFieldHeightPx = layout.size.height.toFloat()
                             },
-                            textStyle = TextStyle(color = LabColors.White85, fontSize = 15.sp, lineHeight = 20.sp),
-                            cursorBrush = SolidColor(LabColors.White),
+                            textStyle = TextStyle(color = PolliColors.White85, fontSize = 15.sp, lineHeight = 20.sp),
+                            cursorBrush = SolidColor(PolliColors.White),
                             decorationBox = { inner ->
                                 Box(contentAlignment = composerFieldAlign) {
                                     if (value.isEmpty() && !isFocused) {
@@ -363,7 +364,7 @@ fun ChatComposerDock(
                                             ComposerCaret()
                                             Text(
                                                 "Message",
-                                                color = LabColors.White33,
+                                                color = PolliColors.White33,
                                                 fontSize = 15.sp,
                                                 lineHeight = 20.sp,
                                                 modifier = Modifier.padding(start = 1.dp),
@@ -372,7 +373,7 @@ fun ChatComposerDock(
                                     } else if (value.isEmpty()) {
                                         Text(
                                             "Message",
-                                            color = LabColors.White33,
+                                            color = PolliColors.White33,
                                             fontSize = 15.sp,
                                             lineHeight = 20.sp,
                                         )
@@ -388,7 +389,7 @@ fun ChatComposerDock(
                     recordLocked -> {
                         Box(
                             modifier = Modifier
-                                .size(LabDimens.ChatComposerPlusSize)
+                                .size(PolliDimens.ChatComposerPlusSize)
                                 .clip(CircleShape)
                                 .background(
                                     Brush.linearGradient(listOf(accent().solid, accent().light)),
@@ -396,13 +397,13 @@ fun ChatComposerDock(
                                 .clickable { finishVoiceRecording(send = true) },
                             contentAlignment = Alignment.Center,
                         ) {
-                            LabIcon(LabIconName.Send, 16.dp, LabColors.White)
+                            PolliIcon(PolliIconName.Send, 16.dp, PolliColors.White)
                         }
                     }
                     showSend && !recording -> {
                         Box(
                             modifier = Modifier
-                                .size(LabDimens.ChatComposerPlusSize)
+                                .size(PolliDimens.ChatComposerPlusSize)
                                 .clip(CircleShape)
                                 .background(
                                     Brush.linearGradient(listOf(accent().solid, accent().light)),
@@ -410,7 +411,7 @@ fun ChatComposerDock(
                                 .clickable(onClick = onSend),
                             contentAlignment = Alignment.Center,
                         ) {
-                            LabIcon(LabIconName.Send, 16.dp, LabColors.White)
+                            PolliIcon(PolliIconName.Send, 16.dp, PolliColors.White)
                         }
                     }
                     onVoiceSent != null -> {
@@ -420,7 +421,7 @@ fun ChatComposerDock(
                                 .offset { IntOffset(0, if (voiceActive) dragY.roundToInt() else 0) }
                                 .offset(x = (-2).dp)
                                 .offset { IntOffset(if (voiceActive) dragX.roundToInt() else 0, 0) }
-                                .size(LabDimens.ChatComposerPlusSize)
+                                .size(PolliDimens.ChatComposerPlusSize)
                                 .clip(CircleShape)
                                 .then(
                                     if (voiceActive) {
@@ -470,10 +471,10 @@ fun ChatComposerDock(
                                 },
                             contentAlignment = Alignment.Center,
                         ) {
-                            LabIcon(
-                                LabIconName.Voice,
+                            PolliIcon(
+                                PolliIconName.Voice,
                                 22.dp,
-                                if (voiceActive) LabColors.White else LabColors.White33,
+                                if (voiceActive) PolliColors.White else PolliColors.White33,
                             )
                         }
                     }
@@ -497,6 +498,6 @@ private fun ComposerCaret() {
         modifier = Modifier
             .width(2.dp)
             .height(20.dp)
-            .background(LabColors.White.copy(alpha = alpha)),
+            .background(PolliColors.White.copy(alpha = alpha)),
     )
 }

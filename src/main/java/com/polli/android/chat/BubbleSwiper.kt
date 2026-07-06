@@ -33,9 +33,9 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import com.polli.android.icons.LabIcon
-import com.polli.android.icons.LabIconName
-import com.polli.android.theme.LabColors
+import com.polli.android.icons.PolliIcon
+import com.polli.android.icons.PolliIconName
+import com.polli.android.theme.PolliColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -119,7 +119,7 @@ fun BubbleSwiper(
     ) {
         if (replyOpacity > 0.01f) {
             SwipeRevealIcon(
-                icon = LabIconName.Reply,
+                icon = PolliIconName.Reply,
                 modifier = Modifier
                     .align(Alignment.CenterStart)
                     .offset(x = replyIconInset.dp + replyParallax.dp),
@@ -211,7 +211,7 @@ fun BubbleSwiper(
 
 @Composable
 private fun SwipeRevealIcon(
-    icon: LabIconName,
+    icon: PolliIconName,
     modifier: Modifier,
     scale: Float,
     alpha: Float,
@@ -248,9 +248,9 @@ private fun SwipeRevealIcon(
                 this.alpha = alpha
             }
             .clip(CircleShape)
-            .background(LabColors.Gray33),
+            .background(PolliColors.Gray33),
         contentAlignment = Alignment.Center,
     ) {
-        LabIcon(icon, ICON_GLYPH.dp, LabColors.White33)
+        PolliIcon(icon, ICON_GLYPH.dp, PolliColors.White33)
     }
 }

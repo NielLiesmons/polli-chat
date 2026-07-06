@@ -2,7 +2,7 @@ package com.polli.android.chat
 
 import android.app.Activity
 import android.net.Uri
-import com.b44t.messenger.DcChat
+import com.polli.android.data.engine.PolliRepositories
 import org.thoughtcrime.securesms.util.SendRelayedMessageUtil
 import org.thoughtcrime.securesms.util.ShareUtil
 
@@ -22,20 +22,21 @@ object ShareInbound {
     }
 
     private fun handleForward(activity: Activity, chatId: Int) {
-        val dc = org.thoughtcrime.securesms.connect.DcHelper.getContext(activity)
-        if (dc.getChat(chatId).isSelfTalk) {
+        val session = PolliRepositories.chat(activity).getSession(chatId)
+        if (session?.isSelfTalk == true) {
             SendRelayedMessageUtil.immediatelyRelay(activity, chatId)
             return
         }
         val messageIds = ShareUtil.getForwardedMessageIDs(activity) ?: intArrayOf()
         val count = messageIds.size
+        val chatName = session?.name ?: "Chat"
         android.app.AlertDialog.Builder(activity)
             .setMessage(
                 activity.resources.getQuantityString(
                     org.thoughtcrime.securesms.R.plurals.ask_forward_messages,
                     count,
                     count,
-                    dc.getChat(chatId).name,
+                    chatName,
                 ),
             )
             .setPositiveButton(org.thoughtcrime.securesms.R.string.forward) { _, _ ->
