@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.polli.domain.prefs.UiScaleAnchor
 import com.polli.domain.prefs.UiScalePreset
-import com.polli.android.theme.LabColors
+import com.polli.android.theme.PolliColors
 import kotlin.math.roundToInt
 
 private val SlitHeight = 6.dp
@@ -93,7 +93,7 @@ fun UiScaleSlider(
                             modifier = Modifier
                                 .width(2.dp)
                                 .height(tickHeight)
-                                .background(LabColors.White33, RoundedCornerShape(1.dp)),
+                                .background(PolliColors.White33, RoundedCornerShape(1.dp)),
                         )
                     }
                 }
@@ -105,7 +105,7 @@ fun UiScaleSlider(
                     .height(SlitHeight)
                     .align(Alignment.BottomCenter)
                     .clip(RoundedCornerShape(999.dp))
-                    .background(LabColors.White16),
+                    .background(PolliColors.White16),
             )
 
             Box(
@@ -131,15 +131,15 @@ fun UiScaleSlider(
                     .zIndex(2f)
                     .size(ThumbWidth, ThumbHeight)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(LabColors.Gray)
-                    .border(1.dp, LabColors.White16, RoundedCornerShape(10.dp)),
+                    .background(PolliColors.Gray)
+                    .border(1.dp, PolliColors.White16, RoundedCornerShape(10.dp)),
                 contentAlignment = Alignment.Center,
             ) {
                 Box(
                     modifier = Modifier
                         .width(2.dp)
                         .height(ThumbHeight * 0.5f)
-                        .background(LabColors.White66, RoundedCornerShape(1.dp)),
+                        .background(PolliColors.White66, RoundedCornerShape(1.dp)),
                 )
             }
         }
@@ -162,7 +162,7 @@ private fun AnchorLabel(
     Text(
         text = text,
         modifier = modifier,
-        color = if (active) LabColors.White85 else LabColors.White33,
+        color = if (active) PolliColors.White85 else PolliColors.White33,
         style = MaterialTheme.typography.labelMedium,
         textAlign = align,
     )

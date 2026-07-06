@@ -18,7 +18,7 @@ val LocalUiPreferences = staticCompositionLocalOf<UiPreferences> {
 }
 
 @Composable
-fun LabTheme(
+fun PolliTheme(
     prefs: UiPreferences,
     uiScaleRevision: Int = 0,
     content: @Composable () -> Unit,
@@ -27,14 +27,14 @@ fun LabTheme(
     val scaledDensity = rememberScaledDensity(prefs, uiScaleRevision)
     val colorScheme = darkColorScheme(
         primary = accentPalette.solid,
-        onPrimary = LabColors.White,
+        onPrimary = PolliColors.White,
         secondary = accentPalette.light,
-        background = LabColors.Black,
-        surface = LabColors.Black,
-        surfaceVariant = LabColors.Gray,
-        onBackground = LabColors.White85,
-        onSurface = LabColors.White85,
-        outline = LabColors.ShellBorder,
+        background = PolliColors.Black,
+        surface = PolliColors.Black,
+        surfaceVariant = PolliColors.Gray,
+        onBackground = PolliColors.White85,
+        onSurface = PolliColors.White85,
+        outline = PolliColors.ShellBorder,
     )
     CompositionLocalProvider(
         LocalUiPreferences provides prefs,
@@ -43,12 +43,12 @@ fun LabTheme(
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
-            typography = LabTypography,
+            typography = PolliTypography,
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(LabColors.Black),
+                    .background(PolliColors.Black),
             ) {
                 content()
             }

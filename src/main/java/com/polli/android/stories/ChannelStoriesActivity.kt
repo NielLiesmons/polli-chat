@@ -48,11 +48,11 @@ import com.polli.android.BaseComposeActivity
 import com.polli.android.chat.DcMsgMediaContent
 import com.polli.android.chat.ChatComposerDock
 import com.polli.android.settings.AppPrefs
-import com.polli.android.theme.LabColors
+import com.polli.android.theme.PolliColors
 import com.polli.android.theme.accent
-import com.polli.android.theme.LabDimens
-import com.polli.android.theme.LabTheme
-import com.polli.android.ui.LabAvatar
+import com.polli.android.theme.PolliDimens
+import com.polli.android.theme.PolliTheme
+import com.polli.android.ui.PolliAvatar
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.ChatFeedEdgeGradients
 import com.polli.android.ui.rememberComposerChromeLayout
@@ -74,7 +74,7 @@ class ChannelStoriesActivity : BaseComposeActivity() {
         val startIdx = channelIds.indexOf(startId).coerceAtLeast(0)
         val prefs = AppPrefs(this)
         setContent {
-            LabTheme(prefs = prefs) {
+            PolliTheme(prefs = prefs) {
                 ChannelStoriesOverlay(
                     session = StorySession(
                         channelId = startId,
@@ -182,7 +182,7 @@ fun ChannelStoriesScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(LabColors.Black)
+            .background(PolliColors.Black)
             .onGloballyPositioned { composerChrome.onRootPositioned(it) },
     ) {
         StoryContentSlide(
@@ -234,8 +234,8 @@ fun ChannelStoriesScreen(
                 .background(
                     Brush.verticalGradient(
                         colorStops = arrayOf(
-                            0f to LabColors.Black.copy(alpha = 0.92f),
-                            0.55f to LabColors.Black.copy(alpha = 0.72f),
+                            0f to PolliColors.Black.copy(alpha = 0.92f),
+                            0.55f to PolliColors.Black.copy(alpha = 0.72f),
                             1f to Color.Transparent,
                         ),
                     ),
@@ -261,7 +261,7 @@ fun ChannelStoriesScreen(
                         fraction = fill,
                         modifier = Modifier
                             .weight(1f)
-                            .height(LabDimens.StoryProgressHeight),
+                            .height(PolliDimens.StoryProgressHeight),
                     )
                 }
             }
@@ -269,11 +269,11 @@ fun ChannelStoriesScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                LabAvatar(name = chat.name, seed = chat.name, size = 32.dp, chatId = chatId)
+                PolliAvatar(name = chat.name, seed = chat.name, size = 32.dp, chatId = chatId)
                 Row(modifier = Modifier.padding(start = 10.dp).weight(1f)) {
                     Text(
                         chat.name,
-                        color = LabColors.White85,
+                        color = PolliColors.White85,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
@@ -324,7 +324,7 @@ private fun StoryProgressSegment(fraction: Float, modifier: Modifier = Modifier)
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(1.dp))
-            .background(LabColors.White16),
+            .background(PolliColors.White16),
     ) {
         if (fraction > 0f) {
             Box(
@@ -332,7 +332,7 @@ private fun StoryProgressSegment(fraction: Float, modifier: Modifier = Modifier)
                     .fillMaxHeight()
                     .fillMaxWidth(fraction.coerceIn(0f, 1f))
                     .clip(RoundedCornerShape(1.dp))
-                    .background(LabColors.White),
+                    .background(PolliColors.White),
             )
         }
     }
@@ -354,8 +354,8 @@ private fun StoryContentSlide(
                 Brush.verticalGradient(
                     listOf(
                         accent().solid.copy(alpha = 0.2f),
-                        LabColors.Black.copy(alpha = 0.75f),
-                        LabColors.Black,
+                        PolliColors.Black.copy(alpha = 0.75f),
+                        PolliColors.Black,
                     ),
                 ),
             ),
@@ -369,7 +369,7 @@ private fun StoryContentSlide(
             if (post == null) {
                 Text(
                     "No posts in this channel yet.",
-                    color = LabColors.White33,
+                    color = PolliColors.White33,
                     fontSize = 15.sp,
                 )
             } else {
@@ -386,7 +386,7 @@ private fun StoryContentSlide(
                     post.text?.trim()?.takeIf { it.isNotBlank() }?.let { body ->
                         Text(
                             text = body,
-                            color = LabColors.White85,
+                            color = PolliColors.White85,
                             style = MaterialTheme.typography.bodyLarge,
                             maxLines = 24,
                             overflow = TextOverflow.Ellipsis,

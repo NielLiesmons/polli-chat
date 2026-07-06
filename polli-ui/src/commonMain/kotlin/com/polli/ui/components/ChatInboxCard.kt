@@ -26,8 +26,8 @@ import com.polli.core.chat.ChatCategory
 import com.polli.domain.model.InboxItem
 import com.polli.ui.components.InboxAvatarBadge
 import com.polli.ui.components.InboxAvatarWithBadge
-import com.polli.ui.theme.LabColors
-import com.polli.ui.theme.LabDimens
+import com.polli.ui.theme.PolliColors
+import com.polli.ui.theme.PolliDimens
 import com.polli.ui.theme.accent
 
 @Composable
@@ -44,10 +44,10 @@ fun ChatInboxCard(
             .polliClickable(onClick = onClick),
     ) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
-            Box(modifier = Modifier.width(LabDimens.AvatarSize).padding(top = 2.dp)) {
+            Box(modifier = Modifier.width(PolliDimens.AvatarSize).padding(top = 2.dp)) {
                 InboxAvatarWithBadge(
                     badge = inboxAvatarBadge(item.category),
-                    avatarSize = LabDimens.AvatarSize,
+                    avatarSize = PolliDimens.AvatarSize,
                 ) {
                     avatar()
                 }
@@ -60,12 +60,12 @@ fun ChatInboxCard(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = LabDimens.InboxTitleRowMinHeight),
+                        .heightIn(min = PolliDimens.InboxTitleRowMinHeight),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         text = item.name,
-                        color = LabColors.White,
+                        color = PolliColors.White,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
@@ -74,20 +74,20 @@ fun ChatInboxCard(
                     )
                     Text(
                         text = RelativeTimeFormat.format(item.updatedAt, nowSec),
-                        color = LabColors.White33,
+                        color = PolliColors.White33,
                         fontSize = 12.sp,
                     )
                 }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = LabDimens.GroupNameNotifGap)
-                        .heightIn(min = LabDimens.InboxPreviewRowMinHeight),
+                        .padding(top = PolliDimens.GroupNameNotifGap)
+                        .heightIn(min = PolliDimens.InboxPreviewRowMinHeight),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         text = inboxPreviewLine(item),
-                        color = LabColors.White66,
+                        color = PolliColors.White66,
                         fontSize = 14.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -97,15 +97,15 @@ fun ChatInboxCard(
                         Box(
                             modifier = Modifier
                                 .padding(start = 8.dp)
-                                .height(LabDimens.UnreadBadgeMinSize)
+                                .height(PolliDimens.UnreadBadgeMinSize)
                                 .clip(RoundedCornerShape(999.dp))
                                 .background(accent().gradientBrush())
-                                .padding(horizontal = LabDimens.UnreadBadgeHPadding),
+                                .padding(horizontal = PolliDimens.UnreadBadgeHPadding),
                             contentAlignment = Alignment.Center,
                         ) {
                             Text(
                                 text = if (item.unreadCount > 99) "99+" else item.unreadCount.toString(),
-                                color = LabColors.White,
+                                color = PolliColors.White,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
                             )

@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.polli.ui.theme.LabColors
+import com.polli.ui.theme.PolliColors
 
 @Composable
 fun DetailScreenHeader(
@@ -28,7 +28,7 @@ fun DetailScreenHeader(
         }
         Text(
             text = title,
-            color = LabColors.White85,
+            color = PolliColors.White85,
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = if (backButton != null) 12.dp else 0.dp),
         )

@@ -19,14 +19,14 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.polli.android.theme.LabColors
+import com.polli.android.theme.PolliColors
 
 @Composable
 fun NoteMarkdownPreview(
     markdown: String,
     modifier: Modifier = Modifier,
-    textColor: Color = LabColors.White85,
-    mutedColor: Color = LabColors.White33,
+    textColor: Color = PolliColors.White85,
+    mutedColor: Color = PolliColors.White33,
 ) {
     val blocks = remember(markdown) { parseMarkdownBlocks(markdown) }
     Column(modifier = modifier.fillMaxWidth()) {

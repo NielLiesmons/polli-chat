@@ -11,7 +11,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import org.thoughtcrime.securesms.R
 
-enum class LabIconName(@DrawableRes val resId: Int) {
+enum class PolliIconName(@DrawableRes val resId: Int) {
     Bell(R.drawable.ic_polli_bell),
     Search(R.drawable.ic_polli_search),
     Plus(R.drawable.ic_polli_plus),
@@ -34,8 +34,8 @@ enum class LabIconName(@DrawableRes val resId: Int) {
 }
 
 @Composable
-fun LabIcon(
-    icon: LabIconName,
+fun PolliIcon(
+    icon: PolliIconName,
     size: Dp,
     color: Color,
     modifier: Modifier = Modifier,

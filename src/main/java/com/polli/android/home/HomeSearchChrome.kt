@@ -14,10 +14,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.polli.android.icons.LabIcon
-import com.polli.android.icons.LabIconName
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabDimens
+import com.polli.android.icons.PolliIcon
+import com.polli.android.icons.PolliIconName
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliDimens
 import com.polli.android.ui.FrostedChromeSurface
 import com.polli.android.ui.polliSearchPanelHazeStyle
 import dev.chrisbanes.haze.HazeState
@@ -33,8 +33,8 @@ fun HomeSearchPillSurface(
     FrostedChromeSurface(
         modifier = modifier,
         shape = RoundedCornerShape(cornerRadius),
-        tint = LabColors.Gray,
-        borderColor = LabColors.ShellBorder,
+        tint = PolliColors.Gray,
+        borderColor = PolliColors.ShellBorder,
         hazeState = hazeState,
         hazeStyle = polliSearchPanelHazeStyle(),
         content = content,
@@ -57,18 +57,18 @@ fun HomeSearchActionButton(
     val rotation = expandProgress * 45f
     Box(
         modifier = modifier
-            .size(LabDimens.HomePillActionSize)
+            .size(PolliDimens.HomePillActionSize)
             .clip(CircleShape)
-            .background(LabColors.White.copy(alpha = bgAlpha))
+            .background(PolliColors.White.copy(alpha = bgAlpha))
             .clickable {
                 if (expanded) onCloseClick() else onPlusClick()
             },
         contentAlignment = Alignment.Center,
     ) {
-        LabIcon(
-            LabIconName.Plus,
-            LabDimens.HomeSearchPlusGlyphSize,
-            LabColors.White.copy(alpha = iconAlpha),
+        PolliIcon(
+            PolliIconName.Plus,
+            PolliDimens.HomeSearchPlusGlyphSize,
+            PolliColors.White.copy(alpha = iconAlpha),
             modifier = Modifier.graphicsLayer { rotationZ = rotation },
         )
     }

@@ -17,8 +17,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.polli.ui.theme.LabColors
-import com.polli.ui.theme.LabDimens
+import com.polli.ui.theme.PolliColors
+import com.polli.ui.theme.PolliDimens
 import com.polli.ui.theme.ProfileColors
 
 private val ExtensionLabelStyle =
@@ -40,7 +40,7 @@ private val ExtensionLabelStyle =
 fun FileExtensionIcon(
     extension: String,
     modifier: Modifier = Modifier,
-    size: Dp = LabDimens.HomeSearchPanelIconSize,
+    size: Dp = PolliDimens.HomeSearchPanelIconSize,
 ) {
     val cleanExtension = extension.trim().uppercase().removePrefix(".")
     val displayText = cleanExtension.take(4)
@@ -53,12 +53,12 @@ fun FileExtensionIcon(
             modifier = Modifier
                 .fillMaxSize()
                 .clip(shape)
-                .background(LabColors.White8),
+                .background(PolliColors.White8),
             contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = displayText,
-                color = LabColors.White,
+                color = PolliColors.White,
                 style = ExtensionLabelStyle,
             )
         }

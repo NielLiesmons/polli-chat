@@ -28,7 +28,7 @@ import com.polli.android.media.ChatAllMediaActivity
 import com.polli.android.navigation.AppNav
 import com.polli.android.newchat.GroupCreateActivity
 import com.polli.android.settings.AppPrefs
-import com.polli.android.theme.LabTheme
+import com.polli.android.theme.PolliTheme
 import org.thoughtcrime.securesms.ContactMultiSelectionActivity
 import org.thoughtcrime.securesms.ContactSelectionListFragment
 import com.polli.android.media.MediaPreviewActivity
@@ -91,8 +91,8 @@ class ProfileDetailActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEv
         DcHelper.getEventCenter(this).addObserver(DcContext.DC_EVENT_INCOMING_MSG, this)
         val prefs = AppPrefs(this)
         setContent {
-            LabTheme(prefs = prefs) {
-                val state = uiState ?: return@LabTheme
+            PolliTheme(prefs = prefs) {
+                val state = uiState ?: return@PolliTheme
                 ProfileDetailScreen(
                     state = state,
                     selectedMemberIds = selectedMembers,

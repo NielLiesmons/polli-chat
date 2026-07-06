@@ -33,8 +33,8 @@ import com.polli.core.chat.ChatMediaFilter
 import com.bumptech.glide.Glide
 import com.polli.android.BaseComposeActivity
 import com.polli.android.settings.AppPrefs
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabTheme
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliTheme
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
 import com.polli.domain.navigation.ChatIntentExtras
@@ -47,7 +47,7 @@ class ChatAllMediaActivity : BaseComposeActivity() {
         val chatId = intent.getIntExtra(ChatIntentExtras.CHAT_ID, -1)
         val prefs = AppPrefs(this)
         setContent {
-            LabTheme(prefs = prefs) {
+            PolliTheme(prefs = prefs) {
                 ChatAllMediaScreen(
                     chatId = chatId,
                     onBack = { finish() },
@@ -114,7 +114,7 @@ fun ChatAllMediaScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(LabColors.Black),
+            .background(PolliColors.Black),
     ) {
         Row(
             modifier = Modifier
@@ -126,7 +126,7 @@ fun ChatAllMediaScreen(
             RoundBackButton(onClick = onBack)
             Text(
                 "All media",
-                color = LabColors.White85,
+                color = PolliColors.White85,
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(start = 12.dp),
             )
@@ -151,7 +151,7 @@ fun GalleryThumb(msgId: Int, onClick: () -> Unit, modifier: Modifier = Modifier)
         modifier = modifier
             .aspectRatio(1f)
             .clip(RoundedCornerShape(8.dp))
-            .background(LabColors.Gray33)
+            .background(PolliColors.Gray33)
             .clickable(onClick = onClick),
     ) {
         if (file != null) {
@@ -185,11 +185,11 @@ fun MediaListRow(msgId: Int, onClick: () -> Unit, modifier: Modifier = Modifier)
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(LabColors.Gray33)
+            .background(PolliColors.Gray33)
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(label, color = LabColors.White85, modifier = Modifier.weight(1f))
+        Text(label, color = PolliColors.White85, modifier = Modifier.weight(1f))
     }
 }

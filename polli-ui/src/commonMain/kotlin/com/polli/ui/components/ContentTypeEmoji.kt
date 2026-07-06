@@ -12,7 +12,7 @@ import com.polli.ui.resources.event
 import com.polli.ui.resources.note
 import com.polli.ui.resources.poll
 import com.polli.ui.resources.task
-import com.polli.ui.theme.LabDimens
+import com.polli.ui.theme.PolliDimens
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
@@ -21,7 +21,7 @@ import org.jetbrains.compose.resources.painterResource
 fun ContentTypeEmoji(
     contentType: String,
     modifier: Modifier = Modifier,
-    size: Dp = LabDimens.HomeSearchPanelIconSize,
+    size: Dp = PolliDimens.HomeSearchPanelIconSize,
 ) {
     Image(
         painter = painterResource(contentTypeDrawable(contentType)),

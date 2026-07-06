@@ -18,7 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.polli.ui.theme.LabColors
+import com.polli.ui.theme.PolliColors
 import com.polli.ui.theme.accent
 
 @Composable
@@ -40,7 +40,7 @@ fun PolliPrimaryButton(
                 .padding(horizontal = 20.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center,
     ) {
-        PolliButtonLabel(label, color = LabColors.White)
+        PolliButtonLabel(label, color = PolliColors.White)
     }
 }
 
@@ -49,7 +49,7 @@ fun PolliGhostButton(
     label: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    color: Color = LabColors.White33,
+    color: Color = PolliColors.White33,
 ) {
     Box(
         modifier =

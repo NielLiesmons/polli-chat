@@ -34,10 +34,10 @@ import com.b44t.messenger.DcContext
 import com.polli.android.BaseComposeActivity
 import com.polli.android.navigation.AppNav
 import com.polli.android.settings.AppPrefs
-import com.polli.android.theme.LabColors
+import com.polli.android.theme.PolliColors
 import com.polli.android.theme.accent
-import com.polli.android.theme.LabTheme
-import com.polli.android.ui.LabAvatar
+import com.polli.android.theme.PolliTheme
+import com.polli.android.ui.PolliAvatar
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
 import org.thoughtcrime.securesms.connect.DcHelper
@@ -47,7 +47,7 @@ class ContactPickerActivity : BaseComposeActivity() {
         super.onCreate(savedInstanceState)
         val prefs = AppPrefs(this)
         setContent {
-            LabTheme(prefs = prefs) {
+            PolliTheme(prefs = prefs) {
                 ContactPickerScreen(onBack = { finish() })
             }
         }
@@ -69,7 +69,7 @@ private fun ContactPickerScreen(onBack: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(LabColors.Black)
+            .background(PolliColors.Black)
             .padding(top = AppInsets.statusBarTop())
             .padding(horizontal = 16.dp),
     ) {
@@ -82,13 +82,13 @@ private fun ContactPickerScreen(onBack: () -> Unit) {
                 modifier = Modifier
                     .weight(1f)
                     .clip(RoundedCornerShape(999.dp))
-                    .background(LabColors.Gray33)
+                    .background(PolliColors.Gray33)
                     .padding(horizontal = 14.dp, vertical = 10.dp),
-                textStyle = MaterialTheme.typography.bodyMedium.copy(color = LabColors.White85),
-                cursorBrush = SolidColor(LabColors.White),
+                textStyle = MaterialTheme.typography.bodyMedium.copy(color = PolliColors.White85),
+                cursorBrush = SolidColor(PolliColors.White),
                 decorationBox = { inner ->
                     if (query.isEmpty()) {
-                        Text("Search contacts", color = LabColors.White33)
+                        Text("Search contacts", color = PolliColors.White33)
                     }
                     inner()
                 },
@@ -107,7 +107,7 @@ private fun ContactPickerScreen(onBack: () -> Unit) {
                         .padding(vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    LabAvatar(
+                    PolliAvatar(
                         name = contact.displayName,
                         seed = contact.addr,
                         size = 44.dp,
@@ -115,8 +115,8 @@ private fun ContactPickerScreen(onBack: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.padding(8.dp))
                     Column {
-                        Text(contact.displayName, color = LabColors.White85, style = MaterialTheme.typography.bodyMedium)
-                        Text(contact.addr, color = LabColors.White33, style = MaterialTheme.typography.bodySmall)
+                        Text(contact.displayName, color = PolliColors.White85, style = MaterialTheme.typography.bodyMedium)
+                        Text(contact.addr, color = PolliColors.White33, style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }

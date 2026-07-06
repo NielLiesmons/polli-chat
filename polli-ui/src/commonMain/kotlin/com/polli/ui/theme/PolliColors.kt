@@ -2,8 +2,8 @@ package com.polli.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-/** Neutral Lab design tokens — accent colors live in [AccentPalette] / [accent]. */
-object LabColors {
+/** Neutral Polli design tokens — accent colors live in [AccentPalette] / [accent]. */
+object PolliColors {
     val Black = Color(0xFF121212)
     val White = Color(0xFFFFFFFF)
     val White66 = Color(0xA8FFFFFF)

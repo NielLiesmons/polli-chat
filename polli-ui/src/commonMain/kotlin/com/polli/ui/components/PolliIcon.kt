@@ -6,21 +6,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.unit.Dp
 
-enum class LabIconName {
+enum class PolliIconName {
     Search,
     Plus,
     ChevronLeft,
+    Play,
+    Pause,
 }
 
 @Composable
-fun LabIcon(
-    icon: LabIconName,
+fun PolliIcon(
+    icon: PolliIconName,
     size: Dp,
     color: Color,
     modifier: Modifier = Modifier,
@@ -30,7 +34,7 @@ fun LabIcon(
         val side = this.size.minDimension
         scale(side / 14f, side / 14f, pivot = Offset.Zero) {
             when (icon) {
-                LabIconName.Plus -> {
+                PolliIconName.Plus -> {
                     val path =
                         PathParser()
                             .parsePathString(
@@ -39,7 +43,7 @@ fun LabIcon(
                             .toPath()
                     drawPath(path, color)
                 }
-                LabIconName.ChevronLeft -> {
+                PolliIconName.ChevronLeft -> {
                     val path =
                         PathParser()
                             .parsePathString(
@@ -48,7 +52,7 @@ fun LabIcon(
                             .toPath()
                     drawPath(path, color)
                 }
-                LabIconName.Search -> {
+                PolliIconName.Search -> {
                     drawCircle(
                         color = color,
                         radius = 4.2f,
@@ -60,6 +64,30 @@ fun LabIcon(
                         start = Offset(9.2f, 9.2f),
                         end = Offset(12.5f, 12.5f),
                         strokeWidth = 1.6f,
+                    )
+                }
+                PolliIconName.Play -> {
+                    val path =
+                        Path().apply {
+                            moveTo(4.5f, 2.5f)
+                            lineTo(11.5f, 7f)
+                            lineTo(4.5f, 11.5f)
+                            close()
+                        }
+                    drawPath(path, color)
+                }
+                PolliIconName.Pause -> {
+                    drawRoundRect(
+                        color,
+                        topLeft = Offset(3.5f, 2.5f),
+                        size = Size(2.8f, 9f),
+                        cornerRadius = CornerRadius(0.8f, 0.8f),
+                    )
+                    drawRoundRect(
+                        color,
+                        topLeft = Offset(8.7f, 2.5f),
+                        size = Size(2.8f, 9f),
+                        cornerRadius = CornerRadius(0.8f, 0.8f),
                     )
                 }
             }

@@ -45,8 +45,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabDimens
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliDimens
 import dev.chrisbanes.haze.HazeState
 
 private const val ModalEnterDurationMs = 280
@@ -84,7 +84,7 @@ fun AppModal(
     val density = LocalDensity.current
     val bottomSafe = AppInsets.navigationBarBottom()
     val maxSheetHeight = config.screenHeightDp.dp * maxHeightFraction
-    val shape = RoundedCornerShape(LabDimens.ModalRadius)
+    val shape = RoundedCornerShape(PolliDimens.ModalRadius)
     val modalHazeStyle = remember { polliModalSheetHazeStyle() }
     var footerHeightPx by remember { mutableIntStateOf(0) }
     var sheetHeightPx by remember { mutableIntStateOf(0) }
@@ -128,7 +128,7 @@ fun AppModal(
             BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = LabDimens.ModalScreenInset)
+                    .padding(horizontal = PolliDimens.ModalScreenInset)
                     .padding(bottom = bottomSafe)
                     .onSizeChanged { sheetHeightPx = it.height }
                     .graphicsLayer {
@@ -160,8 +160,8 @@ fun AppModal(
                             onClick = {},
                         ),
                     shape = shape,
-                    tint = LabColors.Gray66,
-                    borderColor = LabColors.White8,
+                    tint = PolliColors.Gray66,
+                    borderColor = PolliColors.White8,
                     hazeState = hazeState,
                     hazeStyle = modalHazeStyle,
                 ) {
@@ -188,10 +188,10 @@ fun AppModal(
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = LabDimens.ModalInset)
+                                    .padding(horizontal = PolliDimens.ModalInset)
                                     .padding(
-                                        top = LabDimens.ModalInset,
-                                        bottom = if (footer == null) LabDimens.ModalInset else 0.dp,
+                                        top = PolliDimens.ModalInset,
+                                        bottom = if (footer == null) PolliDimens.ModalInset else 0.dp,
                                     ),
                                 content = content,
                             )
@@ -202,7 +202,7 @@ fun AppModal(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .onSizeChanged { footerHeightPx = it.height }
-                                    .padding(LabDimens.ModalInset),
+                                    .padding(PolliDimens.ModalInset),
                             ) {
                                 footerContent()
                             }
@@ -225,15 +225,15 @@ fun ModalTitleBlock(
         modifier = modifier
             .fillMaxWidth()
             .padding(
-                start = LabDimens.ModalInset,
-                end = LabDimens.ModalInset,
-                top = LabDimens.ModalTitleTopPad,
+                start = PolliDimens.ModalInset,
+                end = PolliDimens.ModalInset,
+                top = PolliDimens.ModalTitleTopPad,
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = title,
-            color = LabColors.White,
+            color = PolliColors.White,
             fontSize = 26.sp,
             fontWeight = FontWeight.SemiBold,
             letterSpacing = (-0.4).sp,
@@ -243,11 +243,11 @@ fun ModalTitleBlock(
         if (!description.isNullOrBlank()) {
             Text(
                 text = description,
-                color = LabColors.White66,
+                color = PolliColors.White66,
                 fontSize = 14.5.sp,
                 lineHeight = 19.5.sp,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = LabDimens.ModalTitleDescGap),
+                modifier = Modifier.padding(top = PolliDimens.ModalTitleDescGap),
             )
         }
     }
@@ -267,7 +267,7 @@ private fun Modifier.modalScrollFadeMask(
         if (h <= 0f) return@drawWithContent
 
         val topFadePx = 40.dp.toPx()
-        val bottomFadePx = LabDimens.ModalBottomFade.toPx()
+        val bottomFadePx = PolliDimens.ModalBottomFade.toPx()
         val topStop = (topFadePx / h).coerceIn(0f, 0.48f)
         val bottomStart = if (showBottomFade) {
             ((h - bottomFadePx) / h).coerceIn(topStop + 0.01f, 0.99f)
@@ -293,7 +293,7 @@ private fun Modifier.modalScrollFadeMask(
 fun ModalSectionLabel(label: String) {
     Text(
         text = label.uppercase(),
-        color = LabColors.White33,
+        color = PolliColors.White33,
         fontSize = 13.sp,
         fontWeight = FontWeight.Bold,
         letterSpacing = 2.2.sp,

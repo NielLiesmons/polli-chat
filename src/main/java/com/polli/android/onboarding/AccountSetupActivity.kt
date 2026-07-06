@@ -12,7 +12,7 @@ import com.b44t.messenger.DcEvent
 import com.polli.android.BaseAppCompatComposeActivity
 import com.polli.android.navigation.AppNav
 import com.polli.android.settings.AppPrefs
-import com.polli.android.theme.LabTheme
+import com.polli.android.theme.PolliTheme
 import com.polli.android.ui.AppInsets
 import com.polli.ui.screens.AccountSetupScreen
 import androidx.compose.ui.unit.dp
@@ -39,7 +39,7 @@ class AccountSetupActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEve
         DcHelper.getEventCenter(this).addObserver(DcContext.DC_EVENT_CONFIGURE_PROGRESS, this)
         val prefs = AppPrefs(this)
         setContent {
-            LabTheme(prefs = prefs) {
+            PolliTheme(prefs = prefs) {
                 AccountSetupScreen(
                     initialDisplayName = DcHelper.get(this, DcHelper.CONFIG_DISPLAY_NAME).orEmpty(),
                     topInset = AppInsets.statusBarTop(),

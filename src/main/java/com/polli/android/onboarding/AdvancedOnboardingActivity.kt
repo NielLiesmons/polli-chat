@@ -26,7 +26,7 @@ import com.polli.android.BaseAppCompatComposeActivity
 import com.polli.android.media.ImageEditLauncher
 import com.polli.android.navigation.AppNav
 import com.polli.android.settings.AppPrefs
-import com.polli.android.theme.LabTheme
+import com.polli.android.theme.PolliTheme
 import com.polli.android.ui.AppInsets
 import com.polli.ui.screens.AdvancedOnboardingScreen
 import androidx.compose.ui.unit.dp
@@ -105,7 +105,7 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
         handleIntent(intent)
         val prefs = AppPrefs(this)
         setContent {
-            LabTheme(prefs = prefs) {
+            PolliTheme(prefs = prefs) {
                 AdvancedOnboardingScreen(
                     displayName = displayName,
                     onDisplayNameChange = { displayName = it },

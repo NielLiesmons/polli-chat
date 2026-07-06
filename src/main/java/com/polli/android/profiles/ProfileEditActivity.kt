@@ -37,8 +37,8 @@ import androidx.compose.ui.unit.dp
 import com.polli.android.BaseComposeActivity
 import com.polli.android.media.ImageEditLauncher
 import com.polli.android.settings.AppPrefs
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabTheme
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliTheme
 import com.polli.android.theme.accent
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
@@ -66,7 +66,7 @@ class ProfileEditActivity : BaseComposeActivity() {
         val prefs = AppPrefs(this)
         setContent {
             val revision = avatarRevision
-            LabTheme(prefs = prefs) {
+            PolliTheme(prefs = prefs) {
                 ProfileEditScreen(
                     avatarRevision = revision,
                     onBack = { finish() },
@@ -114,14 +114,14 @@ fun ProfileEditScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(LabColors.Black)
+            .background(PolliColors.Black)
             .padding(top = AppInsets.statusBarTop())
             .padding(horizontal = 16.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             RoundBackButton(onClick = onBack)
             Spacer(modifier = Modifier.padding(12.dp))
-            Text("Edit profile", color = LabColors.White85, style = MaterialTheme.typography.titleLarge)
+            Text("Edit profile", color = PolliColors.White85, style = MaterialTheme.typography.titleLarge)
         }
         Spacer(modifier = Modifier.padding(24.dp))
         key(avatarRevision) {
@@ -133,7 +133,7 @@ fun ProfileEditScreen(
         }
         Text(
             "Change photo",
-            color = LabColors.White33,
+            color = PolliColors.White33,
             style = MaterialTheme.typography.labelSmall,
             modifier = Modifier
                 .padding(top = 8.dp)
@@ -146,16 +146,16 @@ fun ProfileEditScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
-                .background(LabColors.Gray33)
+                .background(PolliColors.Gray33)
                 .padding(horizontal = 14.dp, vertical = 12.dp),
-            textStyle = MaterialTheme.typography.bodyLarge.copy(color = LabColors.White85),
-            cursorBrush = SolidColor(LabColors.White),
+            textStyle = MaterialTheme.typography.bodyLarge.copy(color = PolliColors.White85),
+            cursorBrush = SolidColor(PolliColors.White),
             decorationBox = { inner ->
-                if (displayName.isEmpty()) Text("Display name", color = LabColors.White33)
+                if (displayName.isEmpty()) Text("Display name", color = PolliColors.White33)
                 inner()
             },
         )
-        Text(addr, color = LabColors.White33, modifier = Modifier.padding(top = 8.dp))
+        Text(addr, color = PolliColors.White33, modifier = Modifier.padding(top = 8.dp))
         Spacer(modifier = Modifier.padding(24.dp))
         TextButton(
             onClick = {

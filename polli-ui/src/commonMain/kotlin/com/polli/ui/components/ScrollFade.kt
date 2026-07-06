@@ -15,13 +15,13 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
-import com.polli.ui.theme.LabColors
-import com.polli.ui.theme.LabDimens
+import com.polli.ui.theme.PolliColors
+import com.polli.ui.theme.PolliDimens
 
 fun Modifier.scrollFadeMask(
     showTopFade: Boolean,
-    bottomFadeHeight: Dp = LabDimens.ScrollFadeBottom,
-    topFadeHeight: Dp = LabDimens.ScrollFadeTop,
+    bottomFadeHeight: Dp = PolliDimens.ScrollFadeBottom,
+    topFadeHeight: Dp = PolliDimens.ScrollFadeTop,
 ): Modifier =
     composed {
         val density = LocalDensity.current

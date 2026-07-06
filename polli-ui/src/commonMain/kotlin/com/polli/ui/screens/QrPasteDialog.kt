@@ -14,7 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.polli.ui.components.PolliGhostButton
-import com.polli.ui.theme.LabColors
+import com.polli.ui.theme.PolliColors
 
 @Composable
 fun QrPasteDialog(
@@ -26,12 +26,12 @@ fun QrPasteDialog(
     var text by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(title, color = LabColors.White85) },
+        title = { Text(title, color = PolliColors.White85) },
         text = {
             Column {
                 Text(
                     hint,
-                    color = LabColors.White33,
+                    color = PolliColors.White33,
                     modifier = Modifier.padding(bottom = 12.dp),
                 )
                 OutlinedTextField(
@@ -47,7 +47,7 @@ fun QrPasteDialog(
             PolliGhostButton(
                 label = "Continue",
                 onClick = { onSubmit(text.trim()) },
-                color = if (text.isNotBlank()) LabColors.White85 else LabColors.White16,
+                color = if (text.isNotBlank()) PolliColors.White85 else PolliColors.White16,
             )
         },
         dismissButton = {

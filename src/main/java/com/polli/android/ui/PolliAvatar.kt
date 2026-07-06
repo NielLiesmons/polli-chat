@@ -26,14 +26,14 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.b44t.messenger.DcChat
 import com.b44t.messenger.DcContact
 import com.b44t.messenger.DcContext
-import com.polli.android.icons.LabIcon
-import com.polli.android.icons.LabIconName
+import com.polli.android.icons.PolliIcon
+import com.polli.android.icons.PolliIconName
 import com.polli.android.settings.AppSettingsNotifier
 import com.polli.android.settings.LocalAppPrefs
 import com.polli.android.sigil.RoundedSigilView
 import com.polli.android.sigil.SigilBackground
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabDimens
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliDimens
 import com.polli.android.theme.ProfileColors
 import com.polli.core.sigil.SigilIdentity
 import dev.chrisbanes.haze.HazeState
@@ -88,7 +88,7 @@ fun ProfilePic(
     val showSigil = sigilOnlyMode || !hasPhoto
 
     val clickMod = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
-    val sigilBgMod = if (showSigil) Modifier.background(LabColors.Gray33) else Modifier
+    val sigilBgMod = if (showSigil) Modifier.background(PolliColors.Gray33) else Modifier
     Box(
         modifier = modifier
             .size(size)
@@ -124,7 +124,7 @@ fun ProfilePic(
 
 /** @see ProfilePic */
 @Composable
-fun LabAvatar(
+fun PolliAvatar(
     name: String,
     seed: String,
     size: Dp,
@@ -201,7 +201,7 @@ fun RoundBackButton(
     iconSize: Dp = 14.dp,
     iconEndPadding: Dp = 0.dp,
 ) {
-    val buttonSize = LabDimens.DetailBackButtonSize
+    val buttonSize = PolliDimens.DetailBackButtonSize
     val iconModifier = if (iconEndPadding > 0.dp) {
         Modifier.padding(end = iconEndPadding)
     } else {
@@ -213,10 +213,10 @@ fun RoundBackButton(
             hazeState = hazeState,
             modifier = Modifier.size(buttonSize),
         ) {
-            LabIcon(
-                LabIconName.ChevronLeft,
+            PolliIcon(
+                PolliIconName.ChevronLeft,
                 iconSize,
-                LabColors.White33,
+                PolliColors.White33,
                 modifier = iconModifier,
             )
         }
@@ -225,14 +225,14 @@ fun RoundBackButton(
             modifier = Modifier
                 .size(buttonSize)
                 .clip(CircleShape)
-                .background(LabColors.Gray66)
+                .background(PolliColors.Gray66)
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center,
         ) {
-            LabIcon(
-                LabIconName.ChevronLeft,
+            PolliIcon(
+                PolliIconName.ChevronLeft,
                 iconSize,
-                LabColors.White33,
+                PolliColors.White33,
                 modifier = iconModifier,
             )
         }

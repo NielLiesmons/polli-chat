@@ -15,8 +15,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import com.polli.ui.resources.Res
 import com.polli.ui.resources.mail
-import com.polli.ui.theme.LabColors
-import com.polli.ui.theme.LabDimens
+import com.polli.ui.theme.PolliColors
+import com.polli.ui.theme.PolliDimens
 import org.jetbrains.compose.resources.painterResource
 
 /** Category marker on inbox avatars — mail now, spaces later. */
@@ -38,15 +38,15 @@ fun InboxAvatarWithBadge(
                 modifier =
                     Modifier
                         .align(Alignment.BottomEnd)
-                        .size(LabDimens.InboxAvatarBadgeSize)
+                        .size(PolliDimens.InboxAvatarBadgeSize)
                         .clip(CircleShape)
-                        .background(LabColors.Black)
+                        .background(PolliColors.Black)
                         .border(
-                            width = LabDimens.InboxAvatarBadgeBorder,
-                            color = LabColors.White16,
+                            width = PolliDimens.InboxAvatarBadgeBorder,
+                            color = PolliColors.White16,
                             shape = CircleShape,
                         )
-                        .padding(LabDimens.InboxAvatarBadgeInset),
+                        .padding(PolliDimens.InboxAvatarBadgeInset),
                 contentAlignment = Alignment.Center,
             ) {
                 when (badge) {
@@ -54,7 +54,7 @@ fun InboxAvatarWithBadge(
                         Image(
                             painter = painterResource(Res.drawable.mail),
                             contentDescription = "Mail",
-                            modifier = Modifier.size(LabDimens.InboxAvatarBadgeIconSize),
+                            modifier = Modifier.size(PolliDimens.InboxAvatarBadgeIconSize),
                             contentScale = ContentScale.Fit,
                         )
                 }

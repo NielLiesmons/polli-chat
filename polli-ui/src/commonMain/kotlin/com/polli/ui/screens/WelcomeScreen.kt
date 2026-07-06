@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.polli.ui.components.PolliGhostButton
 import com.polli.ui.components.PolliPrimaryButton
-import com.polli.ui.theme.LabColors
+import com.polli.ui.theme.PolliColors
 
 @Composable
 fun WelcomeScreen(
@@ -33,7 +33,7 @@ fun WelcomeScreen(
         modifier =
             modifier
                 .fillMaxSize()
-                .background(LabColors.Black)
+                .background(PolliColors.Black)
                 .padding(top = topInset)
                 .padding(horizontal = 24.dp)
                 .padding(bottom = bottomInset),
@@ -42,14 +42,14 @@ fun WelcomeScreen(
     ) {
         Text(
             text = "Polli",
-            color = LabColors.White,
+            color = PolliColors.White,
             style = MaterialTheme.typography.headlineLarge,
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.padding(12.dp))
         Text(
             text = "Secure messaging for everyone",
-            color = LabColors.White33,
+            color = PolliColors.White33,
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
         )

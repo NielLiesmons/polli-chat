@@ -21,8 +21,8 @@ import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabDimens
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliDimens
 import kotlin.math.min
 
 private const val CHAT_FEED_TOP_FADE_MID_ALPHA = 0.85f
@@ -37,8 +37,8 @@ private const val CHAT_FEED_TOP_FADE_SOLID_STOP = 0.22f
  */
 fun Modifier.scrollFadeMask(
     showTopFade: Boolean,
-    bottomFadeHeight: Dp = LabDimens.ScrollFadeBottom,
-    topFadeHeight: Dp = LabDimens.ScrollFadeTop,
+    bottomFadeHeight: Dp = PolliDimens.ScrollFadeBottom,
+    topFadeHeight: Dp = PolliDimens.ScrollFadeTop,
 ): Modifier = composed {
     val density = LocalDensity.current
     val bottomPx = with(density) { bottomFadeHeight.toPx() }
@@ -62,13 +62,13 @@ fun ChatFeedEdgeGradients(
     val density = LocalDensity.current
     val navBottom = AppInsets.navigationBarBottom()
     val bottomFadeHeight = bottomChromeInset.coerceAtLeast(
-        navBottom + LabDimens.ChatComposerMinHeight + 8.dp,
-    ) + LabDimens.ChatFeedBottomFadeExtend
+        navBottom + PolliDimens.ChatComposerMinHeight + 8.dp,
+    ) + PolliDimens.ChatFeedBottomFadeExtend
     val topFadeHeight = when {
         topChromeClearance > 0.dp ->
-            topChromeClearance + LabDimens.ChatFeedTopFadeExtend
+            topChromeClearance + PolliDimens.ChatFeedTopFadeExtend
         showTopFade ->
-            LabDimens.ScrollFadeTop + LabDimens.ChatFeedTopFadeExtend
+            PolliDimens.ScrollFadeTop + PolliDimens.ChatFeedTopFadeExtend
         else -> 0.dp
     }
 
@@ -87,8 +87,8 @@ fun ChatFeedEdgeGradients(
                         brush = Brush.verticalGradient(
                             colorStops = arrayOf(
                                 0f to Color.Transparent,
-                                0.5f to LabColors.Black.copy(alpha = 0.75f),
-                                1f to LabColors.Black,
+                                0.5f to PolliColors.Black.copy(alpha = 0.75f),
+                                1f to PolliColors.Black,
                             ),
                             startY = bottomTop,
                             endY = h,
@@ -100,13 +100,13 @@ fun ChatFeedEdgeGradients(
 
                 val topPx = with(density) { topFadeHeight.toPx() }
                 if (topPx > 0f) {
-                    val midColor = LabColors.Black.copy(alpha = CHAT_FEED_TOP_FADE_MID_ALPHA)
+                    val midColor = PolliColors.Black.copy(alpha = CHAT_FEED_TOP_FADE_MID_ALPHA)
                     val solidStop = min(CHAT_FEED_TOP_FADE_SOLID_STOP, CHAT_FEED_TOP_FADE_MID_STOP - 0.05f)
                     drawRect(
                         brush = Brush.verticalGradient(
                             colorStops = arrayOf(
-                                0f to LabColors.Black,
-                                solidStop to LabColors.Black,
+                                0f to PolliColors.Black,
+                                solidStop to PolliColors.Black,
                                 CHAT_FEED_TOP_FADE_MID_STOP to midColor,
                                 1f to Color.Transparent,
                             ),

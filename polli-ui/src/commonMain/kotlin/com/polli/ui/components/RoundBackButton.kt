@@ -12,8 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.polli.ui.theme.LabColors
-import com.polli.ui.theme.LabDimens
+import com.polli.ui.theme.PolliColors
+import com.polli.ui.theme.PolliDimens
 
 @Composable
 fun RoundBackButton(
@@ -23,12 +23,12 @@ fun RoundBackButton(
     Box(
         modifier =
             modifier
-                .size(LabDimens.DetailBackButtonSize)
+                .size(PolliDimens.DetailBackButtonSize)
                 .clip(CircleShape)
-                .background(LabColors.Gray66)
+                .background(PolliColors.Gray66)
                 .polliClickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Text("‹", color = LabColors.White33, fontSize = 22.sp)
+        Text("‹", color = PolliColors.White33, fontSize = 22.sp)
     }
 }

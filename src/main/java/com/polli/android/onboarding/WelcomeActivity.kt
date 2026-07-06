@@ -11,7 +11,7 @@ import com.polli.android.navigation.AppNav
 import com.polli.android.permissions.BackgroundSetup
 import com.polli.android.qr.QrResultHandler
 import com.polli.android.settings.AppPrefs
-import com.polli.android.theme.LabTheme
+import com.polli.android.theme.PolliTheme
 import com.polli.android.ui.AppInsets
 import com.polli.ui.screens.WelcomeScreen
 import androidx.compose.ui.unit.dp
@@ -34,7 +34,7 @@ class WelcomeActivity : BaseComposeActivity() {
         handleBackupQrExtra(intent)
         val prefs = AppPrefs(this)
         setContent {
-            LabTheme(prefs = prefs) {
+            PolliTheme(prefs = prefs) {
                 WelcomeScreen(
                     topInset = AppInsets.statusBarTop(),
                     bottomInset = AppInsets.navigationBarBottom() + 32.dp,

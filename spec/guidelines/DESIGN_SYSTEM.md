@@ -5,17 +5,17 @@ alwaysApply: true
 
 # Polli Chat — Design System
 
-Agent guidelines for the Lab UI layer in **polli-chat**. Intentionally minimal — only patterns this app actually uses. For Zapstore/Webapp rules, see those projects' `spec/guidelines/` trees; do not copy unrelated tokens here.
+Agent guidelines for the Polli UI layer in **polli-chat**. Intentionally minimal — only patterns this app actually uses. For Zapstore/Webapp rules, see those projects' `spec/guidelines/` trees; do not copy unrelated tokens here.
 
 ## Code locations
 
 | What | File |
 |------|------|
-| Colors | `polli-ui/src/commonMain/kotlin/com/polli/ui/theme/LabColors.kt` |
-| Spacing & stroke | `polli-ui/src/commonMain/kotlin/com/polli/ui/theme/LabDimens.kt` |
-| Theme & accent | `polli-ui/.../LabTheme.kt`, `polli-chat/src/.../theme/Accent.kt` |
+| Colors | `polli-ui/src/commonMain/kotlin/com/polli/ui/theme/PolliColors.kt` |
+| Spacing & stroke | `polli-ui/src/commonMain/kotlin/com/polli/ui/theme/PolliDimens.kt` |
+| Theme & accent | `polli-ui/.../PolliTheme.kt`, `polli-chat/src/.../theme/Accent.kt` |
 | Dividers | `polli-chat/src/.../ui/ShellDivider.kt` |
-| Frosted surfaces & scrim | `polli-chat/src/.../ui/LabBackdrop.kt` |
+| Frosted surfaces & scrim | `polli-chat/src/.../ui/PolliBackdrop.kt` |
 | Modals | `polli-chat/src/.../ui/AppModal.kt` |
 
 ## Accent color
@@ -28,8 +28,8 @@ Standard divider: **`ShellDivider`**.
 
 | Property | Token |
 |----------|-------|
-| Height | `LabDimens.ShellDividerWidth` (1dp) |
-| Color | `LabColors.ShellDivider` (= `White8`, ~8% white) |
+| Height | `PolliDimens.ShellDividerWidth` (1dp) |
+| Color | `PolliColors.ShellDivider` (= `White8`, ~8% white) |
 
 ```kotlin
 ShellDivider(screenPad = 0.dp)   // edge-to-edge (Profiles rows, stories row)
@@ -76,11 +76,11 @@ Examples: channel stories, home tab pills.
 
 ## What we are *not* documenting yet
 
-Button factories, icon registry, typography scale, and screen transition specs are shared with or inherited from the broader Lab stack. Add sections here only when polli-chat has a concrete, verified pattern — do not paste Zapstore/Webapp design-system chapters wholesale.
+Button factories, icon registry, typography scale, and screen transition specs live in `polli-ui`. Add sections here only when polli-chat has a concrete, verified pattern.
 
 ## General rules
 
-- Use `LabColors` / `LabDimens` — no raw hex or magic dp in feature code.
+- Use `PolliColors` / `PolliDimens` — no raw hex or magic dp in feature code.
 - Reuse `ShellDivider`, `AppModal`, `FrostedChromeSurface` instead of one-offs.
 - When adding a new screen section separated by lines, default to `ShellDivider(screenPad = 0.dp)` unless inset dividers match surrounding 14dp content.
 - **No hover background washes** on desktop. Use `Modifier.polliClickable()` (`indication = null`) or `PolliPrimaryButton` / `PolliGhostButton` — never Material `TextButton` or default `clickable` (they paint a gray hover tint). Optional hover feedback is scale only, like Zapstore tab buttons.

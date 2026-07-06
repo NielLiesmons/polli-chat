@@ -31,12 +31,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.polli.ui.components.LabIcon
-import com.polli.ui.components.LabIconName
+import com.polli.ui.components.PolliIcon
+import com.polli.ui.components.PolliIconName
 import com.polli.ui.components.RoundedSigilView
 import com.polli.ui.components.SigilBackground
-import com.polli.ui.theme.LabColors
-import com.polli.ui.theme.LabDimens
+import com.polli.ui.theme.PolliColors
+import com.polli.ui.theme.PolliDimens
 import com.polli.ui.theme.ProfileColors
 import com.polli.ui.theme.AppInsets
 import com.polli.core.sigil.MnsSigil
@@ -58,7 +58,7 @@ fun SigilsTab() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(bottom = AppInsets.navigationBarBottom() + LabDimens.TabContentBottomPad),
+            .padding(bottom = AppInsets.navigationBarBottom() + PolliDimens.TabContentBottomPad),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -66,7 +66,7 @@ fun SigilsTab() {
             modifier = Modifier
                 .size(SigilDisplaySize)
                 .clip(CircleShape)
-                .background(LabColors.Gray33)
+                .background(PolliColors.Gray33)
                 .padding(28.dp),
             contentAlignment = Alignment.Center,
         ) {
@@ -83,7 +83,7 @@ fun SigilsTab() {
 
         Text(
             text = name,
-            color = LabColors.White,
+            color = PolliColors.White,
             fontSize = 18.sp,
             fontWeight = FontWeight.SemiBold,
             fontFamily = FontFamily.Monospace,
@@ -95,7 +95,7 @@ fun SigilsTab() {
 
         Text(
             text = hex,
-            color = LabColors.White33,
+            color = PolliColors.White33,
             fontSize = 11.sp,
             fontFamily = FontFamily.Monospace,
             letterSpacing = 1.sp,
@@ -106,18 +106,18 @@ fun SigilsTab() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = LabDimens.HomeBarPadding),
+                .padding(horizontal = PolliDimens.HomeBarPadding),
             horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             SigilNavButton(
-                icon = LabIconName.ChevronLeft,
+                icon = PolliIconName.ChevronLeft,
                 enabled = index > 0,
                 contentDescription = "Previous sigil",
                 onClick = { index -= 1 },
             )
             SigilNavButton(
-                icon = LabIconName.ChevronLeft,
+                icon = PolliIconName.ChevronLeft,
                 flipHorizontal = true,
                 enabled = true,
                 contentDescription = "Next sigil",
@@ -139,7 +139,7 @@ fun SigilsTab() {
 
 @Composable
 private fun SigilNavButton(
-    icon: LabIconName,
+    icon: PolliIconName,
     enabled: Boolean,
     contentDescription: String,
     onClick: () -> Unit,
@@ -148,10 +148,10 @@ private fun SigilNavButton(
     val alpha = if (enabled) 1f else 0.4f
     Box(
         modifier = Modifier
-            .size(LabDimens.DetailBackButtonSize)
+            .size(PolliDimens.DetailBackButtonSize)
             .alpha(alpha)
             .clip(CircleShape)
-            .background(LabColors.Gray66)
+            .background(PolliColors.Gray66)
             .clickable(
                 enabled = enabled,
                 interactionSource = remember { MutableInteractionSource() },
@@ -160,10 +160,10 @@ private fun SigilNavButton(
             ),
         contentAlignment = Alignment.Center,
     ) {
-        LabIcon(
+        PolliIcon(
             icon = icon,
             size = 14.dp,
-            color = LabColors.White33,
+            color = PolliColors.White33,
             contentDescription = contentDescription,
             modifier = if (flipHorizontal) {
                 Modifier.graphicsLayer { scaleX = -1f }

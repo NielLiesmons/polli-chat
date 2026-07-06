@@ -17,8 +17,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.polli.ui.components.ShellDivider
-import com.polli.ui.theme.LabColors
-import com.polli.ui.theme.LabDimens
+import com.polli.ui.theme.PolliColors
+import com.polli.ui.theme.PolliDimens
 import com.polli.ui.theme.accent
 
 /** Centered day separator pill — white8 fill, white66 label. */
@@ -32,28 +32,28 @@ fun ChatDayMarkerPill(
             modifier
                 .fillMaxWidth()
                 .padding(
-                    top = LabDimens.ChatFeedDayPillPadTop,
-                    bottom = LabDimens.ChatFeedDayPillPadBottom,
+                    top = PolliDimens.ChatFeedDayPillPadTop,
+                    bottom = PolliDimens.ChatFeedDayPillPadBottom,
                 ),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = label,
-            color = LabColors.White66,
+            color = PolliColors.White66,
             textAlign = TextAlign.Center,
             modifier =
                 Modifier
-                    .clip(RoundedCornerShape(LabDimens.ChatFeedPillRadius))
-                    .background(LabColors.White8)
+                    .clip(RoundedCornerShape(PolliDimens.ChatFeedPillRadius))
+                    .background(PolliColors.White8)
                     .padding(
-                        horizontal = LabDimens.ChatFeedDayPillHPadding,
-                        vertical = LabDimens.ChatFeedDayPillVPadding,
+                        horizontal = PolliDimens.ChatFeedDayPillHPadding,
+                        vertical = PolliDimens.ChatFeedDayPillVPadding,
                     ),
             style =
                 TextStyle(
-                    fontSize = LabDimens.ChatFeedDayPillFontSize,
+                    fontSize = PolliDimens.ChatFeedDayPillFontSize,
                     fontWeight = FontWeight.Medium,
-                    lineHeight = LabDimens.ChatFeedDayPillFontSize,
+                    lineHeight = PolliDimens.ChatFeedDayPillFontSize,
                 ),
         )
     }
@@ -69,30 +69,30 @@ fun ChatNewMessagesPill(
         modifier =
             modifier
                 .fillMaxWidth()
-                .padding(vertical = LabDimens.ChatFeedNewPillPadV),
+                .padding(vertical = PolliDimens.ChatFeedNewPillPadV),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         ShellDivider(screenPad = 0.dp)
         Box(
             modifier =
                 Modifier
-                    .padding(horizontal = LabDimens.ChatFeedNewPillGap)
-                    .clip(RoundedCornerShape(LabDimens.ChatFeedPillRadius))
+                    .padding(horizontal = PolliDimens.ChatFeedNewPillGap)
+                    .clip(RoundedCornerShape(PolliDimens.ChatFeedPillRadius))
                     .background(accent().gradientBrush(0.33f))
                     .padding(
-                        horizontal = LabDimens.ChatFeedNewPillHPadding,
-                        vertical = LabDimens.ChatFeedNewPillVPadding,
+                        horizontal = PolliDimens.ChatFeedNewPillHPadding,
+                        vertical = PolliDimens.ChatFeedNewPillVPadding,
                     ),
             contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = label,
-                color = LabColors.White,
+                color = PolliColors.White,
                 style =
                     TextStyle(
-                        fontSize = LabDimens.ChatFeedNewPillFontSize,
+                        fontSize = PolliDimens.ChatFeedNewPillFontSize,
                         fontWeight = FontWeight.Medium,
-                        lineHeight = LabDimens.ChatFeedNewPillFontSize,
+                        lineHeight = PolliDimens.ChatFeedNewPillFontSize,
                     ),
             )
         }

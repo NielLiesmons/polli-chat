@@ -19,8 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.polli.ui.theme.LabColors
-import com.polli.ui.theme.LabDimens
+import com.polli.ui.theme.PolliColors
+import com.polli.ui.theme.PolliDimens
 import com.polli.ui.theme.accent
 
 @Composable
@@ -38,16 +38,16 @@ fun ArchiveLinkRow(
     ) {
         Box(
             modifier = Modifier
-                .size(LabDimens.AvatarSize)
+                .size(PolliDimens.AvatarSize)
                 .clip(CircleShape)
-                .background(LabColors.Gray66),
+                .background(PolliColors.Gray66),
             contentAlignment = Alignment.Center,
         ) {
-            Text("⌂", color = LabColors.White66, fontSize = 20.sp)
+            Text("⌂", color = PolliColors.White66, fontSize = 20.sp)
         }
         Text(
             text = label,
-            color = LabColors.White,
+            color = PolliColors.White,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier
@@ -59,15 +59,15 @@ fun ArchiveLinkRow(
         if (unreadCount > 0) {
             Box(
                 modifier = Modifier
-                    .height(LabDimens.UnreadBadgeMinSize)
+                    .height(PolliDimens.UnreadBadgeMinSize)
                     .clip(RoundedCornerShape(999.dp))
                     .background(accent().gradientBrush())
-                    .padding(horizontal = LabDimens.UnreadBadgeHPadding),
+                    .padding(horizontal = PolliDimens.UnreadBadgeHPadding),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = if (unreadCount > 99) "99+" else unreadCount.toString(),
-                    color = LabColors.White,
+                    color = PolliColors.White,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
                 )

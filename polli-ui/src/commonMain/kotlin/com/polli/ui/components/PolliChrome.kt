@@ -17,8 +17,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
-import com.polli.ui.theme.LabColors
-import com.polli.ui.theme.LabDimens
+import com.polli.ui.theme.PolliColors
+import com.polli.ui.theme.PolliDimens
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.HazeInputScale
@@ -31,7 +31,7 @@ val PolliModalBarrier: Color = Color(0x60000000)
 
 private const val FROST_TINT_ALPHA = 0.72f
 
-fun polliHazeStyle(tint: Color = LabColors.Gray66): HazeStyle =
+fun polliHazeStyle(tint: Color = PolliColors.Gray66): HazeStyle =
     HazeStyle(
         backgroundColor = tint.copy(alpha = FROST_TINT_ALPHA),
         tints =
@@ -43,7 +43,7 @@ fun polliHazeStyle(tint: Color = LabColors.Gray66): HazeStyle =
         noiseFactor = HazeDefaults.noiseFactor,
     )
 
-fun polliSearchPanelHazeStyle(tint: Color = LabColors.Gray): HazeStyle =
+fun polliSearchPanelHazeStyle(tint: Color = PolliColors.Gray): HazeStyle =
     HazeStyle(
         backgroundColor = tint.copy(alpha = 0.94f),
         tints =
@@ -82,8 +82,8 @@ fun PolliScreenScrim(
 fun FrostedChromeSurface(
     modifier: Modifier = Modifier,
     shape: Shape,
-    tint: Color = LabColors.Gray66,
-    borderColor: Color = LabColors.ShellBorder,
+    tint: Color = PolliColors.Gray66,
+    borderColor: Color = PolliColors.ShellBorder,
     hazeState: HazeState? = null,
     hazeStyle: HazeStyle? = null,
     content: @Composable BoxScope.() -> Unit,
@@ -94,7 +94,7 @@ fun FrostedChromeSurface(
         modifier
             .clip(shape)
             .graphicsLayer { clip = true }
-            .border(LabDimens.ShellBorderWidth, borderColor, shape)
+            .border(PolliDimens.ShellBorderWidth, borderColor, shape)
             .then(
                 if (hazeState != null) {
                     Modifier.hazeEffect(state = hazeState, style = style) {
@@ -113,8 +113,8 @@ fun FrostedCircleButton(
     onClick: () -> Unit,
     hazeState: HazeState?,
     modifier: Modifier = Modifier,
-    tint: Color = LabColors.Gray66,
-    borderColor: Color = LabColors.ShellBorder,
+    tint: Color = PolliColors.Gray66,
+    borderColor: Color = PolliColors.ShellBorder,
     content: @Composable BoxScope.() -> Unit,
 ) {
     FrostedChromeSurface(

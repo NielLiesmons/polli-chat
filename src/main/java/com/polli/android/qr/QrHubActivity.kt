@@ -35,8 +35,8 @@ import com.caverock.androidsvg.SVGImageView
 import com.google.zxing.integration.android.IntentIntegrator
 import com.polli.android.BaseAppCompatComposeActivity
 import com.polli.android.settings.AppPrefs
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabTheme
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliTheme
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
 import org.thoughtcrime.securesms.R
@@ -58,7 +58,7 @@ class QrHubActivity : BaseAppCompatComposeActivity() {
         super.onCreate(savedInstanceState)
         val prefs = AppPrefs(this)
         setContent {
-            LabTheme(prefs = prefs) {
+            PolliTheme(prefs = prefs) {
                 QrHubScreen(
                     onBack = { finish() },
                     onScan = { launchScan() },
@@ -105,7 +105,7 @@ fun QrHubScreen(onBack: () -> Unit, onScan: () -> Unit, onPaste: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(LabColors.Black),
+            .background(PolliColors.Black),
     ) {
         Row(
             modifier = Modifier
@@ -117,7 +117,7 @@ fun QrHubScreen(onBack: () -> Unit, onScan: () -> Unit, onPaste: () -> Unit) {
             RoundBackButton(onClick = onBack)
             Text(
                 "QR code",
-                color = LabColors.White85,
+                color = PolliColors.White85,
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(start = 12.dp),
             )
@@ -125,8 +125,8 @@ fun QrHubScreen(onBack: () -> Unit, onScan: () -> Unit, onPaste: () -> Unit) {
 
         ScrollableTabRow(
             selectedTabIndex = tab,
-            containerColor = LabColors.Black,
-            contentColor = LabColors.White85,
+            containerColor = PolliColors.Black,
+            contentColor = PolliColors.White85,
             edgePadding = 16.dp,
         ) {
             Tab(selected = tab == 0, onClick = { tab = 0 }, text = { Text("Show") })
@@ -153,7 +153,7 @@ fun QrHubScreen(onBack: () -> Unit, onScan: () -> Unit, onPaste: () -> Unit) {
                             },
                         )
                     } else {
-                        Text("Unable to load QR", color = LabColors.White33)
+                        Text("Unable to load QR", color = PolliColors.White33)
                     }
                 }
             }
@@ -164,10 +164,10 @@ fun QrHubScreen(onBack: () -> Unit, onScan: () -> Unit, onPaste: () -> Unit) {
                     verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
                 ) {
                     TextButton(onClick = onScan) {
-                        Text("Open scanner", color = LabColors.White)
+                        Text("Open scanner", color = PolliColors.White)
                     }
                     TextButton(onClick = onPaste) {
-                        Text("Paste from clipboard", color = LabColors.White66)
+                        Text("Paste from clipboard", color = PolliColors.White66)
                     }
                 }
             }

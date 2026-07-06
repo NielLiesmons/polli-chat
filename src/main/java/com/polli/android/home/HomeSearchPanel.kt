@@ -36,10 +36,10 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.polli.android.icons.LabIcon
-import com.polli.android.icons.LabIconName
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabDimens
+import com.polli.android.icons.PolliIcon
+import com.polli.android.icons.PolliIconName
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliDimens
 import org.thoughtcrime.securesms.R
 
 private val recentSearches = listOf(
@@ -186,7 +186,7 @@ internal fun HomeSearchPanelBody(
 private fun HomeSearchSectionLabel(label: String) {
     Text(
         text = label.uppercase(),
-        color = LabColors.White33,
+        color = PolliColors.White33,
         fontSize = 13.sp,
         fontWeight = FontWeight.Bold,
         letterSpacing = 2.2.sp,
@@ -200,8 +200,8 @@ private fun HomeSearchSectionDivider() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp)
-            .height(LabDimens.ShellDividerWidth)
-            .background(LabColors.ShellDivider),
+            .height(PolliDimens.ShellDividerWidth)
+            .background(PolliColors.ShellDivider),
     )
 }
 
@@ -218,14 +218,14 @@ private fun HomeSearchListRow(
             .padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        LabIcon(LabIconName.Search, LabDimens.HomeSearchGlyphSize, LabColors.White16)
+        PolliIcon(PolliIconName.Search, PolliDimens.HomeSearchGlyphSize, PolliColors.White16)
         Text(
             text = label,
-            color = LabColors.White66,
+            color = PolliColors.White66,
             style = MaterialTheme.typography.labelMedium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(start = LabDimens.HomeSearchGapAfterGlyph + 1.dp),
+            modifier = Modifier.padding(start = PolliDimens.HomeSearchGapAfterGlyph + 1.dp),
         )
     }
 }
@@ -233,7 +233,7 @@ private fun HomeSearchListRow(
 @Composable
 private fun HomeFavoriteColumn(column: FavoriteColumnDummy) {
     Column(
-        modifier = Modifier.width(LabDimens.HomeSearchFavoriteColumnWidth),
+        modifier = Modifier.width(PolliDimens.HomeSearchFavoriteColumnWidth),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         column.files.forEach { file ->
@@ -259,14 +259,14 @@ private fun HomeFavoriteFileCell(file: FavoriteFileDummy) {
         ) {
             Text(
                 text = file.baseName,
-                color = LabColors.White66,
+                color = PolliColors.White66,
                 style = MaterialTheme.typography.labelMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = ".${file.extension}",
-                color = LabColors.White33,
+                color = PolliColors.White33,
                 style = MaterialTheme.typography.labelMedium,
                 maxLines = 1,
             )
@@ -278,9 +278,9 @@ private fun HomeFavoriteFileCell(file: FavoriteFileDummy) {
 private fun HomeCreateTypeCard(option: CreateTypeOption, onClick: () -> Unit) {
     Column(
         modifier = Modifier
-            .width(LabDimens.HomeSearchCreateCardWidth)
+            .width(PolliDimens.HomeSearchCreateCardWidth)
             .clip(RoundedCornerShape(14.dp))
-            .background(LabColors.White8)
+            .background(PolliColors.White8)
             .clickable(onClick = onClick)
             .padding(horizontal = 8.dp, vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -289,12 +289,12 @@ private fun HomeCreateTypeCard(option: CreateTypeOption, onClick: () -> Unit) {
         Image(
             painter = painterResource(option.emojiRes),
             contentDescription = option.label,
-            modifier = Modifier.size(LabDimens.HomeSearchPanelIconSize),
+            modifier = Modifier.size(PolliDimens.HomeSearchPanelIconSize),
             contentScale = ContentScale.Fit,
         )
         Text(
             text = option.label,
-            color = LabColors.White66,
+            color = PolliColors.White66,
             style = MaterialTheme.typography.labelMedium,
             fontSize = 12.sp,
             textAlign = TextAlign.Center,

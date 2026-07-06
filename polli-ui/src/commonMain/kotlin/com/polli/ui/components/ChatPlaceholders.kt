@@ -6,7 +6,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.polli.ui.theme.LabColors
+import com.polli.ui.theme.PolliColors
 
 @Composable
 fun ChatComingSoonTab(
@@ -17,6 +17,6 @@ fun ChatComingSoonTab(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
-        Text("$label — coming soon", color = LabColors.White33)
+        Text("$label — coming soon", color = PolliColors.White33)
     }
 }

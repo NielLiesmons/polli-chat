@@ -16,8 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabDimens
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliDimens
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.HazeInputScale
@@ -32,7 +32,7 @@ val PolliModalBarrier: Color = Color(0x60000000)
 private const val FROST_TINT_ALPHA = 0.72f
 
 /** Shared frosted-glass blur style for Polli chrome surfaces (composer, modals, search bar). */
-fun polliHazeStyle(tint: Color = LabColors.Gray66): HazeStyle = HazeStyle(
+fun polliHazeStyle(tint: Color = PolliColors.Gray66): HazeStyle = HazeStyle(
     backgroundColor = tint.copy(alpha = FROST_TINT_ALPHA),
     tints = listOf(
         HazeTint(Color.Black.copy(alpha = 0.32f)),
@@ -42,8 +42,8 @@ fun polliHazeStyle(tint: Color = LabColors.Gray66): HazeStyle = HazeStyle(
     noiseFactor = HazeDefaults.noiseFactor,
 )
 
-/** Darker frost for the home search pill / expanded panel (solid [LabColors.Gray], not the lighter Gray33 token). */
-fun polliSearchPanelHazeStyle(tint: Color = LabColors.Gray): HazeStyle = HazeStyle(
+/** Darker frost for the home search pill / expanded panel (solid [PolliColors.Gray], not the lighter Gray33 token). */
+fun polliSearchPanelHazeStyle(tint: Color = PolliColors.Gray): HazeStyle = HazeStyle(
     backgroundColor = tint.copy(alpha = 0.94f),
     tints = listOf(
         HazeTint(Color.Black.copy(alpha = 0.58f)),
@@ -57,7 +57,7 @@ fun polliSearchPanelHazeStyle(tint: Color = LabColors.Gray): HazeStyle = HazeSty
  * Modal sheet frost — matches zapstore AppModal (gray66 + ~14px backdrop blur).
  * High tint opacity so content does not bleed through when blur is unavailable.
  */
-fun polliModalSheetHazeStyle(tint: Color = LabColors.Gray66): HazeStyle = HazeStyle(
+fun polliModalSheetHazeStyle(tint: Color = PolliColors.Gray66): HazeStyle = HazeStyle(
     backgroundColor = tint.copy(alpha = 0.96f),
     tints = listOf(
         HazeTint(Color.Black.copy(alpha = 0.35f)),
@@ -68,7 +68,7 @@ fun polliModalSheetHazeStyle(tint: Color = LabColors.Gray66): HazeStyle = HazeSt
 )
 
 /** Heavier frost for bubble overlay panels so feed text does not bleed through. */
-fun polliOverlayHazeStyle(tint: Color = LabColors.Gray66): HazeStyle = HazeStyle(
+fun polliOverlayHazeStyle(tint: Color = PolliColors.Gray66): HazeStyle = HazeStyle(
     backgroundColor = tint.copy(alpha = 0.94f),
     tints = listOf(
         HazeTint(Color.Black.copy(alpha = 0.50f)),
@@ -111,8 +111,8 @@ fun PolliScreenScrim(
 fun FrostedChromeSurface(
     modifier: Modifier = Modifier,
     shape: Shape,
-    tint: Color = LabColors.Gray66,
-    borderColor: Color = LabColors.ShellBorder,
+    tint: Color = PolliColors.Gray66,
+    borderColor: Color = PolliColors.ShellBorder,
     hazeState: HazeState? = null,
     hazeStyle: HazeStyle? = null,
     content: @Composable BoxScope.() -> Unit,
@@ -122,7 +122,7 @@ fun FrostedChromeSurface(
     val chromeModifier = modifier
         .clip(shape)
         .graphicsLayer { clip = true }
-        .border(LabDimens.ShellBorderWidth, borderColor, shape)
+        .border(PolliDimens.ShellBorderWidth, borderColor, shape)
         .then(
             if (hazeState != null) {
                 Modifier.hazeEffect(state = hazeState, style = style) {
@@ -141,8 +141,8 @@ fun FrostedCircleButton(
     onClick: () -> Unit,
     hazeState: HazeState?,
     modifier: Modifier = Modifier,
-    tint: Color = LabColors.Gray66,
-    borderColor: Color = LabColors.ShellBorder,
+    tint: Color = PolliColors.Gray66,
+    borderColor: Color = PolliColors.ShellBorder,
     content: @Composable BoxScope.() -> Unit,
 ) {
     FrostedChromeSurface(

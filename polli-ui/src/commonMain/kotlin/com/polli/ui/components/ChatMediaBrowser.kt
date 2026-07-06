@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.polli.core.chat.ChatMediaFilter
-import com.polli.ui.theme.LabColors
+import com.polli.ui.theme.PolliColors
 
 @Composable
 fun ChatMediaBrowser(
@@ -42,8 +42,8 @@ fun ChatMediaBrowser(
     ) {
         ScrollableTabRow(
             selectedTabIndex = selectedFilterIndex,
-            containerColor = LabColors.Black,
-            contentColor = LabColors.White85,
+            containerColor = PolliColors.Black,
+            contentColor = PolliColors.White85,
             edgePadding = 16.dp,
         ) {
             ChatMediaFilter.entries.forEachIndexed { index, item ->
@@ -60,7 +60,7 @@ fun ChatMediaBrowser(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
-                Text("No ${filter.label.lowercase()}", color = LabColors.White33)
+                Text("No ${filter.label.lowercase()}", color = PolliColors.White33)
             }
         } else if (filter.isGrid) {
             LazyVerticalGrid(

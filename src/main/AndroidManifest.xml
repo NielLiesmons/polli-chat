@@ -146,7 +146,7 @@
             android:name="com.polli.android.LauncherActivity"
             android:label="@string/app_name"
             android:launchMode="singleTask"
-            android:theme="@style/Lab.NoActionBar"
+            android:theme="@style/Polli.NoActionBar"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"
             android:exported="false" />
 
@@ -154,19 +154,19 @@
             android:name="com.polli.android.HomeActivity"
             android:label="@string/app_name"
             android:launchMode="singleTask"
-            android:theme="@style/Lab.NoActionBar"
+            android:theme="@style/Polli.NoActionBar"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"
             android:exported="false" />
 
         <activity
             android:name="com.polli.android.stories.ChannelStoriesActivity"
-            android:theme="@style/Lab.NoActionBar"
+            android:theme="@style/Polli.NoActionBar"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"
             android:exported="false" />
 
         <activity
             android:name="com.polli.android.chat.ChatActivity"
-            android:theme="@style/Lab.NoActionBar"
+            android:theme="@style/Polli.NoActionBar"
             android:windowSoftInputMode="adjustResize"
             android:launchMode="singleTask"
             android:relinquishTaskIdentity="true"
@@ -180,7 +180,7 @@
 
         <activity
             android:name="com.polli.android.notes.NoteEditorActivity"
-            android:theme="@style/Lab.NoActionBar"
+            android:theme="@style/Polli.NoActionBar"
             android:windowSoftInputMode="adjustResize"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"
             android:parentActivityName="com.polli.android.HomeActivity"
@@ -192,7 +192,7 @@
 
         <activity
             android:name="com.polli.android.home.ArchiveActivity"
-            android:theme="@style/Lab.NoActionBar"
+            android:theme="@style/Polli.NoActionBar"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"
             android:parentActivityName="com.polli.android.HomeActivity"
             android:exported="false">
@@ -203,58 +203,58 @@
 
         <activity
             android:name="com.polli.android.profiles.ProfilesActivity"
-            android:theme="@style/Lab.NoActionBar"
+            android:theme="@style/Polli.NoActionBar"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"
             android:exported="false" />
 
         <activity
             android:name="com.polli.android.newchat.NewConversationActivity"
-            android:theme="@style/Lab.NoActionBar"
+            android:theme="@style/Polli.NoActionBar"
             android:exported="false" />
 
         <activity
             android:name="com.polli.android.newchat.ContactPickerActivity"
-            android:theme="@style/Lab.NoActionBar"
+            android:theme="@style/Polli.NoActionBar"
             android:exported="false" />
 
         <activity
             android:name="com.polli.android.newchat.GroupCreateActivity"
-            android:theme="@style/Lab.NoActionBar"
+            android:theme="@style/Polli.NoActionBar"
             android:exported="false" />
 
         <activity
             android:name="com.polli.android.settings.AppSettingsActivity"
-            android:theme="@style/Lab.NoActionBar"
+            android:theme="@style/Polli.NoActionBar"
             android:exported="false" />
 
         <activity
             android:name="com.polli.android.profiles.ProfileEditActivity"
-            android:theme="@style/Lab.NoActionBar"
+            android:theme="@style/Polli.NoActionBar"
             android:exported="false" />
 
         <activity
             android:name="com.polli.android.onboarding.WelcomeActivity"
-            android:theme="@style/Lab.NoActionBar"
+            android:theme="@style/Polli.NoActionBar"
             android:exported="false" />
 
         <activity
             android:name="com.polli.android.onboarding.AccountSetupActivity"
-            android:theme="@style/Lab.NoActionBar"
+            android:theme="@style/Polli.NoActionBar"
             android:exported="false" />
 
         <activity
             android:name="com.polli.android.qr.QrHubActivity"
-            android:theme="@style/Lab.NoActionBar"
+            android:theme="@style/Polli.NoActionBar"
             android:exported="false" />
 
         <activity
             android:name="com.polli.android.media.MediaPreviewActivity"
-            android:theme="@style/Lab.NoActionBar"
+            android:theme="@style/Polli.NoActionBar"
             android:exported="false" />
 
         <activity
             android:name="com.polli.android.media.ChatAllMediaActivity"
-            android:theme="@style/Lab.NoActionBar"
+            android:theme="@style/Polli.NoActionBar"
             android:exported="false" />
 
         <activity-alias
@@ -312,7 +312,7 @@
         <activity
             android:name="com.polli.android.HomeRelayingActivity"
             android:label="@string/app_name"
-            android:theme="@style/Lab.NoActionBar"
+            android:theme="@style/Polli.NoActionBar"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"
             android:exported="false" />
 
@@ -377,7 +377,7 @@
 
         <activity
             android:name="com.polli.android.profiles.ProfileDetailActivity"
-            android:theme="@style/Lab.NoActionBar"
+            android:theme="@style/Polli.NoActionBar"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"
             android:exported="false" />
 
@@ -416,7 +416,7 @@
 
         <activity
             android:name="com.polli.android.onboarding.AdvancedOnboardingActivity"
-            android:theme="@style/Lab.NoActionBar"
+            android:theme="@style/Polli.NoActionBar"
             android:windowSoftInputMode="stateHidden|adjustResize"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"
             android:exported="true">

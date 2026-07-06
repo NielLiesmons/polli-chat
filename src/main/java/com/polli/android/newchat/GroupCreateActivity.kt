@@ -40,11 +40,11 @@ import com.polli.android.BaseComposeActivity
 import com.polli.android.media.ImageEditLauncher
 import com.polli.android.navigation.AppNav
 import com.polli.android.settings.AppPrefs
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabTheme
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliTheme
 import com.polli.android.theme.accent
 import com.polli.android.ui.AppInsets
-import com.polli.android.ui.LabAvatar
+import com.polli.android.ui.PolliAvatar
 import com.polli.android.ui.RoundBackButton
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.connect.DcHelper
@@ -113,7 +113,7 @@ class GroupCreateActivity : BaseComposeActivity() {
             }
         val prefs = AppPrefs(this)
         setContent {
-            LabTheme(prefs = prefs) {
+            PolliTheme(prefs = prefs) {
                 GroupCreateScreen(
                     mode = mode,
                     onBack = { finish() },
@@ -264,7 +264,7 @@ private fun GroupCreateScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(LabColors.Black)
+            .background(PolliColors.Black)
             .padding(top = AppInsets.statusBarTop())
             .verticalScroll(rememberScrollState()),
     ) {
@@ -274,7 +274,7 @@ private fun GroupCreateScreen(
         ) {
             RoundBackButton(onClick = onBack)
             Spacer(modifier = Modifier.padding(12.dp))
-            Text(title, color = LabColors.White85, style = MaterialTheme.typography.titleLarge)
+            Text(title, color = PolliColors.White85, style = MaterialTheme.typography.titleLarge)
         }
         Column(
             modifier = Modifier
@@ -283,14 +283,14 @@ private fun GroupCreateScreen(
                 .clickable(onClick = onPickAvatar),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            LabAvatar(
+            PolliAvatar(
                 name = name.ifBlank { "Group" },
                 seed = name.ifBlank { "group" },
                 size = 72.dp,
                 chatId = avatarChatId,
                 dcContext = dc,
             )
-            Text("Tap to change photo", color = LabColors.White33, modifier = Modifier.padding(top = 8.dp))
+            Text("Tap to change photo", color = PolliColors.White33, modifier = Modifier.padding(top = 8.dp))
         }
         BasicTextField(
             value = name,
@@ -299,15 +299,15 @@ private fun GroupCreateScreen(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(LabColors.Gray33)
+                .background(PolliColors.Gray33)
                 .padding(horizontal = 14.dp, vertical = 12.dp),
-            textStyle = MaterialTheme.typography.bodyLarge.copy(color = LabColors.White85),
-            cursorBrush = SolidColor(LabColors.White),
+            textStyle = MaterialTheme.typography.bodyLarge.copy(color = PolliColors.White85),
+            cursorBrush = SolidColor(PolliColors.White),
             decorationBox = { inner ->
                 if (name.isEmpty()) {
                     Text(
                         if (broadcast) "Channel name" else "Group name",
-                        color = LabColors.White33,
+                        color = PolliColors.White33,
                     )
                 }
                 inner()
@@ -322,13 +322,13 @@ private fun GroupCreateScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(LabColors.Gray33)
+                    .background(PolliColors.Gray33)
                     .padding(horizontal = 14.dp, vertical = 12.dp),
-                textStyle = MaterialTheme.typography.bodyLarge.copy(color = LabColors.White85),
-                cursorBrush = SolidColor(LabColors.White),
+                textStyle = MaterialTheme.typography.bodyLarge.copy(color = PolliColors.White85),
+                cursorBrush = SolidColor(PolliColors.White),
                 decorationBox = { inner ->
                     if (description.isEmpty()) {
-                        Text("Description (optional)", color = LabColors.White33)
+                        Text("Description (optional)", color = PolliColors.White33)
                     }
                     inner()
                 },

@@ -25,9 +25,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.b44t.messenger.DcContact
-import com.polli.android.theme.LabColors
+import com.polli.android.theme.PolliColors
 import com.polli.android.ui.AppInsets
-import com.polli.android.ui.LabAvatar
+import com.polli.android.ui.PolliAvatar
 import com.polli.android.ui.RoundBackButton
 import com.polli.android.ui.ShellDivider
 import org.thoughtcrime.securesms.connect.DcHelper
@@ -55,7 +55,7 @@ fun ProfileDetailScreen(
         modifier =
             Modifier
                 .fillMaxSize()
-                .background(LabColors.Black)
+                .background(PolliColors.Black)
                 .verticalScroll(rememberScrollState())
                 .padding(top = AppInsets.statusBarTop() + 8.dp)
                 .padding(bottom = AppInsets.navigationBarBottom() + 24.dp),
@@ -66,14 +66,14 @@ fun ProfileDetailScreen(
         ) {
             RoundBackButton(onClick = onBack)
             Spacer(modifier = Modifier.width(12.dp))
-            Text(state.screenTitle, color = LabColors.White85, style = MaterialTheme.typography.titleLarge)
+            Text(state.screenTitle, color = PolliColors.White85, style = MaterialTheme.typography.titleLarge)
         }
 
         Column(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            LabAvatar(
+            PolliAvatar(
                 name = state.displayName.ifBlank { "?" },
                 seed = state.seed,
                 size = 88.dp,
@@ -85,7 +85,7 @@ fun ProfileDetailScreen(
             Spacer(modifier = Modifier.padding(8.dp))
             Text(
                 state.displayName,
-                color = LabColors.White85,
+                color = PolliColors.White85,
                 style = MaterialTheme.typography.titleMedium,
             )
         }
@@ -125,14 +125,14 @@ fun ProfileDetailScreen(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .background(LabColors.Gray)
+                        .background(PolliColors.Gray)
                         .clickable(onClick = onRemoveSelectedMembers)
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     "Remove ${selectedMemberIds.size} member(s)",
-                    color = LabColors.Rouge,
+                    color = PolliColors.Rouge,
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
@@ -156,7 +156,7 @@ fun ProfileDetailScreen(
         if (state.sharedChats.isNotEmpty()) {
             Text(
                 "Shared chats",
-                color = LabColors.White33,
+                color = PolliColors.White33,
                 style = MaterialTheme.typography.labelMedium,
                 modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
             )
@@ -179,7 +179,7 @@ private fun ProfileActionRow(
 ) {
     Text(
         text = label,
-        color = LabColors.White85,
+        color = PolliColors.White85,
         fontWeight = FontWeight.SemiBold,
         style = MaterialTheme.typography.bodyLarge,
         modifier =
@@ -194,7 +194,7 @@ private fun ProfileActionRow(
 private fun ProfileMetaRow(text: String) {
     Text(
         text = text,
-        color = LabColors.White33,
+        color = PolliColors.White33,
         style = MaterialTheme.typography.bodyMedium,
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
     )
@@ -207,14 +207,14 @@ private fun ProfileInfoText(
 ) {
     Text(
         text = text,
-        color = LabColors.White66,
+        color = PolliColors.White66,
         style = MaterialTheme.typography.bodyMedium,
         modifier =
             Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(LabColors.Gray33)
+                .background(PolliColors.Gray33)
                 .padding(14.dp)
                 .combinedClickable(onLongClick = onLongClick, onClick = {}),
     )
@@ -236,13 +236,13 @@ private fun ProfileMemberRowView(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .background(if (selected) LabColors.Gray else LabColors.Black)
+                .background(if (selected) PolliColors.Gray else PolliColors.Black)
                 .combinedClickable(onClick = onClick, onLongClick = onLongClick)
                 .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (!isSpecial) {
-            LabAvatar(
+            PolliAvatar(
                 name = member.name,
                 seed = member.addr ?: member.name,
                 size = 40.dp,
@@ -252,9 +252,9 @@ private fun ProfileMemberRowView(
             Spacer(modifier = Modifier.width(12.dp))
         }
         Column(modifier = Modifier.weight(1f)) {
-            Text(member.name, color = LabColors.White85, style = MaterialTheme.typography.bodyMedium)
+            Text(member.name, color = PolliColors.White85, style = MaterialTheme.typography.bodyMedium)
             if (!member.addr.isNullOrBlank()) {
-                Text(member.addr, color = LabColors.White33, style = MaterialTheme.typography.bodySmall)
+                Text(member.addr, color = PolliColors.White33, style = MaterialTheme.typography.bodySmall)
             }
         }
     }
@@ -273,9 +273,9 @@ private fun ProfileSharedChatRow(
                 .clickable(onClick = onClick)
                 .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
-        Text(title, color = LabColors.White85, style = MaterialTheme.typography.bodyMedium)
+        Text(title, color = PolliColors.White85, style = MaterialTheme.typography.bodyMedium)
         if (subtitle.isNotBlank()) {
-            Text(subtitle, color = LabColors.White33, style = MaterialTheme.typography.bodySmall)
+            Text(subtitle, color = PolliColors.White33, style = MaterialTheme.typography.bodySmall)
         }
     }
 }

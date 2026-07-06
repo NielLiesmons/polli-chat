@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.polli.ui.components.ProfileAvatar
 import com.polli.ui.components.RoundBackButton
-import com.polli.ui.theme.LabColors
+import com.polli.ui.theme.PolliColors
 import com.polli.ui.theme.accent
 
 @Composable
@@ -48,7 +48,7 @@ fun AccountSetupScreen(
         modifier =
             modifier
                 .fillMaxSize()
-                .background(LabColors.Black)
+                .background(PolliColors.Black)
                 .padding(top = topInset + 8.dp)
                 .padding(horizontal = 24.dp)
                 .padding(bottom = bottomInset),
@@ -61,7 +61,7 @@ fun AccountSetupScreen(
             Spacer(modifier = Modifier.padding(16.dp))
             Text(
                 text = "Create account",
-                color = LabColors.White85,
+                color = PolliColors.White85,
                 style = MaterialTheme.typography.titleLarge,
             )
             Spacer(modifier = Modifier.padding(20.dp))
@@ -76,10 +76,10 @@ fun AccountSetupScreen(
                 enabled = !busy,
                 colors =
                     TextFieldDefaults.colors(
-                        focusedTextColor = LabColors.White85,
-                        unfocusedTextColor = LabColors.White85,
-                        focusedContainerColor = LabColors.Gray33,
-                        unfocusedContainerColor = LabColors.Gray33,
+                        focusedTextColor = PolliColors.White85,
+                        unfocusedTextColor = PolliColors.White85,
+                        focusedContainerColor = PolliColors.Gray33,
+                        unfocusedContainerColor = PolliColors.Gray33,
                     ),
             )
             Spacer(modifier = Modifier.padding(24.dp))

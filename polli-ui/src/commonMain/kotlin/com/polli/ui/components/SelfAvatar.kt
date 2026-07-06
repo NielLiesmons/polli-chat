@@ -14,7 +14,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import com.polli.core.sigil.MnsSigil
 import com.polli.core.sigil.SigilIdentity
-import com.polli.ui.theme.LabColors
+import com.polli.ui.theme.PolliColors
 import com.polli.ui.theme.ProfileColors
 
 @Composable
@@ -35,7 +35,7 @@ fun SelfAvatar(
             modifier
                 .size(size)
                 .clip(CircleShape)
-                .background(LabColors.Gray33)
+                .background(PolliColors.Gray33)
                 .then(clickMod),
         contentAlignment = Alignment.Center,
     ) {

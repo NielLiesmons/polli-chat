@@ -25,7 +25,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.polli.android.theme.LabColors
+import com.polli.android.theme.PolliColors
 import kotlin.math.min
 
 private val StoryOpenEasing = CubicBezierEasing(0.22f, 1f, 0.36f, 1f)
@@ -106,7 +106,7 @@ fun ChannelStoriesOverlay(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(LabColors.Black.copy(alpha = scrimAlpha)),
+                .background(PolliColors.Black.copy(alpha = scrimAlpha)),
         )
 
         Box(

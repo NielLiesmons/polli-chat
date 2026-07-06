@@ -24,8 +24,8 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabDimens
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliDimens
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
 import com.polli.android.ui.ShellDivider
@@ -44,7 +44,7 @@ fun NoteEditorScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(LabColors.Black)
+            .background(PolliColors.Black)
             .imePadding(),
     ) {
         NoteEditorTopBar(
@@ -66,7 +66,7 @@ fun NoteEditorScreen(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = LabDimens.HomeBarPadding)
+                .padding(horizontal = PolliDimens.HomeBarPadding)
                 .padding(bottom = AppInsets.navigationBarBottom() + 16.dp),
         ) {
             BasicTextField(
@@ -76,18 +76,18 @@ fun NoteEditorScreen(
                     .fillMaxWidth()
                     .padding(top = 8.dp, bottom = 12.dp),
                 textStyle = TextStyle(
-                    color = LabColors.White85,
+                    color = PolliColors.White85,
                     fontFamily = FontFamily.Monospace,
                     fontSize = MaterialTheme.typography.bodyLarge.fontSize,
                     lineHeight = MaterialTheme.typography.bodyLarge.lineHeight,
                 ),
-                cursorBrush = SolidColor(LabColors.White),
+                cursorBrush = SolidColor(PolliColors.White),
                 decorationBox = { inner ->
                     Box {
                         if (viewModel.body.isEmpty()) {
                             Text(
                                 "# Title\n\nWrite markdown here…",
-                                color = LabColors.White16,
+                                color = PolliColors.White16,
                                 fontFamily = FontFamily.Monospace,
                                 style = MaterialTheme.typography.bodyLarge,
                             )
@@ -101,7 +101,7 @@ fun NoteEditorScreen(
                 ShellDivider(screenPad = 0.dp)
                 Text(
                     "Preview",
-                    color = LabColors.White33,
+                    color = PolliColors.White33,
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.padding(top = 14.dp, bottom = 8.dp),
                 )
@@ -109,7 +109,7 @@ fun NoteEditorScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(LabColors.Gray33)
+                        .background(PolliColors.Gray33)
                         .padding(14.dp),
                 ) {
                     NoteMarkdownPreview(markdown = viewModel.body)
@@ -132,13 +132,13 @@ private fun NoteEditorTopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = top, start = LabDimens.HomeBarPadding, end = 8.dp, bottom = 8.dp),
+            .padding(top = top, start = PolliDimens.HomeBarPadding, end = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         RoundBackButton(onClick = onBack)
         Text(
             text = title,
-            color = LabColors.White85,
+            color = PolliColors.White85,
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier
                 .weight(1f)
@@ -147,12 +147,12 @@ private fun NoteEditorTopBar(
         TextButton(onClick = onTogglePreview) {
             Text(
                 if (showPreview) "Hide preview" else "Preview",
-                color = LabColors.White66,
+                color = PolliColors.White66,
             )
         }
         if (canDelete) {
             TextButton(onClick = onDelete) {
-                Text("Delete", color = LabColors.White33)
+                Text("Delete", color = PolliColors.White33)
             }
         }
     }

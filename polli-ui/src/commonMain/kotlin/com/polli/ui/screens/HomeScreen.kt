@@ -63,10 +63,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import com.polli.domain.model.InboxItem
-import com.polli.ui.components.LabIcon
-import com.polli.ui.components.LabIconName
-import com.polli.ui.theme.LabColors
-import com.polli.ui.theme.LabDimens
+import com.polli.ui.components.PolliIcon
+import com.polli.ui.components.PolliIconName
+import com.polli.ui.theme.PolliColors
+import com.polli.ui.theme.PolliDimens
 import com.polli.ui.theme.accent
 import com.polli.ui.theme.AppInsets
 import com.polli.ui.components.ArchiveLinkRow
@@ -204,8 +204,8 @@ fun HomeScreen(
     }
 
     val density = LocalDensity.current
-    val expandDragDistancePx = with(density) { LabDimens.HomeSearchExpandDragDistance.toPx() }
-    val snapThreshold = LabDimens.HomeSearchExpandSnapThreshold
+    val expandDragDistancePx = with(density) { PolliDimens.HomeSearchExpandDragDistance.toPx() }
+    val snapThreshold = PolliDimens.HomeSearchExpandSnapThreshold
     val expandNestedScroll = remember(listState, searchPanelOpen, snapThreshold) {
         object : NestedScrollConnection {
             override fun onPostScroll(
@@ -245,25 +245,25 @@ fun HomeScreen(
 
     val feedAlpha = (1f - expandProgress * 0.92f).coerceIn(0f, 1f)
     val chromeAlpha = (1f - expandProgress * 0.88f).coerceIn(0f, 1f)
-    val barTopInset = (LabDimens.HomeProfileSize - LabDimens.HomeBarHeight) / 2
+    val barTopInset = (PolliDimens.HomeProfileSize - PolliDimens.HomeBarHeight) / 2
     val searchExpanded = searchPanelOpen || expandProgress > 0.05f
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(LabColors.Black)
+            .background(PolliColors.Black)
             .padding(top = AppInsets.statusBarTop()),
     ) {
         var searchPanelBodyHeight by remember {
-            mutableStateOf(LabDimens.HomeSearchPanelExpandedHeight - LabDimens.HomeBarHeight)
+            mutableStateOf(PolliDimens.HomeSearchPanelExpandedHeight - PolliDimens.HomeBarHeight)
         }
         HomeSearchPanelHeightMeasurer { measured ->
             if (measured > 0.dp) searchPanelBodyHeight = measured
         }
-        val expandedPanelHeight = LabDimens.HomeBarHeight + searchPanelBodyHeight
-        val panelHeight = lerp(LabDimens.HomeBarHeight, expandedPanelHeight, expandProgress)
-        val headerBlockHeight = LabDimens.HomeBarVerticalPad + maxOf(
-            LabDimens.HomeProfileSize,
+        val expandedPanelHeight = PolliDimens.HomeBarHeight + searchPanelBodyHeight
+        val panelHeight = lerp(PolliDimens.HomeBarHeight, expandedPanelHeight, expandProgress)
+        val headerBlockHeight = PolliDimens.HomeBarVerticalPad + maxOf(
+            PolliDimens.HomeProfileSize,
             barTopInset + panelHeight,
         )
         Column(
@@ -281,16 +281,16 @@ fun HomeScreen(
                 shareRelayTitle?.let { title ->
                     Text(
                         text = title,
-                        color = LabColors.White66,
+                        color = PolliColors.White66,
                         style = MaterialTheme.typography.labelLarge,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = LabDimens.HomeBarPadding)
+                            .padding(horizontal = PolliDimens.HomeBarPadding)
                             .padding(bottom = 8.dp),
                     )
                 }
                 if (expandProgress < 0.92f) {
-                    Spacer(modifier = Modifier.height(LabDimens.HomeChromeGap))
+                    Spacer(modifier = Modifier.height(PolliDimens.HomeChromeGap))
                     Column(modifier = Modifier.fillMaxWidth()) {
                         if (storyRingEntries.isNotEmpty()) {
                             ChannelStoriesRow(
@@ -315,7 +315,7 @@ fun HomeScreen(
                                     }
                                 },
                             )
-                            Spacer(modifier = Modifier.height(LabDimens.HomeChromeGap))
+                            Spacer(modifier = Modifier.height(PolliDimens.HomeChromeGap))
                         }
                         TabRow(
                             active = tab,
@@ -326,13 +326,13 @@ fun HomeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(LabDimens.TabSectionGap))
+            Spacer(modifier = Modifier.height(PolliDimens.TabSectionGap))
 
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .background(LabColors.Black)
+                    .background(PolliColors.Black)
                     .alpha(feedAlpha),
             ) {
                 if (tab == HomeTab.Sigils) {
@@ -360,7 +360,7 @@ fun HomeScreen(
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Text(
                                 text = hint,
-                                color = LabColors.White33,
+                                color = PolliColors.White33,
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.padding(horizontal = 24.dp),
                                 textAlign = TextAlign.Center,
@@ -374,11 +374,11 @@ fun HomeScreen(
                                 .nestedScroll(expandNestedScroll)
                                 .scrollFadeMask(showTopFade),
                             contentPadding = PaddingValues(
-                                start = LabDimens.HomeBarPadding,
-                                end = LabDimens.HomeBarPadding,
-                                bottom = AppInsets.navigationBarBottom() + LabDimens.TabContentBottomPad,
+                                start = PolliDimens.HomeBarPadding,
+                                end = PolliDimens.HomeBarPadding,
+                                bottom = AppInsets.navigationBarBottom() + PolliDimens.TabContentBottomPad,
                             ),
-                            verticalArrangement = Arrangement.spacedBy(LabDimens.TabSectionGap),
+                            verticalArrangement = Arrangement.spacedBy(PolliDimens.TabSectionGap),
                         ) {
                             if (showArchiveRow) {
                                 item(key = "archive-link") {
@@ -395,7 +395,7 @@ fun HomeScreen(
                                     onClick = { onChatClick(item.chatId) },
                                     nowSec = nowSec,
                                     avatar = {
-                                        chatAvatar(item, LabDimens.AvatarSize)
+                                        chatAvatar(item, PolliDimens.AvatarSize)
                                     },
                                 )
                             }
@@ -455,20 +455,20 @@ private fun HomeExpandableSearchHeader(
     onCreateNote: () -> Unit,
     selfAvatar: @Composable (String, Dp, () -> Unit) -> Unit,
 ) {
-    val cornerRadius = lerp(LabDimens.HomeBarHeight / 2, 20.dp, expandProgress)
+    val cornerRadius = lerp(PolliDimens.HomeBarHeight / 2, 20.dp, expandProgress)
     val profileSlotWidth = lerp(
-        LabDimens.HomeProfileSize + LabDimens.HomeProfileGap,
+        PolliDimens.HomeProfileSize + PolliDimens.HomeProfileGap,
         0.dp,
         expandProgress,
     )
     val profileAlpha = (1f - expandProgress).coerceIn(0f, 1f)
-    val barTopInset = (LabDimens.HomeProfileSize - LabDimens.HomeBarHeight) / 2
+    val barTopInset = (PolliDimens.HomeProfileSize - PolliDimens.HomeBarHeight) / 2
     val showField = searchPanelOpen || expandProgress > 0.08f
 
     Column(
         modifier = Modifier
-            .padding(horizontal = LabDimens.HomeBarPadding)
-            .padding(top = LabDimens.HomeBarVerticalPad),
+            .padding(horizontal = PolliDimens.HomeBarPadding)
+            .padding(top = PolliDimens.HomeBarVerticalPad),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -477,14 +477,14 @@ private fun HomeExpandableSearchHeader(
             Box(
                 modifier = Modifier
                     .width(profileSlotWidth)
-                    .height(LabDimens.HomeProfileSize)
+                    .height(PolliDimens.HomeProfileSize)
                     .clipToBounds()
                     .alpha(profileAlpha),
                 contentAlignment = Alignment.CenterStart,
             ) {
                 selfAvatar(
                     profileName,
-                    LabDimens.HomeProfileSize,
+                    PolliDimens.HomeProfileSize,
                     onProfileClick,
                 )
             }
@@ -502,7 +502,7 @@ private fun HomeExpandableSearchHeader(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(LabDimens.HomeBarHeight)
+                            .height(PolliDimens.HomeBarHeight)
                             .then(
                                 if (!showField) {
                                     Modifier.polliClickable(onClick = onOpenSearch)
@@ -511,15 +511,15 @@ private fun HomeExpandableSearchHeader(
                                 },
                             )
                             .padding(
-                                start = LabDimens.HomePillInsetBeforeSearch,
+                                start = PolliDimens.HomePillInsetBeforeSearch,
                                 end = 6.dp,
                             ),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        LabIcon(
-                            LabIconName.Search,
-                            LabDimens.HomeSearchGlyphSize,
-                            LabColors.White33,
+                        PolliIcon(
+                            PolliIconName.Search,
+                            PolliDimens.HomeSearchGlyphSize,
+                            PolliColors.White33,
                         )
                         if (showField) {
                             BasicTextField(
@@ -527,27 +527,27 @@ private fun HomeExpandableSearchHeader(
                                 onValueChange = onQueryChange,
                                 modifier = Modifier
                                     .weight(1f)
-                                    .padding(horizontal = LabDimens.HomeSearchGapAfterGlyph)
+                                    .padding(horizontal = PolliDimens.HomeSearchGapAfterGlyph)
                                     .focusRequester(focusRequester),
                                 textStyle = MaterialTheme.typography.labelMedium.copy(
-                                    color = LabColors.White85,
+                                    color = PolliColors.White85,
                                 ),
-                                cursorBrush = SolidColor(LabColors.White),
+                                cursorBrush = SolidColor(PolliColors.White),
                                 singleLine = true,
                                 decorationBox = { inner ->
                                     Box(contentAlignment = Alignment.CenterStart) {
                                         if (query.isEmpty()) {
-                                            Text("Search", color = LabColors.White16)
+                                            Text("Search", color = PolliColors.White16)
                                         }
                                         inner()
                                     }
                                 },
                             )
                         } else {
-                            Spacer(modifier = Modifier.width(LabDimens.HomeSearchGapAfterGlyph))
+                            Spacer(modifier = Modifier.width(PolliDimens.HomeSearchGapAfterGlyph))
                             Text(
                                 "Search",
-                                color = LabColors.White16,
+                                color = PolliColors.White16,
                                 style = MaterialTheme.typography.labelMedium,
                                 modifier = Modifier.weight(1f),
                             )
@@ -586,11 +586,11 @@ private fun ChannelStoriesRow(
             Modifier
                 .fillMaxWidth()
                 .padding(
-                    start = LabDimens.StoriesRowPaddingStart,
-                    end = LabDimens.StoriesRowPadding,
+                    start = PolliDimens.StoriesRowPaddingStart,
+                    end = PolliDimens.StoriesRowPadding,
                 )
                 .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(LabDimens.StoryRingSpacing),
+        horizontalArrangement = Arrangement.spacedBy(PolliDimens.StoryRingSpacing),
     ) {
         entries.forEach { entry ->
             StoryRing(
@@ -617,7 +617,7 @@ private fun StoryRing(
     var launchBounds by remember(channel.chatId) { mutableStateOf<StoryLaunchBounds?>(null) }
     Box(
         modifier = Modifier
-            .size(LabDimens.StoryRingOuter)
+            .size(PolliDimens.StoryRingOuter)
             .onGloballyPositioned { coords ->
                 val rect = coords.boundsInRoot()
                 launchBounds = StoryLaunchBounds(
@@ -628,7 +628,7 @@ private fun StoryRing(
             }
             .clip(CircleShape)
             .background(ringColor)
-            .padding(LabDimens.StoryRingStroke)
+            .padding(PolliDimens.StoryRingStroke)
             .polliClickable {
                 launchBounds?.let(onClick)
             },
@@ -638,11 +638,11 @@ private fun StoryRing(
             modifier = Modifier
                 .fillMaxSize()
                 .clip(CircleShape)
-                .background(LabColors.Black)
-                .padding(LabDimens.StoryRingGap),
+                .background(PolliColors.Black)
+                .padding(PolliDimens.StoryRingGap),
             contentAlignment = Alignment.Center,
         ) {
-            chatAvatar(channel, LabDimens.StoryRingInner)
+            chatAvatar(channel, PolliDimens.StoryRingInner)
         }
     }
 }
@@ -658,8 +658,8 @@ private fun TabRow(
             Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState())
-                .padding(horizontal = LabDimens.HomeBarPadding),
-        horizontalArrangement = Arrangement.spacedBy(LabDimens.TabGap),
+                .padding(horizontal = PolliDimens.HomeBarPadding),
+        horizontalArrangement = Arrangement.spacedBy(PolliDimens.TabGap),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TabPill(
@@ -688,22 +688,22 @@ private fun TabPill(
     onClick: () -> Unit,
     unreadCount: Int = 0,
 ) {
-    val height = if (selected) LabDimens.TabButtonHeight else LabDimens.TabButtonUnselectedHeight
-    val hPadding = if (selected) LabDimens.TabButtonHPadding else LabDimens.TabButtonUnselectedHPadding
-    val corner = if (selected) 17.dp else LabDimens.TabButtonUnselectedCorner
+    val height = if (selected) PolliDimens.TabButtonHeight else PolliDimens.TabButtonUnselectedHeight
+    val hPadding = if (selected) PolliDimens.TabButtonHPadding else PolliDimens.TabButtonUnselectedHPadding
+    val corner = if (selected) 17.dp else PolliDimens.TabButtonUnselectedCorner
     val fontSize = if (selected) 14.5.sp else 13.sp
     val bg =
         if (selected) {
             accent().gradientBrush(0.66f)
         } else {
-            Brush.linearGradient(listOf(LabColors.White8, LabColors.White8))
+            Brush.linearGradient(listOf(PolliColors.White8, PolliColors.White8))
         }
     val countLabel = formatHomeTabUnreadCount(unreadCount)
     val countColor =
         if (selected) {
-            LabColors.White.copy(alpha = 0.66f)
+            PolliColors.White.copy(alpha = 0.66f)
         } else {
-            LabColors.White66
+            PolliColors.White66
         }
     Box(
         modifier =
@@ -721,7 +721,7 @@ private fun TabPill(
         ) {
             Text(
                 text = label,
-                color = if (selected) LabColors.White else LabColors.White66,
+                color = if (selected) PolliColors.White else PolliColors.White66,
                 style =
                     TextStyle(
                         fontSize = fontSize,

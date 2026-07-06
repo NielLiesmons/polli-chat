@@ -32,12 +32,12 @@ import android.widget.ImageView
 import com.b44t.messenger.DcMsg
 import com.bumptech.glide.Glide
 import com.polli.android.BaseComposeActivity
-import com.polli.android.icons.LabIcon
-import com.polli.android.icons.LabIconName
+import com.polli.android.icons.PolliIcon
+import com.polli.android.icons.PolliIconName
 import com.polli.android.newchat.GroupCreateActivity
 import com.polli.android.settings.AppPrefs
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabTheme
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliTheme
 import com.polli.android.theme.accent
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
@@ -57,7 +57,7 @@ class MediaPreviewActivity : BaseComposeActivity() {
         val editChatId = intent.getIntExtra(EDIT_AVATAR_CHAT_ID, 0)
         val prefs = AppPrefs(this)
         setContent {
-            LabTheme(prefs = prefs) {
+            PolliTheme(prefs = prefs) {
                 when {
                     msgId != DcMsg.DC_MSG_NO_ID -> {
                         MediaPreviewScreen(
@@ -85,10 +85,10 @@ class MediaPreviewActivity : BaseComposeActivity() {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .background(LabColors.Black),
+                                .background(PolliColors.Black),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Text("Media unavailable", color = LabColors.White33)
+                            Text("Media unavailable", color = PolliColors.White33)
                         }
                     }
                 }
@@ -142,10 +142,10 @@ fun MediaPreviewScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(LabColors.Black),
+                .background(PolliColors.Black),
             contentAlignment = Alignment.Center,
         ) {
-            Text("Media unavailable", color = LabColors.White33)
+            Text("Media unavailable", color = PolliColors.White33)
         }
         return
     }
@@ -159,7 +159,7 @@ fun MediaPreviewScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(LabColors.Black),
+            .background(PolliColors.Black),
     ) {
         Row(
             modifier = Modifier
@@ -171,7 +171,7 @@ fun MediaPreviewScreen(
             RoundBackButton(onClick = onBack)
             Text(
                 text = "${pagerState.currentPage + 1} / ${msgIds.size}",
-                color = LabColors.White85,
+                color = PolliColors.White85,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier
                     .weight(1f)
@@ -181,13 +181,13 @@ fun MediaPreviewScreen(
                 val id = msgIds[pagerState.currentPage]
                 DcHelper.openForViewOrShare(context, id, Intent.ACTION_SEND)
             }) {
-                LabIcon(LabIconName.Options, 22.dp, LabColors.White85)
+                PolliIcon(PolliIconName.Options, 22.dp, PolliColors.White85)
             }
             IconButton(onClick = {
                 val id = msgIds[pagerState.currentPage]
                 saveMessageToDisk(context as Activity, id)
             }) {
-                LabIcon(LabIconName.ArrowDown, 22.dp, LabColors.White85)
+                PolliIcon(PolliIconName.ArrowDown, 22.dp, PolliColors.White85)
             }
         }
 
@@ -213,7 +213,7 @@ private fun AvatarPreviewScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(LabColors.Black),
+            .background(PolliColors.Black),
     ) {
         Row(
             modifier = Modifier
@@ -225,7 +225,7 @@ private fun AvatarPreviewScreen(
             RoundBackButton(onClick = onBack)
             Text(
                 text = title,
-                color = LabColors.White85,
+                color = PolliColors.White85,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
                     .weight(1f)
@@ -256,7 +256,7 @@ private fun MediaPage(msgId: Int) {
 
     if (!msg.isOk || !msg.hasFile()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Media unavailable", color = LabColors.White33)
+            Text("Media unavailable", color = PolliColors.White33)
         }
         return
     }
@@ -280,7 +280,7 @@ private fun MediaPage(msgId: Int) {
                     Glide.with(view).asBitmap().load(file).frame(1_000_000).fitCenter().into(view)
                 },
             )
-            Text("▶ Tap to play", color = LabColors.White85)
+            Text("▶ Tap to play", color = PolliColors.White85)
         }
     } else {
         AndroidView(

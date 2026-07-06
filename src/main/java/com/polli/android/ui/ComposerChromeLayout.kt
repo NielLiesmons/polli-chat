@@ -12,7 +12,7 @@ import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.polli.android.theme.LabDimens
+import com.polli.android.theme.PolliDimens
 
 /**
  * Tracks the live bottom chrome (composer dock + safe/IME gap) from layout bounds so feed
@@ -46,7 +46,7 @@ class ComposerChromeLayoutState internal constructor(
         }
 
     val feedBottomPadding: Dp
-        get() = bottomChromeInset + LabDimens.ChatComposerDockClearanceExtra
+        get() = bottomChromeInset + PolliDimens.ChatComposerDockClearanceExtra
 
     val dockHeight: Dp
         get() = with(density) { dockHeightPx.toDp() }

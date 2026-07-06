@@ -8,7 +8,7 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.remember
 import com.polli.android.BaseComposeActivity
 import com.polli.android.settings.AppPrefs
-import com.polli.android.theme.LabTheme
+import com.polli.android.theme.PolliTheme
 
 class NoteEditorActivity : BaseComposeActivity() {
 
@@ -21,7 +21,7 @@ class NoteEditorActivity : BaseComposeActivity() {
 
         setContent {
             val prefs = remember { AppPrefs(this@NoteEditorActivity) }
-            LabTheme(prefs = prefs) {
+            PolliTheme(prefs = prefs) {
                 NoteEditorScreen(
                     viewModel = viewModel,
                     onBack = { finish() },

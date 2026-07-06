@@ -25,9 +25,9 @@ data class AccentPalette(
 }
 
 val LocalAccentPalette = staticCompositionLocalOf<AccentPalette> {
-    error("AccentPalette not provided — wrap content in LabTheme")
+    error("AccentPalette not provided — wrap content in PolliTheme")
 }
 
-/** Current accent palette from [LabTheme]. */
+/** Current accent palette from [PolliTheme]. */
 @Composable
 fun accent(): AccentPalette = LocalAccentPalette.current

@@ -20,12 +20,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.polli.android.icons.LabIcon
-import com.polli.android.icons.LabIconName
+import com.polli.android.icons.PolliIcon
+import com.polli.android.icons.PolliIconName
 import com.polli.android.notes.Note
 import com.polli.android.notes.rememberNotes
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabDimens
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliDimens
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.ShellDivider
 import java.text.DateFormat
@@ -40,7 +40,7 @@ fun NotesTab(
     onOpenNote: (Int) -> Unit,
 ) {
     val notes = rememberNotes()
-    val bottomPad = AppInsets.navigationBarBottom() + LabDimens.TabContentBottomPad
+    val bottomPad = AppInsets.navigationBarBottom() + PolliDimens.TabContentBottomPad
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -56,12 +56,12 @@ fun NotesTab(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = LabDimens.HomeBarPadding, vertical = 48.dp),
+                        .padding(horizontal = PolliDimens.HomeBarPadding, vertical = 48.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         "No notes yet.\nSaved messages and new notes appear here.",
-                        color = LabColors.White33,
+                        color = PolliColors.White33,
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
@@ -81,14 +81,14 @@ private fun NewNoteCta(onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = LabDimens.HomeBarPadding, vertical = 14.dp),
+            .padding(horizontal = PolliDimens.HomeBarPadding, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        LabIcon(LabIconName.Plus, 16.dp, LabColors.White33)
+        PolliIcon(PolliIconName.Plus, 16.dp, PolliColors.White33)
         Text(
             text = "New note",
-            color = LabColors.White33,
+            color = PolliColors.White33,
             style = MaterialTheme.typography.bodyMedium,
         )
     }
@@ -105,9 +105,9 @@ private fun NoteListRow(note: Note, onClick: () -> Unit) {
     val previewColor = if (
         note.preview.isNotBlank() || note.hasAttachment
     ) {
-        LabColors.White33
+        PolliColors.White33
     } else {
-        LabColors.White16
+        PolliColors.White16
     }
 
     Column(
@@ -115,7 +115,7 @@ private fun NoteListRow(note: Note, onClick: () -> Unit) {
             .fillMaxWidth()
             .height(NoteRowHeight)
             .clickable(onClick = onClick)
-            .padding(horizontal = LabDimens.HomeBarPadding, vertical = 14.dp),
+            .padding(horizontal = PolliDimens.HomeBarPadding, vertical = 14.dp),
         verticalArrangement = Arrangement.SpaceBetween,
     ) {
         Row(
@@ -125,7 +125,7 @@ private fun NoteListRow(note: Note, onClick: () -> Unit) {
         ) {
             Text(
                 text = note.title,
-                color = LabColors.White85,
+                color = PolliColors.White85,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
                 maxLines = 1,
@@ -135,7 +135,7 @@ private fun NoteListRow(note: Note, onClick: () -> Unit) {
             if (dateLabel.isNotBlank()) {
                 Text(
                     text = dateLabel,
-                    color = LabColors.White16,
+                    color = PolliColors.White16,
                     style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.padding(start = 12.dp),
                 )

@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.polli.ui.components.PolliPrimaryButton
 import com.polli.ui.components.ProfileAvatar
 import com.polli.ui.components.RoundBackButton
-import com.polli.ui.theme.LabColors
+import com.polli.ui.theme.PolliColors
 import com.polli.ui.theme.accent
 
 @Composable
@@ -56,7 +56,7 @@ fun AdvancedOnboardingScreen(
         modifier =
             modifier
                 .fillMaxSize()
-                .background(LabColors.Black)
+                .background(PolliColors.Black)
                 .verticalScroll(rememberScrollState())
                 .padding(top = topInset + 8.dp)
                 .padding(horizontal = 24.dp)
@@ -70,14 +70,14 @@ fun AdvancedOnboardingScreen(
             Spacer(modifier = Modifier.padding(16.dp))
             Text(
                 text = "Your profile",
-                color = LabColors.White85,
+                color = PolliColors.White85,
                 style = MaterialTheme.typography.titleLarge,
             )
             if (!invitationMessage.isNullOrBlank()) {
                 Spacer(modifier = Modifier.padding(8.dp))
                 Text(
                     text = invitationMessage,
-                    color = LabColors.White66,
+                    color = PolliColors.White66,
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
@@ -101,7 +101,7 @@ fun AdvancedOnboardingScreen(
             }
             Text(
                 text = "Tap to change photo",
-                color = LabColors.White33,
+                color = PolliColors.White33,
                 modifier = Modifier.padding(top = 8.dp),
             )
             Spacer(modifier = Modifier.padding(20.dp))
@@ -114,10 +114,10 @@ fun AdvancedOnboardingScreen(
                 enabled = !busy,
                 colors =
                     TextFieldDefaults.colors(
-                        focusedTextColor = LabColors.White85,
-                        unfocusedTextColor = LabColors.White85,
-                        focusedContainerColor = LabColors.Gray33,
-                        unfocusedContainerColor = LabColors.Gray33,
+                        focusedTextColor = PolliColors.White85,
+                        unfocusedTextColor = PolliColors.White85,
+                        focusedContainerColor = PolliColors.Gray33,
+                        unfocusedContainerColor = PolliColors.Gray33,
                     ),
             )
             if (providerHost.isNotBlank() && !isDcLogin) {
@@ -133,13 +133,13 @@ fun AdvancedOnboardingScreen(
                 Spacer(modifier = Modifier.padding(8.dp))
                 Text(
                     text = "Log in to $providerHost",
-                    color = LabColors.White66,
+                    color = PolliColors.White66,
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
             Spacer(modifier = Modifier.padding(16.dp))
             TextButton(onClick = onShowOtherOptions, enabled = !busy) {
-                Text("Other server options", color = LabColors.White66)
+                Text("Other server options", color = PolliColors.White66)
             }
             Spacer(modifier = Modifier.padding(16.dp))
             if (busy) {

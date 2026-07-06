@@ -95,7 +95,7 @@ val LocalAppPrefs = staticCompositionLocalOf<AppPrefs> {
 }
 
 @Composable
-fun rememberLabDensity(prefs: AppPrefs, uiScaleRevision: Int = 0): Density {
+fun rememberPolliDensity(prefs: AppPrefs, uiScaleRevision: Int = 0): Density {
     val context = androidx.compose.ui.platform.LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     var resumeTick by mutableIntStateOf(0)

@@ -22,12 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.polli.android.BaseComposeActivity
-import com.polli.android.icons.LabIcon
-import com.polli.android.icons.LabIconName
+import com.polli.android.icons.PolliIcon
+import com.polli.android.icons.PolliIconName
 import com.polli.android.navigation.AppNav
 import com.polli.android.settings.AppPrefs
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabTheme
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliTheme
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
 
@@ -36,7 +36,7 @@ class NewConversationActivity : BaseComposeActivity() {
         super.onCreate(savedInstanceState)
         val prefs = AppPrefs(this)
         setContent {
-            LabTheme(prefs = prefs) {
+            PolliTheme(prefs = prefs) {
                 NewConversationScreen(
                     onBack = { finish() },
                     onNewOneToOne = {
@@ -77,37 +77,37 @@ fun NewConversationScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(LabColors.Black)
+            .background(PolliColors.Black)
             .padding(top = AppInsets.statusBarTop())
             .padding(horizontal = 16.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             RoundBackButton(onClick = onBack)
             Spacer(modifier = Modifier.padding(12.dp))
-            Text("New", color = LabColors.White85, style = MaterialTheme.typography.titleLarge)
+            Text("New", color = PolliColors.White85, style = MaterialTheme.typography.titleLarge)
         }
         Spacer(modifier = Modifier.height(24.dp))
-        NewAction("New 1:1 chat", LabIconName.EmojiFill, onNewOneToOne)
-        NewAction("New group", LabIconName.Plus, onNewGroup)
-        NewAction("New broadcast", LabIconName.Bell, onNewBroadcast)
-        NewAction("Scan QR code", LabIconName.Camera, onScanQr)
+        NewAction("New 1:1 chat", PolliIconName.EmojiFill, onNewOneToOne)
+        NewAction("New group", PolliIconName.Plus, onNewGroup)
+        NewAction("New broadcast", PolliIconName.Bell, onNewBroadcast)
+        NewAction("Scan QR code", PolliIconName.Camera, onScanQr)
     }
 }
 
 @Composable
-private fun NewAction(label: String, icon: LabIconName, onClick: () -> Unit) {
+private fun NewAction(label: String, icon: PolliIconName, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(LabColors.Gray33)
+            .background(PolliColors.Gray33)
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        LabIcon(icon, 18.dp, LabColors.White66)
+        PolliIcon(icon, 18.dp, PolliColors.White66)
         Spacer(modifier = Modifier.padding(12.dp))
-        Text(label, color = LabColors.White85, style = MaterialTheme.typography.bodyLarge)
+        Text(label, color = PolliColors.White85, style = MaterialTheme.typography.bodyLarge)
     }
 }

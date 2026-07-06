@@ -19,8 +19,8 @@ import com.polli.domain.model.InboxItem
 import com.polli.ui.components.ChatInboxCard
 import com.polli.ui.components.DetailScreenHeader
 import com.polli.ui.components.ShellDivider
-import com.polli.ui.theme.LabColors
-import com.polli.ui.theme.LabDimens
+import com.polli.ui.theme.PolliColors
+import com.polli.ui.theme.PolliDimens
 
 /** Archived chat list — first full screen in polli-ui commonMain. */
 @Composable
@@ -39,7 +39,7 @@ fun ArchiveScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(LabColors.Black)
+            .background(PolliColors.Black)
             .padding(top = topInset),
     ) {
         DetailScreenHeader(
@@ -49,13 +49,13 @@ fun ArchiveScreen(
         ShellDivider(screenPad = 0.dp)
         if (items.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(emptyLabel, color = LabColors.White33)
+                Text(emptyLabel, color = PolliColors.White33)
             }
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = LabDimens.HomeBarPadding),
-                verticalArrangement = Arrangement.spacedBy(LabDimens.TabSectionGap),
+                contentPadding = PaddingValues(horizontal = PolliDimens.HomeBarPadding),
+                verticalArrangement = Arrangement.spacedBy(PolliDimens.TabSectionGap),
             ) {
                 items(items, key = { it.chatId }) { item ->
                     ChatInboxCard(

@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.polli.android.theme.LabDimens
+import com.polli.android.theme.PolliDimens
 
 object AppInsets {
     @Composable
@@ -19,8 +19,8 @@ object AppInsets {
     @Composable
     fun chatComposerClearance(): Dp {
         val bottom = navigationBarBottom()
-        return LabDimens.ChatComposerMinHeight +
-            maxOf(LabDimens.ChatComposerDockBottomMin, bottom) +
-            LabDimens.ChatComposerDockClearanceExtra
+        return PolliDimens.ChatComposerMinHeight +
+            maxOf(PolliDimens.ChatComposerDockBottomMin, bottom) +
+            PolliDimens.ChatComposerDockClearanceExtra
     }
 }

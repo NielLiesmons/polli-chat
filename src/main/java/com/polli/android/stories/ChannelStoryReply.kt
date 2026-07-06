@@ -4,7 +4,7 @@ import com.b44t.messenger.DcChat
 import com.b44t.messenger.DcContact
 import com.b44t.messenger.DcContext
 import com.b44t.messenger.DcMsg
-import com.polli.android.chat.MessageQuote
+import com.polli.domain.model.chat.MessageQuote
 
 /** Private replies from channel stories — mirrors Delta's "Reply Privately" on broadcast posts. */
 object ChannelStoryReply {

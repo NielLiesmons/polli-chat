@@ -8,17 +8,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
-import com.polli.ui.theme.LabColors
-import com.polli.ui.theme.LabDimens
+import com.polli.ui.theme.PolliColors
+import com.polli.ui.theme.PolliDimens
 
 /** Hairline divider — full width with optional horizontal inset. */
 @Composable
-fun ShellDivider(screenPad: Dp = LabDimens.HomeBarPadding) {
+fun ShellDivider(screenPad: Dp = PolliDimens.HomeBarPadding) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = screenPad)
-            .height(LabDimens.ShellDividerWidth)
-            .background(LabColors.ShellDivider),
+            .height(PolliDimens.ShellDividerWidth)
+            .background(PolliColors.ShellDivider),
     )
 }

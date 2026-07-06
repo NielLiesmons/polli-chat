@@ -43,10 +43,10 @@ import com.polli.android.navigation.AppNav
 import com.polli.android.settings.AccentPreset
 import com.polli.android.settings.AppPrefs
 import com.polli.android.ui.UiScaleSlider
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabDimens
-import com.polli.android.theme.LabTheme
-import com.polli.android.ui.LabAvatar
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliDimens
+import com.polli.android.theme.PolliTheme
+import com.polli.android.ui.PolliAvatar
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.AppModal
 import com.polli.android.ui.ModalSectionLabel
@@ -65,7 +65,7 @@ class ProfilesActivity : BaseComposeActivity() {
             val prefs = remember { AppPrefs(this@ProfilesActivity) }
             var themeRevision by remember { mutableIntStateOf(0) }
             var showChatSettings by remember { mutableStateOf(openChatSettings) }
-            LabTheme(prefs = prefs, uiScaleRevision = themeRevision) {
+            PolliTheme(prefs = prefs, uiScaleRevision = themeRevision) {
                 ProfilesScreen(
                     prefs = prefs,
                     onThemeChanged = { themeRevision++ },
@@ -152,7 +152,7 @@ fun ProfilesScreen(
 
             Text(
                 "Accounts",
-                color = LabColors.White33,
+                color = PolliColors.White33,
                 style = MaterialTheme.typography.labelMedium,
                 modifier = Modifier.padding(start = 14.dp, top = 16.dp, bottom = 8.dp),
             )
@@ -166,15 +166,15 @@ fun ProfilesScreen(
                         .padding(horizontal = 14.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    LabAvatar(
+                    PolliAvatar(
                         name = name,
                         seed = name,
-                        size = LabDimens.AvatarSize,
+                        size = PolliDimens.AvatarSize,
                         contactId = DcContact.DC_CONTACT_ID_SELF,
                         dcContext = acc,
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text(name, color = LabColors.White66, style = MaterialTheme.typography.bodyMedium)
+                    Text(name, color = PolliColors.White66, style = MaterialTheme.typography.bodyMedium)
                 }
             }
         }
@@ -184,10 +184,10 @@ fun ProfilesScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.TopCenter)
-                .background(LabColors.Black.copy(alpha = 0.85f))
+                .background(PolliColors.Black.copy(alpha = 0.85f))
                 .border(
-                    width = LabDimens.ShellBorderWidth,
-                    color = LabColors.White8,
+                    width = PolliDimens.ShellBorderWidth,
+                    color = PolliColors.White8,
                     shape = RoundedCornerShape(0.dp),
                 )
                 .padding(top = headerTop, start = 14.dp, end = 14.dp, bottom = 9.dp),
@@ -195,7 +195,7 @@ fun ProfilesScreen(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RoundBackButton(onClick = onBack)
                 Spacer(modifier = Modifier.width(12.dp))
-                Text("Profiles", color = LabColors.White, style = MaterialTheme.typography.titleLarge)
+                Text("Profiles", color = PolliColors.White, style = MaterialTheme.typography.titleLarge)
             }
         }
     }
@@ -329,7 +329,7 @@ private fun AccentSwatch(
     onClick: () -> Unit,
 ) {
     val palette = remember(preset) { AccentThemes.palette(preset) }
-    val borderColor = if (selected) LabColors.White else LabColors.White16
+    val borderColor = if (selected) PolliColors.White else PolliColors.White16
     val borderWidth = if (selected) 2.dp else 1.dp
     Box(
         modifier = Modifier
@@ -358,10 +358,10 @@ private fun SettingsToggleRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, color = LabColors.White85, style = MaterialTheme.typography.bodyMedium)
+            Text(title, color = PolliColors.White85, style = MaterialTheme.typography.bodyMedium)
             Text(
                 subtitle,
-                color = LabColors.White33,
+                color = PolliColors.White33,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(top = 4.dp),
             )
@@ -382,8 +382,8 @@ private fun SettingsRowItem(
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 14.dp),
     ) {
-        Text(title, color = LabColors.White85, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyLarge)
-        Text(description, color = LabColors.White33, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
+        Text(title, color = PolliColors.White85, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyLarge)
+        Text(description, color = PolliColors.White33, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
     }
 }
 
@@ -398,21 +398,21 @@ private fun ActiveProfileCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(LabColors.Gray)
-            .border(LabDimens.ShellBorderWidth, LabColors.ShellBorder, RoundedCornerShape(16.dp))
+            .background(PolliColors.Gray)
+            .border(PolliDimens.ShellBorderWidth, PolliColors.ShellBorder, RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
             .padding(16.dp),
     ) {
-        LabAvatar(
+        PolliAvatar(
             name = name,
             seed = subtitle.ifBlank { name },
             size = 56.dp,
             contactId = DcContact.DC_CONTACT_ID_SELF,
         )
         Spacer(modifier = Modifier.height(12.dp))
-        Text(name, color = LabColors.White85, style = MaterialTheme.typography.titleMedium)
+        Text(name, color = PolliColors.White85, style = MaterialTheme.typography.titleMedium)
         if (subtitle.isNotBlank()) {
-            Text(subtitle, color = LabColors.White33, style = MaterialTheme.typography.bodySmall)
+            Text(subtitle, color = PolliColors.White33, style = MaterialTheme.typography.bodySmall)
         }
     }
 }

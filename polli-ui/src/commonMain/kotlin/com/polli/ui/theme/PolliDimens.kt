@@ -4,7 +4,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /** Layout constants — ported from polli/src/design_system/spacing.rs */
-object LabDimens {
+object PolliDimens {
     val AvatarSize = 50.dp
     val HomeBarPadding = 14.dp
     val StoriesRowPadding = 12.dp // trailing / end inset for the stories row

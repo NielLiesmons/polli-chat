@@ -8,111 +8,111 @@ import androidx.compose.ui.unit.Dp
 import com.polli.android.settings.AppPrefs
 import com.polli.android.settings.LocalAppPrefs
 
-@get:JvmName("getLabTypography")
-val LabTypography: Typography
-    get() = com.polli.ui.theme.LabTypography
+@get:JvmName("getPolliTypography")
+val PolliTypography: Typography
+    get() = com.polli.ui.theme.PolliTypography
 
-object LabDimens {
-    val AvatarSize: Dp get() = com.polli.ui.theme.LabDimens.AvatarSize
-    val HomeBarPadding: Dp get() = com.polli.ui.theme.LabDimens.HomeBarPadding
-    val StoriesRowPadding: Dp get() = com.polli.ui.theme.LabDimens.StoriesRowPadding
-    val StoriesRowPaddingStart: Dp get() = com.polli.ui.theme.LabDimens.StoriesRowPaddingStart
-    val HomeBarHeight: Dp get() = com.polli.ui.theme.LabDimens.HomeBarHeight
-    val HomeProfileSize: Dp get() = com.polli.ui.theme.LabDimens.HomeProfileSize
-    val HomeProfileGap: Dp get() = com.polli.ui.theme.LabDimens.HomeProfileGap
-    val HomePillInsetBeforeSearch: Dp get() = com.polli.ui.theme.LabDimens.HomePillInsetBeforeSearch
-    val HomeSearchGlyphSize: Dp get() = com.polli.ui.theme.LabDimens.HomeSearchGlyphSize
-    val HomeSearchGapAfterGlyph: Dp get() = com.polli.ui.theme.LabDimens.HomeSearchGapAfterGlyph
-    val HomePillActionSize: Dp get() = com.polli.ui.theme.LabDimens.HomePillActionSize
-    val HomeSearchPlusGlyphSize: Dp get() = com.polli.ui.theme.LabDimens.HomeSearchPlusGlyphSize
-    val HomeBarVerticalPad: Dp get() = com.polli.ui.theme.LabDimens.HomeBarVerticalPad
-    val IconStrokeWidth: Dp get() = com.polli.ui.theme.LabDimens.IconStrokeWidth
-    val HomeSearchPanelExpandedHeight: Dp get() = com.polli.ui.theme.LabDimens.HomeSearchPanelExpandedHeight
-    val HomeSearchPanelIconSize: Dp get() = com.polli.ui.theme.LabDimens.HomeSearchPanelIconSize
-    val HomeSearchPanelTopFade: Dp get() = com.polli.ui.theme.LabDimens.HomeSearchPanelTopFade
-    val HomeSearchFavoriteColumnWidth: Dp get() = com.polli.ui.theme.LabDimens.HomeSearchFavoriteColumnWidth
-    val HomeSearchCreateCardWidth: Dp get() = com.polli.ui.theme.LabDimens.HomeSearchCreateCardWidth
-    val HomeSearchExpandDragDistance: Dp get() = com.polli.ui.theme.LabDimens.HomeSearchExpandDragDistance
-    val HomeSearchExpandSnapThreshold: Float get() = com.polli.ui.theme.LabDimens.HomeSearchExpandSnapThreshold
-    val TabButtonHeight: Dp get() = com.polli.ui.theme.LabDimens.TabButtonHeight
-    val TabButtonHPadding: Dp get() = com.polli.ui.theme.LabDimens.TabButtonHPadding
-    val TabButtonUnselectedHeight: Dp get() = com.polli.ui.theme.LabDimens.TabButtonUnselectedHeight
-    val TabButtonUnselectedHPadding: Dp get() = com.polli.ui.theme.LabDimens.TabButtonUnselectedHPadding
-    val TabButtonUnselectedCorner: Dp get() = com.polli.ui.theme.LabDimens.TabButtonUnselectedCorner
-    val TabGap: Dp get() = com.polli.ui.theme.LabDimens.TabGap
-    val ChatHeaderTabGap: Dp get() = com.polli.ui.theme.LabDimens.ChatHeaderTabGap
-    val TabSectionGap: Dp get() = com.polli.ui.theme.LabDimens.TabSectionGap
-    val TabContentTopGap: Dp get() = com.polli.ui.theme.LabDimens.TabContentTopGap
-    val TabContentBottomPad: Dp get() = com.polli.ui.theme.LabDimens.TabContentBottomPad
-    val StoryRingOuter: Dp get() = com.polli.ui.theme.LabDimens.StoryRingOuter
-    val StoryRingInner: Dp get() = com.polli.ui.theme.LabDimens.StoryRingInner
-    val StoryRingStroke: Dp get() = com.polli.ui.theme.LabDimens.StoryRingStroke
-    val StoryRingGap: Dp get() = com.polli.ui.theme.LabDimens.StoryRingGap
-    val StoryRingSpacing: Dp get() = com.polli.ui.theme.LabDimens.StoryRingSpacing
-    val StoryRowVerticalPadTop: Dp get() = com.polli.ui.theme.LabDimens.StoryRowVerticalPadTop
-    val StoryRowVerticalPadBottom: Dp get() = com.polli.ui.theme.LabDimens.StoryRowVerticalPadBottom
-    val StoryRowDividerGap: Dp get() = com.polli.ui.theme.LabDimens.StoryRowDividerGap
-    val StoryProgressHeight: Dp get() = com.polli.ui.theme.LabDimens.StoryProgressHeight
-    val ShellBorderWidth: Dp get() = com.polli.ui.theme.LabDimens.ShellBorderWidth
-    val ShellDividerWidth: Dp get() = com.polli.ui.theme.LabDimens.ShellDividerWidth
-    val ListRowPadding: Dp get() = com.polli.ui.theme.LabDimens.ListRowPadding
-    val GroupNameNotifGap: Dp get() = com.polli.ui.theme.LabDimens.GroupNameNotifGap
-    val InboxPreviewRowMinHeight: Dp get() = com.polli.ui.theme.LabDimens.InboxPreviewRowMinHeight
-    val InboxTitleRowMinHeight: Dp get() = com.polli.ui.theme.LabDimens.InboxTitleRowMinHeight
-    val UnreadBadgeMinSize: Dp get() = com.polli.ui.theme.LabDimens.UnreadBadgeMinSize
-    val UnreadBadgeHPadding: Dp get() = com.polli.ui.theme.LabDimens.UnreadBadgeHPadding
-    val ChatAvatarSize: Dp get() = com.polli.ui.theme.LabDimens.ChatAvatarSize
-    val ChatAvatarGap: Dp get() = com.polli.ui.theme.LabDimens.ChatAvatarGap
-    val ChatBubbleRadius: Dp get() = com.polli.ui.theme.LabDimens.ChatBubbleRadius
-    val ChatBubbleTailRadius: Dp get() = com.polli.ui.theme.LabDimens.ChatBubbleTailRadius
-    val ChatBubbleInsetH: Dp get() = com.polli.ui.theme.LabDimens.ChatBubbleInsetH
-    val ChatBubblePaddingV: Dp get() = com.polli.ui.theme.LabDimens.ChatBubblePaddingV
-    val ChatBubbleMetaRowPaddingV: Dp get() = com.polli.ui.theme.LabDimens.ChatBubbleMetaRowPaddingV
-    val ChatBubbleMetaRowMarginTop: Dp get() = com.polli.ui.theme.LabDimens.ChatBubbleMetaRowMarginTop
-    val ChatBubbleOutgoingShellBottom: Dp get() = com.polli.ui.theme.LabDimens.ChatBubbleOutgoingShellBottom
-    val ChatBubbleIncomingBottomExtra: Dp get() = com.polli.ui.theme.LabDimens.ChatBubbleIncomingBottomExtra
-    val ChatBubbleStackedIncomingTopExtra: Dp get() = com.polli.ui.theme.LabDimens.ChatBubbleStackedIncomingTopExtra
-    val ChatBubbleTextOnlyExtraTop: Dp get() = com.polli.ui.theme.LabDimens.ChatBubbleTextOnlyExtraTop
-    val ChatQuoteAccentWidth: Dp get() = com.polli.ui.theme.LabDimens.ChatQuoteAccentWidth
-    val ChatQuoteBubblePadH: Dp get() = com.polli.ui.theme.LabDimens.ChatQuoteBubblePadH
-    val ChatQuoteMarginBottom: Dp get() = com.polli.ui.theme.LabDimens.ChatQuoteMarginBottom
-    val ChatReactionRowTop: Dp get() = com.polli.ui.theme.LabDimens.ChatReactionRowTop
-    val ChatRowPaddingH: Dp get() = com.polli.ui.theme.LabDimens.ChatRowPaddingH
-    val ChatRowOutgoingExtraStart: Dp get() = com.polli.ui.theme.LabDimens.ChatRowOutgoingExtraStart
-    val ChatRowIncomingRight: Dp get() = com.polli.ui.theme.LabDimens.ChatRowIncomingRight
-    val ChatRowTop: Dp get() = com.polli.ui.theme.LabDimens.ChatRowTop
-    val ChatRowTopCollapsed: Dp get() = com.polli.ui.theme.LabDimens.ChatRowTopCollapsed
-    val ChatBubbleMaxWidthFraction: Float get() = com.polli.ui.theme.LabDimens.ChatBubbleMaxWidthFraction
-    val ChatBubbleImageMinWidth: Dp get() = com.polli.ui.theme.LabDimens.ChatBubbleImageMinWidth
-    val ChatBubbleImageMinHeight: Dp get() = com.polli.ui.theme.LabDimens.ChatBubbleImageMinHeight
-    val ChatBubbleImageMaxHeight: Dp get() = com.polli.ui.theme.LabDimens.ChatBubbleImageMaxHeight
-    val ChatIncomingGroupAvatarOffset: Dp get() = com.polli.ui.theme.LabDimens.ChatIncomingGroupAvatarOffset
-    val ChatIncomingGroupBubbleGap: Dp get() = com.polli.ui.theme.LabDimens.ChatIncomingGroupBubbleGap
-    val ChatFloatingChromeSize: Dp get() = com.polli.ui.theme.LabDimens.ChatFloatingChromeSize
-    val ChatComposerMinHeight: Dp get() = com.polli.ui.theme.LabDimens.ChatComposerMinHeight
-    val ChatComposerDockHPadding: Dp get() = com.polli.ui.theme.LabDimens.ChatComposerDockHPadding
-    val ChatComposerDockBottomMin: Dp get() = com.polli.ui.theme.LabDimens.ChatComposerDockBottomMin
-    val ChatComposerKeyboardGap: Dp get() = com.polli.ui.theme.LabDimens.ChatComposerKeyboardGap
-    val ChatComposerDockClearanceExtra: Dp get() = com.polli.ui.theme.LabDimens.ChatComposerDockClearanceExtra
-    val ChatScrollFabGapAboveComposer: Dp get() = com.polli.ui.theme.LabDimens.ChatScrollFabGapAboveComposer
-    val ChatComposerPlusSize: Dp get() = com.polli.ui.theme.LabDimens.ChatComposerPlusSize
-    val ChatComposerSendSize: Dp get() = com.polli.ui.theme.LabDimens.ChatComposerSendSize
-    val ChatComposerFieldGap: Dp get() = com.polli.ui.theme.LabDimens.ChatComposerFieldGap
-    val ScrollFadeBottom: Dp get() = com.polli.ui.theme.LabDimens.ScrollFadeBottom
-    val ScrollFadeTop: Dp get() = com.polli.ui.theme.LabDimens.ScrollFadeTop
-    val ChatFeedTopFadeExtend: Dp get() = com.polli.ui.theme.LabDimens.ChatFeedTopFadeExtend
-    val ChatFeedBottomFadeExtend: Dp get() = com.polli.ui.theme.LabDimens.ChatFeedBottomFadeExtend
-    val ChatScrollFadeBottom: Dp get() = com.polli.ui.theme.LabDimens.ChatScrollFadeBottom
-    val ChatScrollFadeBottomMid: Dp get() = com.polli.ui.theme.LabDimens.ChatScrollFadeBottomMid
-    val ModalInset: Dp get() = com.polli.ui.theme.LabDimens.ModalInset
-    val ModalScreenInset: Dp get() = com.polli.ui.theme.LabDimens.ModalScreenInset
-    val ModalRadius: Dp get() = com.polli.ui.theme.LabDimens.ModalRadius
-    val ModalBottomFade: Dp get() = com.polli.ui.theme.LabDimens.ModalBottomFade
-    val ModalTitleTopPad: Dp get() = com.polli.ui.theme.LabDimens.ModalTitleTopPad
-    val ModalTitleDescGap: Dp get() = com.polli.ui.theme.LabDimens.ModalTitleDescGap
-    val DetailBackButtonSize: Dp get() = com.polli.ui.theme.LabDimens.DetailBackButtonSize
-    val ProfileCardWidth: Dp get() = com.polli.ui.theme.LabDimens.ProfileCardWidth
-    val GroupHeaderClearance: Dp get() = com.polli.ui.theme.LabDimens.GroupHeaderClearance
+object PolliDimens {
+    val AvatarSize: Dp get() = com.polli.ui.theme.PolliDimens.AvatarSize
+    val HomeBarPadding: Dp get() = com.polli.ui.theme.PolliDimens.HomeBarPadding
+    val StoriesRowPadding: Dp get() = com.polli.ui.theme.PolliDimens.StoriesRowPadding
+    val StoriesRowPaddingStart: Dp get() = com.polli.ui.theme.PolliDimens.StoriesRowPaddingStart
+    val HomeBarHeight: Dp get() = com.polli.ui.theme.PolliDimens.HomeBarHeight
+    val HomeProfileSize: Dp get() = com.polli.ui.theme.PolliDimens.HomeProfileSize
+    val HomeProfileGap: Dp get() = com.polli.ui.theme.PolliDimens.HomeProfileGap
+    val HomePillInsetBeforeSearch: Dp get() = com.polli.ui.theme.PolliDimens.HomePillInsetBeforeSearch
+    val HomeSearchGlyphSize: Dp get() = com.polli.ui.theme.PolliDimens.HomeSearchGlyphSize
+    val HomeSearchGapAfterGlyph: Dp get() = com.polli.ui.theme.PolliDimens.HomeSearchGapAfterGlyph
+    val HomePillActionSize: Dp get() = com.polli.ui.theme.PolliDimens.HomePillActionSize
+    val HomeSearchPlusGlyphSize: Dp get() = com.polli.ui.theme.PolliDimens.HomeSearchPlusGlyphSize
+    val HomeBarVerticalPad: Dp get() = com.polli.ui.theme.PolliDimens.HomeBarVerticalPad
+    val IconStrokeWidth: Dp get() = com.polli.ui.theme.PolliDimens.IconStrokeWidth
+    val HomeSearchPanelExpandedHeight: Dp get() = com.polli.ui.theme.PolliDimens.HomeSearchPanelExpandedHeight
+    val HomeSearchPanelIconSize: Dp get() = com.polli.ui.theme.PolliDimens.HomeSearchPanelIconSize
+    val HomeSearchPanelTopFade: Dp get() = com.polli.ui.theme.PolliDimens.HomeSearchPanelTopFade
+    val HomeSearchFavoriteColumnWidth: Dp get() = com.polli.ui.theme.PolliDimens.HomeSearchFavoriteColumnWidth
+    val HomeSearchCreateCardWidth: Dp get() = com.polli.ui.theme.PolliDimens.HomeSearchCreateCardWidth
+    val HomeSearchExpandDragDistance: Dp get() = com.polli.ui.theme.PolliDimens.HomeSearchExpandDragDistance
+    val HomeSearchExpandSnapThreshold: Float get() = com.polli.ui.theme.PolliDimens.HomeSearchExpandSnapThreshold
+    val TabButtonHeight: Dp get() = com.polli.ui.theme.PolliDimens.TabButtonHeight
+    val TabButtonHPadding: Dp get() = com.polli.ui.theme.PolliDimens.TabButtonHPadding
+    val TabButtonUnselectedHeight: Dp get() = com.polli.ui.theme.PolliDimens.TabButtonUnselectedHeight
+    val TabButtonUnselectedHPadding: Dp get() = com.polli.ui.theme.PolliDimens.TabButtonUnselectedHPadding
+    val TabButtonUnselectedCorner: Dp get() = com.polli.ui.theme.PolliDimens.TabButtonUnselectedCorner
+    val TabGap: Dp get() = com.polli.ui.theme.PolliDimens.TabGap
+    val ChatHeaderTabGap: Dp get() = com.polli.ui.theme.PolliDimens.ChatHeaderTabGap
+    val TabSectionGap: Dp get() = com.polli.ui.theme.PolliDimens.TabSectionGap
+    val TabContentTopGap: Dp get() = com.polli.ui.theme.PolliDimens.TabContentTopGap
+    val TabContentBottomPad: Dp get() = com.polli.ui.theme.PolliDimens.TabContentBottomPad
+    val StoryRingOuter: Dp get() = com.polli.ui.theme.PolliDimens.StoryRingOuter
+    val StoryRingInner: Dp get() = com.polli.ui.theme.PolliDimens.StoryRingInner
+    val StoryRingStroke: Dp get() = com.polli.ui.theme.PolliDimens.StoryRingStroke
+    val StoryRingGap: Dp get() = com.polli.ui.theme.PolliDimens.StoryRingGap
+    val StoryRingSpacing: Dp get() = com.polli.ui.theme.PolliDimens.StoryRingSpacing
+    val StoryRowVerticalPadTop: Dp get() = com.polli.ui.theme.PolliDimens.StoryRowVerticalPadTop
+    val StoryRowVerticalPadBottom: Dp get() = com.polli.ui.theme.PolliDimens.StoryRowVerticalPadBottom
+    val StoryRowDividerGap: Dp get() = com.polli.ui.theme.PolliDimens.StoryRowDividerGap
+    val StoryProgressHeight: Dp get() = com.polli.ui.theme.PolliDimens.StoryProgressHeight
+    val ShellBorderWidth: Dp get() = com.polli.ui.theme.PolliDimens.ShellBorderWidth
+    val ShellDividerWidth: Dp get() = com.polli.ui.theme.PolliDimens.ShellDividerWidth
+    val ListRowPadding: Dp get() = com.polli.ui.theme.PolliDimens.ListRowPadding
+    val GroupNameNotifGap: Dp get() = com.polli.ui.theme.PolliDimens.GroupNameNotifGap
+    val InboxPreviewRowMinHeight: Dp get() = com.polli.ui.theme.PolliDimens.InboxPreviewRowMinHeight
+    val InboxTitleRowMinHeight: Dp get() = com.polli.ui.theme.PolliDimens.InboxTitleRowMinHeight
+    val UnreadBadgeMinSize: Dp get() = com.polli.ui.theme.PolliDimens.UnreadBadgeMinSize
+    val UnreadBadgeHPadding: Dp get() = com.polli.ui.theme.PolliDimens.UnreadBadgeHPadding
+    val ChatAvatarSize: Dp get() = com.polli.ui.theme.PolliDimens.ChatAvatarSize
+    val ChatAvatarGap: Dp get() = com.polli.ui.theme.PolliDimens.ChatAvatarGap
+    val ChatBubbleRadius: Dp get() = com.polli.ui.theme.PolliDimens.ChatBubbleRadius
+    val ChatBubbleTailRadius: Dp get() = com.polli.ui.theme.PolliDimens.ChatBubbleTailRadius
+    val ChatBubbleInsetH: Dp get() = com.polli.ui.theme.PolliDimens.ChatBubbleInsetH
+    val ChatBubblePaddingV: Dp get() = com.polli.ui.theme.PolliDimens.ChatBubblePaddingV
+    val ChatBubbleMetaRowPaddingV: Dp get() = com.polli.ui.theme.PolliDimens.ChatBubbleMetaRowPaddingV
+    val ChatBubbleMetaRowMarginTop: Dp get() = com.polli.ui.theme.PolliDimens.ChatBubbleMetaRowMarginTop
+    val ChatBubbleOutgoingShellBottom: Dp get() = com.polli.ui.theme.PolliDimens.ChatBubbleOutgoingShellBottom
+    val ChatBubbleIncomingBottomExtra: Dp get() = com.polli.ui.theme.PolliDimens.ChatBubbleIncomingBottomExtra
+    val ChatBubbleStackedIncomingTopExtra: Dp get() = com.polli.ui.theme.PolliDimens.ChatBubbleStackedIncomingTopExtra
+    val ChatBubbleTextOnlyExtraTop: Dp get() = com.polli.ui.theme.PolliDimens.ChatBubbleTextOnlyExtraTop
+    val ChatQuoteAccentWidth: Dp get() = com.polli.ui.theme.PolliDimens.ChatQuoteAccentWidth
+    val ChatQuoteBubblePadH: Dp get() = com.polli.ui.theme.PolliDimens.ChatQuoteBubblePadH
+    val ChatQuoteMarginBottom: Dp get() = com.polli.ui.theme.PolliDimens.ChatQuoteMarginBottom
+    val ChatReactionRowTop: Dp get() = com.polli.ui.theme.PolliDimens.ChatReactionRowTop
+    val ChatRowPaddingH: Dp get() = com.polli.ui.theme.PolliDimens.ChatRowPaddingH
+    val ChatRowOutgoingExtraStart: Dp get() = com.polli.ui.theme.PolliDimens.ChatRowOutgoingExtraStart
+    val ChatRowIncomingRight: Dp get() = com.polli.ui.theme.PolliDimens.ChatRowIncomingRight
+    val ChatRowTop: Dp get() = com.polli.ui.theme.PolliDimens.ChatRowTop
+    val ChatRowTopCollapsed: Dp get() = com.polli.ui.theme.PolliDimens.ChatRowTopCollapsed
+    val ChatBubbleMaxWidthFraction: Float get() = com.polli.ui.theme.PolliDimens.ChatBubbleMaxWidthFraction
+    val ChatBubbleImageMinWidth: Dp get() = com.polli.ui.theme.PolliDimens.ChatBubbleImageMinWidth
+    val ChatBubbleImageMinHeight: Dp get() = com.polli.ui.theme.PolliDimens.ChatBubbleImageMinHeight
+    val ChatBubbleImageMaxHeight: Dp get() = com.polli.ui.theme.PolliDimens.ChatBubbleImageMaxHeight
+    val ChatIncomingGroupAvatarOffset: Dp get() = com.polli.ui.theme.PolliDimens.ChatIncomingGroupAvatarOffset
+    val ChatIncomingGroupBubbleGap: Dp get() = com.polli.ui.theme.PolliDimens.ChatIncomingGroupBubbleGap
+    val ChatFloatingChromeSize: Dp get() = com.polli.ui.theme.PolliDimens.ChatFloatingChromeSize
+    val ChatComposerMinHeight: Dp get() = com.polli.ui.theme.PolliDimens.ChatComposerMinHeight
+    val ChatComposerDockHPadding: Dp get() = com.polli.ui.theme.PolliDimens.ChatComposerDockHPadding
+    val ChatComposerDockBottomMin: Dp get() = com.polli.ui.theme.PolliDimens.ChatComposerDockBottomMin
+    val ChatComposerKeyboardGap: Dp get() = com.polli.ui.theme.PolliDimens.ChatComposerKeyboardGap
+    val ChatComposerDockClearanceExtra: Dp get() = com.polli.ui.theme.PolliDimens.ChatComposerDockClearanceExtra
+    val ChatScrollFabGapAboveComposer: Dp get() = com.polli.ui.theme.PolliDimens.ChatScrollFabGapAboveComposer
+    val ChatComposerPlusSize: Dp get() = com.polli.ui.theme.PolliDimens.ChatComposerPlusSize
+    val ChatComposerSendSize: Dp get() = com.polli.ui.theme.PolliDimens.ChatComposerSendSize
+    val ChatComposerFieldGap: Dp get() = com.polli.ui.theme.PolliDimens.ChatComposerFieldGap
+    val ScrollFadeBottom: Dp get() = com.polli.ui.theme.PolliDimens.ScrollFadeBottom
+    val ScrollFadeTop: Dp get() = com.polli.ui.theme.PolliDimens.ScrollFadeTop
+    val ChatFeedTopFadeExtend: Dp get() = com.polli.ui.theme.PolliDimens.ChatFeedTopFadeExtend
+    val ChatFeedBottomFadeExtend: Dp get() = com.polli.ui.theme.PolliDimens.ChatFeedBottomFadeExtend
+    val ChatScrollFadeBottom: Dp get() = com.polli.ui.theme.PolliDimens.ChatScrollFadeBottom
+    val ChatScrollFadeBottomMid: Dp get() = com.polli.ui.theme.PolliDimens.ChatScrollFadeBottomMid
+    val ModalInset: Dp get() = com.polli.ui.theme.PolliDimens.ModalInset
+    val ModalScreenInset: Dp get() = com.polli.ui.theme.PolliDimens.ModalScreenInset
+    val ModalRadius: Dp get() = com.polli.ui.theme.PolliDimens.ModalRadius
+    val ModalBottomFade: Dp get() = com.polli.ui.theme.PolliDimens.ModalBottomFade
+    val ModalTitleTopPad: Dp get() = com.polli.ui.theme.PolliDimens.ModalTitleTopPad
+    val ModalTitleDescGap: Dp get() = com.polli.ui.theme.PolliDimens.ModalTitleDescGap
+    val DetailBackButtonSize: Dp get() = com.polli.ui.theme.PolliDimens.DetailBackButtonSize
+    val ProfileCardWidth: Dp get() = com.polli.ui.theme.PolliDimens.ProfileCardWidth
+    val GroupHeaderClearance: Dp get() = com.polli.ui.theme.PolliDimens.GroupHeaderClearance
 }
 
 object ProfileColor {
@@ -129,12 +129,12 @@ object ProfileColors {
 }
 
 @Composable
-fun LabTheme(
+fun PolliTheme(
     prefs: AppPrefs,
     uiScaleRevision: Int = 0,
     content: @Composable () -> Unit,
 ) {
     CompositionLocalProvider(LocalAppPrefs provides prefs) {
-        com.polli.ui.theme.LabTheme(prefs = prefs, uiScaleRevision = uiScaleRevision, content = content)
+        com.polli.ui.theme.PolliTheme(prefs = prefs, uiScaleRevision = uiScaleRevision, content = content)
     }
 }

@@ -11,15 +11,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.polli.android.theme.LabColors
+import com.polli.android.theme.PolliColors
 import dev.chrisbanes.haze.HazeState
 
 @Composable
 fun BlurPanel(
     modifier: Modifier = Modifier,
     cornerRadius: Dp = 16.dp,
-    backgroundColor: Color = LabColors.Gray66,
-    borderColor: Color = LabColors.White16,
+    backgroundColor: Color = PolliColors.Gray66,
+    borderColor: Color = PolliColors.White16,
     hazeState: HazeState? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -38,8 +38,8 @@ fun FrostedPanel(
     modifier: Modifier = Modifier,
     cornerRadius: Dp = 16.dp,
     shape: Shape? = null,
-    backgroundColor: Color = LabColors.Gray66,
-    borderColor: Color = LabColors.White16,
+    backgroundColor: Color = PolliColors.Gray66,
+    borderColor: Color = PolliColors.White16,
     hazeState: HazeState? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {

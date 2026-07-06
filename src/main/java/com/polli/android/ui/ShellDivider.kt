@@ -8,20 +8,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
-import com.polli.android.theme.LabColors
-import com.polli.android.theme.LabDimens
+import com.polli.android.theme.PolliColors
+import com.polli.android.theme.PolliDimens
 
 /**
- * Standard divider line — [LabDimens.ShellDividerWidth] × [LabColors.ShellDivider] (white8).
- * Pass [screenPad] = 0.dp for full-bleed dividers; default insets to [LabDimens.HomeBarPadding].
+ * Standard divider line — [PolliDimens.ShellDividerWidth] × [PolliColors.ShellDivider] (white8).
+ * Pass [screenPad] = 0.dp for full-bleed dividers; default insets to [PolliDimens.HomeBarPadding].
  */
 @Composable
-fun ShellDivider(screenPad: Dp = LabDimens.HomeBarPadding) {
+fun ShellDivider(screenPad: Dp = PolliDimens.HomeBarPadding) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = screenPad)
-            .height(LabDimens.ShellDividerWidth)
-            .background(LabColors.ShellDivider),
+            .height(PolliDimens.ShellDividerWidth)
+            .background(PolliColors.ShellDivider),
     )
 }
