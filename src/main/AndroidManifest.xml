@@ -321,12 +321,6 @@
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
 
         <activity
-            android:name=".ContactMultiSelectionActivity"
-            android:label="@string/contacts_title"
-            android:windowSoftInputMode="stateHidden"
-            android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
-
-        <activity
             android:name="com.polli.android.settings.NotificationSettingsActivity"
             android:theme="@style/TextSecure.LightTheme"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"
@@ -398,11 +392,6 @@
             android:stateNotNeeded="true"
             android:clearTaskOnLaunch="true"
             android:finishOnTaskLaunch="true" />
-
-        <activity
-            android:name=".AttachContactActivity"
-            android:theme="@style/TextSecure.LightTheme"
-            android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
 
         <activity
             android:name="com.polli.android.onboarding.AdvancedOnboardingActivity"

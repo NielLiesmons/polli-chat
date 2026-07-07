@@ -31,8 +31,7 @@ import com.polli.android.newchat.GroupCreateActivity
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.PolliTheme
 import com.polli.android.platform.EngineBridge
-import com.polli.android.platform.LegacyContactMultiSelectionActivity
-import com.polli.android.platform.LegacyContactSelectionListFragment
+import com.polli.android.newchat.ContactPickerActivity
 import com.polli.android.ui.MuteDurationDialog
 import com.polli.android.qr.QrShowActivity
 import com.polli.android.platform.PlatformClipboard
@@ -60,9 +59,9 @@ class ProfileDetailActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEv
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val data = result.data ?: return@registerForActivityResult
             if (result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
-            val selected = data.getIntegerArrayListExtra(LegacyContactMultiSelectionActivity.CONTACTS_EXTRA)
+            val selected = data.getIntegerArrayListExtra(ContactPickerActivity.RESULT_SELECTED)
             val deselected =
-                data.getIntegerArrayListExtra(LegacyContactMultiSelectionActivity.DESELECTED_CONTACTS_EXTRA)
+                data.getIntegerArrayListExtra(ContactPickerActivity.RESULT_DESELECTED)
             val chatId = uiState?.chatId ?: return@registerForActivityResult
             PlatformLegacyUtil.runOnAnyBackgroundThread {
                 deselected?.forEach { contactId ->
@@ -284,12 +283,8 @@ class ProfileDetailActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEv
     }
 
     private fun addMembers(chatId: Int) {
-        val preselected = ArrayList(dcContext.getChatContacts(chatId).toList())
-        pickMembers.launch(
-            Intent(this, LegacyContactMultiSelectionActivity::class.java).apply {
-                putExtra(LegacyContactSelectionListFragment.PRESELECTED_CONTACTS, preselected)
-            },
-        )
+        val preselected = dcContext.getChatContacts(chatId).toList()
+        pickMembers.launch(ContactPickerActivity.pickMulti(this, preselected))
     }
 
     private fun qrInvite(chatId: Int) {

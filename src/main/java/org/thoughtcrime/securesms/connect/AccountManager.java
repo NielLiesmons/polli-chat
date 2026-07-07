@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentActivity;
 import androidx.preference.PreferenceManager;
 import chat.delta.rpc.Rpc;
 import chat.delta.rpc.RpcException;
@@ -16,7 +14,6 @@ import com.polli.android.navigation.AppNav;
 import java.io.File;
 import org.thoughtcrime.securesms.ApplicationContext;
 import com.polli.android.onboarding.WelcomeActivity;
-import org.thoughtcrime.securesms.accounts.AccountSelectionListFragment;
 
 public class AccountManager {
 
@@ -139,13 +136,6 @@ public class AccountManager {
     }
   }
 
-  // ui
-
-  public void showSwitchAccountMenu(FragmentActivity activity, boolean selectOnly) {
-    AccountSelectionListFragment dialog = AccountSelectionListFragment.newInstance(selectOnly);
-    dialog.show(activity.getSupportFragmentManager(), null);
-  }
-
   /** Reload home after the active profile changes (Polli Compose path). */
   public void onProfileSwitched(Activity activity) {
     Intent intent = AppNav.homeIntent(activity.getApplicationContext());
@@ -154,7 +144,7 @@ public class AccountManager {
     activity.finish();
   }
 
-  public void deleteProfile(Activity activity, int profileId, boolean selectOnly) {
+  public void deleteProfile(Activity activity, int profileId) {
     DcAccounts accounts = DcHelper.getAccounts(activity);
     boolean selected = profileId == accounts.getSelectedAccount().getAccountId();
     DcHelper.getNotificationCenter(activity).removeAllNotifications(profileId);
@@ -167,8 +157,6 @@ public class AccountManager {
       } else {
         switchAccountAndStartActivity(activity, 0);
       }
-    } else {
-      showSwitchAccountMenu((FragmentActivity) activity, selectOnly);
     }
   }
 

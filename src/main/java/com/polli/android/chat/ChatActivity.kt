@@ -25,7 +25,7 @@ import com.polli.android.theme.PolliTheme
 import com.polli.android.data.engine.PolliRepositories
 import com.polli.domain.navigation.ChatIntentExtras
 import com.polli.android.platform.EngineBridge
-import com.polli.android.platform.LegacyAttachContactActivity
+import com.polli.android.newchat.ContactPickerActivity
 import com.polli.android.platform.PlatformAttachments
 import com.polli.android.platform.PlatformMedia
 import com.polli.android.platform.PolliAudioPlaybackService
@@ -71,7 +71,7 @@ class ChatActivity : BaseComposeActivity() {
 
     private val pickContact = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode != RESULT_OK || result.data == null) return@registerForActivityResult
-        val contactId = result.data!!.getIntExtra(LegacyAttachContactActivity.CONTACT_ID_EXTRA, 0)
+        val contactId = result.data!!.getIntExtra(ContactPickerActivity.RESULT_CONTACT_ID, 0)
         if (contactId <= 0) return@registerForActivityResult
         try {
             val rpc = EngineBridge.getRpc(this)
@@ -160,7 +160,7 @@ class ChatActivity : BaseComposeActivity() {
                         },
                         onPickContact = {
                             showAttachModal = false
-                            pickContact.launch(Intent(this, LegacyAttachContactActivity::class.java))
+                            pickContact.launch(ContactPickerActivity.pickSingle(this))
                         },
                         onPickLocation = {
                             showAttachModal = false

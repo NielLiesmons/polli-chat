@@ -1,9 +1,0 @@
-package com.polli.android.platform
-
-import org.thoughtcrime.securesms.AttachContactActivity
-import org.thoughtcrime.securesms.ContactMultiSelectionActivity
-import org.thoughtcrime.securesms.ContactSelectionListFragment
-
-typealias LegacyAttachContactActivity = AttachContactActivity
-typealias LegacyContactMultiSelectionActivity = ContactMultiSelectionActivity
-typealias LegacyContactSelectionListFragment = ContactSelectionListFragment
