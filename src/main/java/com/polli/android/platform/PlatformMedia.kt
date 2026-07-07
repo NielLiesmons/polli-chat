@@ -2,7 +2,7 @@ package com.polli.android.platform
 
 import android.content.Context
 import android.net.Uri
-import org.thoughtcrime.securesms.providers.PersistentBlobProvider
+import com.polli.android.providers.PersistentBlobProvider
 import org.thoughtcrime.securesms.util.MediaUtil
 
 object PlatformMedia {

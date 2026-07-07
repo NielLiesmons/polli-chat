@@ -15,7 +15,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import com.polli.android.navigation.AppNav;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.notifications.NotificationCenter;
+import com.polli.android.notifications.NotificationCenter;
 import org.thoughtcrime.securesms.util.IntentUtils;
 import org.thoughtcrime.securesms.util.Prefs;
 

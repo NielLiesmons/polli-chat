@@ -39,15 +39,15 @@ import org.thoughtcrime.securesms.connect.KeepAliveService;
 import org.thoughtcrime.securesms.connect.NetworkStateReceiver;
 import org.thoughtcrime.securesms.crypto.DatabaseSecret;
 import org.thoughtcrime.securesms.crypto.DatabaseSecretProvider;
-import org.thoughtcrime.securesms.notifications.FcmReceiveService;
-import org.thoughtcrime.securesms.notifications.InChatSounds;
-import org.thoughtcrime.securesms.notifications.NotificationCenter;
+import com.polli.android.notifications.FcmReceiveService;
+import com.polli.android.notifications.InChatSounds;
+import com.polli.android.notifications.NotificationCenter;
 import org.thoughtcrime.securesms.util.AndroidSignalProtocolLogger;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 import org.thoughtcrime.securesms.util.Prefs;
 import org.thoughtcrime.securesms.util.SignalProtocolLoggerProvider;
 import org.thoughtcrime.securesms.util.Util;
-import org.thoughtcrime.securesms.webxdc.WebxdcGarbageCollectionWorker;
+import com.polli.android.webxdc.WebxdcGarbageCollectionWorker;
 
 public class ApplicationContext extends MultiDexApplication {
   private static final String TAG = "ApplicationContext";

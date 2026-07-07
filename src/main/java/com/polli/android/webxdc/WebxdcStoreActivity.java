@@ -23,7 +23,7 @@ import java.util.HashMap;
 import com.polli.android.ui.PolliBaseActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.connect.DcHelper;
-import org.thoughtcrime.securesms.providers.PersistentBlobProvider;
+import com.polli.android.providers.PersistentBlobProvider;
 import org.thoughtcrime.securesms.util.IntentUtils;
 import org.thoughtcrime.securesms.util.JsonUtils;
 import org.thoughtcrime.securesms.util.MediaUtil;

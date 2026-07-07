@@ -1,7 +1,7 @@
 package com.polli.android.platform
 
 import android.app.Activity
-import org.thoughtcrime.securesms.geolocation.LocationSharing
+import com.polli.android.geolocation.LocationSharing
 
 object PlatformAttachments {
     fun selectLocation(activity: Activity, chatId: Int) {

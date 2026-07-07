@@ -8,7 +8,7 @@ import com.b44t.messenger.DcAccounts
 import com.b44t.messenger.DcContext
 import org.thoughtcrime.securesms.connect.DcEventCenter
 import org.thoughtcrime.securesms.connect.DcHelper
-import org.thoughtcrime.securesms.notifications.NotificationCenter
+import com.polli.android.notifications.NotificationCenter
 
 /** JNI/RPC engine access — sole `DcHelper` entry from Polli UI code. */
 object EngineBridge {

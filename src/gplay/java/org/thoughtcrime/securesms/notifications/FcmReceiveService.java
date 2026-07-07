@@ -1,4 +1,4 @@
-package org.thoughtcrime.securesms.notifications;
+package com.polli.android.notifications;
 
 import android.content.Context;
 import android.text.TextUtils;
@@ -13,7 +13,7 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import org.thoughtcrime.securesms.ApplicationContext;
 import org.thoughtcrime.securesms.BuildConfig;
-import org.thoughtcrime.securesms.service.FetchForegroundService;
+import com.polli.android.service.FetchForegroundService;
 import org.thoughtcrime.securesms.util.Util;
 
 public class FcmReceiveService extends FirebaseMessagingService {

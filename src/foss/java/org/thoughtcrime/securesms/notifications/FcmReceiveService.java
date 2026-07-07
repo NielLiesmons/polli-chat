@@ -1,4 +1,4 @@
-package org.thoughtcrime.securesms.notifications;
+package com.polli.android.notifications;
 
 import android.content.Context;
 import androidx.annotation.Nullable;

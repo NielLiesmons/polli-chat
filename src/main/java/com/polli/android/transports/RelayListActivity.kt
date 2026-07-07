@@ -66,7 +66,7 @@ import androidx.lifecycle.lifecycleScope
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.connect.DcEventCenter
 import com.polli.android.qr.QrActivity
-import org.thoughtcrime.securesms.qr.QrCodeHandler
+import com.polli.android.qr.QrCodeHandler
 
 /** Compose relay (transport) list — replaces the legacy Java RelayListActivity. */
 class RelayListActivity : BaseComposeActivity(), DcEventCenter.DcEventDelegate {

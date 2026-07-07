@@ -449,20 +449,20 @@
         </activity>
 
         <service
-            android:name=".service.GenericForegroundService"
+            android:name="com.polli.android.service.GenericForegroundService"
             android:foregroundServiceType="dataSync" />
 
         <service
-            android:name=".service.FetchForegroundService"
+            android:name="com.polli.android.service.FetchForegroundService"
             android:foregroundServiceType="dataSync" />
 
         <service
-            android:name=".geolocation.LocationStreamingService"
+            android:name="com.polli.android.geolocation.LocationStreamingService"
             android:foregroundServiceType="location"
             android:exported="false" />
 
         <service
-            android:name=".service.AudioPlaybackService"
+            android:name="com.polli.android.service.AudioPlaybackService"
             android:foregroundServiceType="mediaPlayback"
             android:exported="true">
             <intent-filter>
@@ -471,21 +471,21 @@
         </service>
 
         <receiver
-            android:name=".notifications.MarkReadReceiver"
+            android:name="com.polli.android.notifications.MarkReadReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
-                <action android:name="org.thoughtcrime.securesms.notifications.MARK_NOTICED" />
-                <action android:name="org.thoughtcrime.securesms.notifications.CANCEL" />
+                <action android:name="com.polli.android.notifications.MARK_NOTICED" />
+                <action android:name="com.polli.android.notifications.CANCEL" />
             </intent-filter>
         </receiver>
 
         <receiver
-            android:name=".notifications.RemoteReplyReceiver"
+            android:name="com.polli.android.notifications.RemoteReplyReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
-                <action android:name="org.thoughtcrime.securesms.notifications.WEAR_REPLY" />
+                <action android:name="com.polli.android.notifications.WEAR_REPLY" />
             </intent-filter>
         </receiver>
 
@@ -523,7 +523,7 @@
         </provider>
 
         <receiver
-            android:name=".service.BootReceiver"
+            android:name="com.polli.android.service.BootReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -532,7 +532,7 @@
         </receiver>
 
         <receiver
-            android:name=".service.PanicResponderListener"
+            android:name="com.polli.android.service.PanicResponderListener"
             android:exported="true">
             <intent-filter>
                 <action android:name="info.guardianproject.panic.action.TRIGGER" />

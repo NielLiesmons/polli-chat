@@ -21,7 +21,7 @@ import com.polli.domain.navigation.ChatIntentExtras
 import kotlinx.coroutines.launch
 import com.polli.android.ui.PolliBaseActivity
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.permissions.Permissions
+import com.polli.android.permissions.Permissions
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme
 
 /**

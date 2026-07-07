@@ -2,7 +2,7 @@ package com.polli.android.platform
 
 import android.content.Context
 import android.graphics.Bitmap
-import org.thoughtcrime.securesms.profiles.AvatarHelper
+import com.polli.android.profiles.AvatarHelper
 import java.io.File
 
 object PlatformAvatars {

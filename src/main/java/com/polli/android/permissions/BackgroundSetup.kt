@@ -15,9 +15,9 @@ import com.polli.domain.navigation.ChatIntentExtras
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.components.reminder.DozeReminder
 import com.polli.android.platform.EngineBridge
-import org.thoughtcrime.securesms.notifications.FcmReceiveService
-import org.thoughtcrime.securesms.permissions.Permissions
-import org.thoughtcrime.securesms.qr.QrCodeHandler
+import com.polli.android.notifications.FcmReceiveService
+import com.polli.android.permissions.Permissions
+import com.polli.android.qr.QrCodeHandler
 import com.polli.android.platform.PlatformPrefs
 
 /**

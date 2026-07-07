@@ -8,8 +8,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.NotificationManagerCompat
 import com.polli.android.BaseAppCompatComposeActivity
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.permissions.Permissions
-import org.thoughtcrime.securesms.preferences.NotificationsPreferenceFragment
+import com.polli.android.permissions.Permissions
+import com.polli.android.preferences.NotificationsPreferenceFragment
 
 /** Polli host for Delta Chat notification prefs (ringtone, background service, battery). */
 class NotificationSettingsActivity : BaseAppCompatComposeActivity() {

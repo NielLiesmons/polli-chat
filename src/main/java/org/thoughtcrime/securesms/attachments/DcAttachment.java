@@ -5,7 +5,7 @@ import android.net.Uri;
 import androidx.annotation.Nullable;
 import com.b44t.messenger.DcMsg;
 import java.io.File;
-import org.thoughtcrime.securesms.database.AttachmentDatabase;
+import com.polli.android.database.AttachmentDatabase;
 
 public class DcAttachment extends Attachment {
 

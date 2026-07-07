@@ -2,7 +2,7 @@ package org.thoughtcrime.securesms.contacts.avatars;
 
 import android.content.Context;
 import com.b44t.messenger.DcContact;
-import org.thoughtcrime.securesms.database.Address;
+import com.polli.android.database.Address;
 
 public class ProfileContactPhoto extends LocalFileContactPhoto {
 

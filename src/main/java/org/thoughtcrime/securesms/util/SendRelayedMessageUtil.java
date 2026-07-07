@@ -26,7 +26,7 @@ import java.util.List;
 import com.polli.android.HomeRelayingActivity;
 import org.thoughtcrime.securesms.connect.DcHelper;
 import org.thoughtcrime.securesms.mms.PartAuthority;
-import org.thoughtcrime.securesms.providers.PersistentBlobProvider;
+import com.polli.android.providers.PersistentBlobProvider;
 
 public class SendRelayedMessageUtil {
 

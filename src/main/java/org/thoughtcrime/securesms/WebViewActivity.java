@@ -25,7 +25,7 @@ import com.polli.android.ui.PolliBaseActivity;
 import java.net.IDN;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.thoughtcrime.securesms.qr.QrCodeHandler;
+import com.polli.android.qr.QrCodeHandler;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 import org.thoughtcrime.securesms.util.IntentUtils;
 import org.thoughtcrime.securesms.util.Util;

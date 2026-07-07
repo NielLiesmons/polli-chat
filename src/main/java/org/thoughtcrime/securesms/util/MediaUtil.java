@@ -31,7 +31,7 @@ import org.thoughtcrime.securesms.mms.Slide;
 import org.thoughtcrime.securesms.mms.StickerSlide;
 import org.thoughtcrime.securesms.mms.VcardSlide;
 import org.thoughtcrime.securesms.mms.VideoSlide;
-import org.thoughtcrime.securesms.providers.PersistentBlobProvider;
+import com.polli.android.providers.PersistentBlobProvider;
 
 public class MediaUtil {
 

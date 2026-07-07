@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import org.thoughtcrime.securesms.ApplicationContext;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.service.FetchForegroundService;
+import com.polli.android.service.FetchForegroundService;
 import org.thoughtcrime.securesms.util.Util;
 
 public class DcEventCenter {

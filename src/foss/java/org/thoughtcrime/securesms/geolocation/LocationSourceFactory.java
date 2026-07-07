@@ -1,4 +1,4 @@
-package org.thoughtcrime.securesms.geolocation;
+package com.polli.android.geolocation;
 
 import android.content.Context;
 import android.util.Log;

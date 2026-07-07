@@ -7,7 +7,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import com.polli.android.qr.WifiSsid
 import org.thoughtcrime.securesms.connect.DcHelper
-import org.thoughtcrime.securesms.notifications.FcmReceiveService
+import com.polli.android.notifications.FcmReceiveService
 import org.thoughtcrime.securesms.util.FileProviderUtil
 import org.thoughtcrime.securesms.util.IntentUtils
 import org.thoughtcrime.securesms.util.Prefs

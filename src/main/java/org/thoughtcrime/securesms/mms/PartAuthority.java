@@ -8,8 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
-import org.thoughtcrime.securesms.providers.PersistentBlobProvider;
-import org.thoughtcrime.securesms.providers.SingleUseBlobProvider;
+import com.polli.android.providers.PersistentBlobProvider;
+import com.polli.android.providers.SingleUseBlobProvider;
 
 public class PartAuthority {
 

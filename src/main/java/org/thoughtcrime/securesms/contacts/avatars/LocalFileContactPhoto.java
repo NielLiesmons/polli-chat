@@ -10,8 +10,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
-import org.thoughtcrime.securesms.database.Address;
-import org.thoughtcrime.securesms.profiles.AvatarHelper;
+import com.polli.android.database.Address;
+import com.polli.android.profiles.AvatarHelper;
 import org.thoughtcrime.securesms.util.Conversions;
 
 public abstract class LocalFileContactPhoto implements ContactPhoto {

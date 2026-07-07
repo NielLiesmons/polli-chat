@@ -8,7 +8,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import org.thoughtcrime.securesms.permissions.Permissions;
+import com.polli.android.permissions.Permissions;
 
 public class StorageUtil {
 

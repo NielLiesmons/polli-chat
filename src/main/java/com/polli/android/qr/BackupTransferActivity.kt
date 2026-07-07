@@ -60,8 +60,8 @@ import com.polli.android.theme.PolliTheme
 import com.polli.android.ui.AppInsets
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.connect.DcEventCenter
-import org.thoughtcrime.securesms.service.GenericForegroundService
-import org.thoughtcrime.securesms.service.NotificationController
+import com.polli.android.service.GenericForegroundService
+import com.polli.android.service.NotificationController
 import java.util.Locale
 
 /** Compose account backup transfer between two devices — replaces the Java activity + fragments. */
