@@ -80,7 +80,9 @@ import com.polli.ui.components.ProfileAvatar
 import com.polli.ui.components.SelfAvatar
 import com.polli.ui.home.HomeNote
 import com.polli.ui.home.HomeSearchPanelBody
+import com.polli.ui.home.StackedTabAvatars
 import com.polli.ui.home.formatHomeTabUnreadCount
+import com.polli.ui.home.mailUnreadChats
 import com.polli.ui.home.totalUnreadMessages
 import com.polli.ui.home.HomeSearchPanelHeightMeasurer
 import com.polli.ui.home.HomeSearchActionButton
@@ -103,7 +105,7 @@ import androidx.compose.ui.unit.Dp
 private val SearchExpandEasing = CubicBezierEasing(0.22f, 1f, 0.36f, 1f)
 private const val SearchExpandDurationMs = 380
 
-enum class HomeTab { Home, Notes, Sigils }
+enum class HomeTab { Spaces, Mail, Notes, Sigils }
 
 @Composable
 fun HomeScreen(
@@ -137,7 +139,7 @@ fun HomeScreen(
     var dragExpandProgress by remember { mutableFloatStateOf(0f) }
     var isDraggingExpand by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
-    var tab by remember { mutableStateOf(HomeTab.Home) }
+    var tab by remember { mutableStateOf(HomeTab.Spaces) }
     val listState = rememberLazyListState()
     val showTopFade by rememberLazyListShowTopFadeDerived(listState)
     val focusRequester = remember { FocusRequester() }
@@ -167,13 +169,13 @@ fun HomeScreen(
         storyRingLoader?.invoke(loadedChannels, nowSec)
             ?: StoryRingLogic.buildEntries(loadedChannels, nowSec)
     val archiveLink = rememberArchiveLinkState(chatRepository)
-    val homeItems =
-        remember(loadedItems) {
-            loadedItems.filter {
-                it.category == ChatCategory.Space || it.category == ChatCategory.Mail
-            }
-        }
-    val homeUnreadTotal = remember(homeItems) { totalUnreadMessages(homeItems) }
+    val spaceItems =
+        remember(loadedItems) { loadedItems.filter { it.category == ChatCategory.Space } }
+    val mailItems =
+        remember(loadedItems) { loadedItems.filter { it.category == ChatCategory.Mail } }
+    val spacesUnreadTotal = remember(spaceItems) { totalUnreadMessages(spaceItems) }
+    val mailUnreadTotal = remember(mailItems) { totalUnreadMessages(mailItems) }
+    val mailUnreadPreview = remember(mailItems) { mailUnreadChats(mailItems) }
 
     fun openSearchPanel() {
         isDraggingExpand = false
@@ -320,7 +322,10 @@ fun HomeScreen(
                         TabRow(
                             active = tab,
                             onSelect = { tab = it },
-                            homeUnreadCount = homeUnreadTotal,
+                            spacesUnreadCount = spacesUnreadTotal,
+                            mailUnreadCount = mailUnreadTotal,
+                            mailUnreadChats = mailUnreadPreview,
+                            chatAvatar = chatAvatar,
                         )
                     }
                 }
@@ -344,8 +349,13 @@ fun HomeScreen(
                         onOpenNote = onOpenNote,
                     )
                 } else {
-                    val filtered = homeItems
-                    val showArchiveRow = tab == HomeTab.Home && archiveLink.visible
+                    val filtered =
+                        when (tab) {
+                            HomeTab.Spaces -> spaceItems
+                            HomeTab.Mail -> mailItems
+                            HomeTab.Notes, HomeTab.Sigils -> emptyList()
+                        }
+                    val showArchiveRow = tab == HomeTab.Mail && archiveLink.visible
                     val showFeed = filtered.isNotEmpty() || showArchiveRow
 
                     if (!showFeed) {
@@ -651,7 +661,10 @@ private fun StoryRing(
 private fun TabRow(
     active: HomeTab,
     onSelect: (HomeTab) -> Unit,
-    homeUnreadCount: Int,
+    spacesUnreadCount: Int,
+    mailUnreadCount: Int,
+    mailUnreadChats: List<InboxItem>,
+    chatAvatar: @Composable (InboxItem, Dp) -> Unit,
 ) {
     Row(
         modifier =
@@ -663,10 +676,18 @@ private fun TabRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TabPill(
-            label = "Home",
-            selected = active == HomeTab.Home,
-            onClick = { onSelect(HomeTab.Home) },
-            unreadCount = homeUnreadCount,
+            label = "Spaces",
+            selected = active == HomeTab.Spaces,
+            onClick = { onSelect(HomeTab.Spaces) },
+            unreadCount = spacesUnreadCount,
+        )
+        TabPill(
+            label = "Mail",
+            selected = active == HomeTab.Mail,
+            onClick = { onSelect(HomeTab.Mail) },
+            unreadCount = mailUnreadCount,
+            unreadAvatars = mailUnreadChats,
+            chatAvatar = chatAvatar,
         )
         TabPill(
             label = "Notes",
@@ -687,6 +708,8 @@ private fun TabPill(
     selected: Boolean,
     onClick: () -> Unit,
     unreadCount: Int = 0,
+    unreadAvatars: List<InboxItem> = emptyList(),
+    chatAvatar: (@Composable (InboxItem, Dp) -> Unit)? = null,
 ) {
     val height = if (selected) PolliDimens.TabButtonHeight else PolliDimens.TabButtonUnselectedHeight
     val hPadding = if (selected) PolliDimens.TabButtonHPadding else PolliDimens.TabButtonUnselectedHPadding
@@ -705,6 +728,11 @@ private fun TabPill(
         } else {
             PolliColors.White66
         }
+    val hasStack = unreadAvatars.isNotEmpty() && chatAvatar != null
+    // The avatar stack / count pill sit at button-height minus 6dp (a 3dp inset top & bottom);
+    // tighten the trailing padding to that same 3dp so the stack hugs the pill edge symmetrically.
+    val innerSize = height - 6.dp
+    val endPadding = if (hasStack) 3.dp else hPadding
     Box(
         modifier =
             Modifier
@@ -712,13 +740,10 @@ private fun TabPill(
                 .clip(RoundedCornerShape(corner))
                 .background(bg)
                 .polliClickable(onClick = onClick)
-                .padding(horizontal = hPadding),
+                .padding(start = hPadding, end = endPadding),
         contentAlignment = Alignment.Center,
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = label,
                 color = if (selected) PolliColors.White else PolliColors.White66,
@@ -729,18 +754,65 @@ private fun TabPill(
                         lineHeight = fontSize,
                     ),
             )
-            if (countLabel != null) {
-                Text(
-                    text = countLabel,
-                    color = countColor,
-                    style =
-                        TextStyle(
-                            fontSize = fontSize,
-                            fontWeight = FontWeight.Medium,
-                            lineHeight = fontSize,
-                        ),
+            if (hasStack) {
+                Spacer(modifier = Modifier.width(8.dp))
+                StackedTabAvatars(
+                    items = unreadAvatars,
+                    avatarSize = innerSize,
+                    overlap = innerSize / 3,
+                    chatAvatar = chatAvatar!!,
                 )
             }
+            if (countLabel != null) {
+                if (hasStack) {
+                    Spacer(modifier = Modifier.width(3.dp))
+                    TabCountPill(
+                        text = countLabel,
+                        height = innerSize,
+                        selected = selected,
+                    )
+                } else {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = countLabel,
+                        color = countColor,
+                        style =
+                            TextStyle(
+                                fontSize = fontSize,
+                                fontWeight = FontWeight.Medium,
+                                lineHeight = fontSize,
+                            ),
+                    )
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun TabCountPill(
+    text: String,
+    height: Dp,
+    selected: Boolean,
+) {
+    Box(
+        modifier =
+            Modifier
+                .height(height)
+                .clip(RoundedCornerShape(50))
+                .background(if (selected) PolliColors.White.copy(alpha = 0.16f) else PolliColors.White16)
+                .padding(horizontal = 8.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = text,
+            color = if (selected) PolliColors.White else PolliColors.White85,
+            style =
+                TextStyle(
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    lineHeight = 12.sp,
+                ),
+        )
     }
 }
