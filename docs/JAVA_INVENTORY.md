@@ -2,7 +2,9 @@
 
 Cross-reference: references from `com.polli.android` vs legacy-only Java.
 
-**2026-07 status:** ~270 Java files remain (down from ~376). Polli chat/home/onboarding run on `polli-engine` JSON-RPC; legacy Java is JNI bootstrap + platform bridges only.
+**2026-07 status:** 248 legacy `securesms` Java files remain (down from ~376). Polli chat/home/onboarding run on `polli-engine` JSON-RPC; legacy Java is JNI bootstrap + platform bridges only. Rust core is reached via `com.b44t.messenger` (JNI) and `chat.delta.rpc` (JSON-RPC) — those are the Rust interface and stay.
+
+**Dead-code sweep 2026-07-07:** Removed 14 unreachable classes (video transcoding `video/recode/*` except Sample/Track, `TransportOptions*`, subsampling decoders, `FutureTaskListener`, span utils). Reachability computed via transitive closure from the kept surface (Kotlin/manifest/XML). Note: `@GlideModule SignalGlideModule` + `ContactPhotoLoader`/`ContactPhotoFetcher` look unreferenced but are discovered by Glide annotation processing and register the `ContactPhoto` loader used by avatars/quotes/notifications — keep them.
 
 ## Removed from Polli path (2026-07)
 
