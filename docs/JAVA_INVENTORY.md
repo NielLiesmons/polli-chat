@@ -16,7 +16,7 @@ Cross-reference: references from `com.polli.android` vs legacy-only Java.
 
 Polli hosts: `HomeActivity`, `ChatActivity`, `ArchiveActivity`, Compose `WelcomeActivity`, `NewConversationActivity`, `GroupCreateActivity`, `AccountSetupActivity`, `AdvancedOnboardingActivity`, `ProfileDetailActivity`, `ProfilesActivity`, `NotificationSettingsActivity`, `com.polli.android.webxdc.WebxdcActivity` / `WebxdcStoreActivity`.
 
-**2026-07-07:** Onboarding, profiles, QR, home, notes, and media screens no longer import `DcHelper` directly — all go through `com.polli.android.platform` bridges. Remaining direct legacy imports: `org.thoughtcrime.securesms.R`, `webxdc/*.java`, `PolliShareActivity` → `ShareActivity`.
+**2026-07-07:** Onboarding, profiles, QR, home, notes, and media screens no longer import `DcHelper` directly — all go through `com.polli.android.platform` bridges. `PolliShareActivity` is Kotlin-native; legacy `ShareActivity.java`, `ResolveMediaTask.java`, and `MailtoUtil.java` deleted. Remaining direct legacy imports: `org.thoughtcrime.securesms.R`, `webxdc/*.java` (feature-flagged off).
 
 ## Polli platform bridges (`com.polli.android.platform`)
 

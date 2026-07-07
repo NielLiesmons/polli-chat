@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
 import org.thoughtcrime.securesms.BuildConfig;
 import com.polli.android.HomeActivity;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.ShareActivity;
+import com.polli.android.share.PolliShareActivity;
 import org.thoughtcrime.securesms.connect.DcHelper;
 
 @RunWith(AndroidJUnit4.class)
@@ -70,7 +70,7 @@ public class SharingTest {
     i.putExtra(Intent.EXTRA_TEXT, "Hello!");
     i.setComponent(
         new ComponentName(
-            getInstrumentation().getTargetContext().getApplicationContext(), ShareActivity.class));
+            getInstrumentation().getTargetContext().getApplicationContext(), PolliShareActivity.class));
     activityRule.getScenario().onActivity(a -> a.startActivity(i));
 
     onView(withId(R.id.list)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
@@ -110,10 +110,10 @@ public class SharingTest {
             | Intent.FLAG_RECEIVER_FOREGROUND
             | Intent.FLAG_GRANT_READ_URI_PERMISSION);
     i.putExtra(Intent.EXTRA_STREAM, uri);
-    i.putExtra(ShareActivity.EXTRA_CHAT_ID, createdGroupId);
+    i.putExtra(PolliShareActivity.EXTRA_CHAT_ID, createdGroupId);
     i.setComponent(
         new ComponentName(
-            getInstrumentation().getTargetContext().getApplicationContext(), ShareActivity.class));
+            getInstrumentation().getTargetContext().getApplicationContext(), PolliShareActivity.class));
     activityRule.getScenario().onActivity(a -> a.startActivity(i));
 
     TestUtils.waitForView(withId(R.id.send_button), 10000, 50);
@@ -224,7 +224,7 @@ public class SharingTest {
     i.putExtra(Intent.EXTRA_TEXT, "Veeery important draft");
     i.setComponent(
         new ComponentName(
-            getInstrumentation().getTargetContext().getApplicationContext(), ShareActivity.class));
+            getInstrumentation().getTargetContext().getApplicationContext(), PolliShareActivity.class));
     activityRule.getScenario().onActivity(a -> a.startActivity(i));
 
     // In DC, select the same chat you opened before
