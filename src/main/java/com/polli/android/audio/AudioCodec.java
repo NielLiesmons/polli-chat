@@ -11,7 +11,7 @@ import android.media.MediaRecorder;
 import android.util.Log;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import org.thoughtcrime.securesms.util.Prefs;
+import com.polli.android.util.Prefs;
 
 public class AudioCodec {
 

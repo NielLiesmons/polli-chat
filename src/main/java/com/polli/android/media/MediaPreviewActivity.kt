@@ -43,8 +43,8 @@ import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
 import com.polli.android.platform.EngineBridge
 import org.thoughtcrime.securesms.mms.Slide
-import org.thoughtcrime.securesms.util.SaveAttachmentTask
-import org.thoughtcrime.securesms.util.StorageUtil
+import com.polli.android.util.SaveAttachmentTask
+import com.polli.android.util.StorageUtil
 import java.io.File
 
 /** Compose media preview — replaces Java MediaPreviewActivity. */

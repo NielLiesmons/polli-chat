@@ -23,9 +23,9 @@ import java.security.SecureRandom;
 import org.thoughtcrime.securesms.attachments.Attachment;
 import org.thoughtcrime.securesms.attachments.UriAttachment;
 import com.polli.android.database.AttachmentDatabase;
-import org.thoughtcrime.securesms.util.MediaUtil;
-import org.thoughtcrime.securesms.util.Util;
-import org.thoughtcrime.securesms.util.guava.Optional;
+import com.polli.android.util.MediaUtil;
+import com.polli.android.util.Util;
+import com.polli.android.util.guava.Optional;
 
 public abstract class Slide {
 

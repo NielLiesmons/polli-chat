@@ -42,11 +42,11 @@ import org.thoughtcrime.securesms.crypto.DatabaseSecretProvider;
 import com.polli.android.notifications.FcmReceiveService;
 import com.polli.android.notifications.InChatSounds;
 import com.polli.android.notifications.NotificationCenter;
-import org.thoughtcrime.securesms.util.AndroidSignalProtocolLogger;
-import org.thoughtcrime.securesms.util.DynamicTheme;
-import org.thoughtcrime.securesms.util.Prefs;
-import org.thoughtcrime.securesms.util.SignalProtocolLoggerProvider;
-import org.thoughtcrime.securesms.util.Util;
+import com.polli.android.util.AndroidSignalProtocolLogger;
+import com.polli.android.util.DynamicTheme;
+import com.polli.android.util.Prefs;
+import com.polli.android.util.SignalProtocolLoggerProvider;
+import com.polli.android.util.Util;
 import com.polli.android.webxdc.WebxdcGarbageCollectionWorker;
 
 public class ApplicationContext extends MultiDexApplication {

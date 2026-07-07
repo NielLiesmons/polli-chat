@@ -18,9 +18,9 @@ import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.connect.AccountManager;
 import org.thoughtcrime.securesms.connect.DcHelper;
 import com.polli.android.transports.RelayListActivity;
-import org.thoughtcrime.securesms.util.IntentUtils;
-import org.thoughtcrime.securesms.util.Util;
-import org.thoughtcrime.securesms.util.views.ProgressDialog;
+import com.polli.android.util.IntentUtils;
+import com.polli.android.util.Util;
+import com.polli.android.util.views.ProgressDialog;
 
 public class QrCodeHandler {
   private static final String TAG = "QrCodeHandler";

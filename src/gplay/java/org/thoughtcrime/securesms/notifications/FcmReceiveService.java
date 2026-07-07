@@ -14,7 +14,7 @@ import com.google.firebase.messaging.RemoteMessage;
 import org.thoughtcrime.securesms.ApplicationContext;
 import org.thoughtcrime.securesms.BuildConfig;
 import com.polli.android.service.FetchForegroundService;
-import org.thoughtcrime.securesms.util.Util;
+import com.polli.android.util.Util;
 
 public class FcmReceiveService extends FirebaseMessagingService {
   private static final String TAG = "FcmReceiveService";

@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.thoughtcrime.securesms.DummyActivity;
 import org.thoughtcrime.securesms.R;
 import com.polli.android.notifications.NotificationCenter;
-import org.thoughtcrime.securesms.util.IntentUtils;
+import com.polli.android.util.IntentUtils;
 
 public final class GenericForegroundService extends Service {
 

@@ -18,7 +18,7 @@ import org.thoughtcrime.securesms.connect.DcEventCenter;
 import org.thoughtcrime.securesms.connect.DcHelper;
 import com.polli.android.service.GenericForegroundService;
 import com.polli.android.service.NotificationController;
-import org.thoughtcrime.securesms.util.views.ProgressDialog;
+import com.polli.android.util.views.ProgressDialog;
 
 public abstract class ListSummaryPreferenceFragment extends CorrectedPreferenceFragment
     implements DcEventCenter.DcEventDelegate {

@@ -1,6 +1,6 @@
 package com.polli.android.platform
 
-import org.thoughtcrime.securesms.util.Util
+import com.polli.android.util.Util
 
 object PlatformThread {
     fun runOnMain(block: () -> Unit) {

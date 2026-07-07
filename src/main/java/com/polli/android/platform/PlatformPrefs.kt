@@ -2,7 +2,7 @@ package com.polli.android.platform
 
 import android.content.Context
 import android.net.Uri
-import org.thoughtcrime.securesms.util.Prefs
+import com.polli.android.util.Prefs
 
 object PlatformPrefs {
     val askedForNotificationPermission: String = Prefs.ASKED_FOR_NOTIFICATION_PERMISSION

@@ -21,8 +21,8 @@ import com.b44t.messenger.DcMsg;
 import org.thoughtcrime.securesms.attachments.DcAttachment;
 import org.thoughtcrime.securesms.attachments.UriAttachment;
 import com.polli.android.database.AttachmentDatabase;
-import org.thoughtcrime.securesms.util.MediaUtil;
-import org.thoughtcrime.securesms.util.StorageUtil;
+import com.polli.android.util.MediaUtil;
+import com.polli.android.util.StorageUtil;
 
 public class AudioSlide extends Slide {
 

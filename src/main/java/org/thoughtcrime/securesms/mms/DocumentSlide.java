@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.b44t.messenger.DcMsg;
 import org.thoughtcrime.securesms.attachments.DcAttachment;
-import org.thoughtcrime.securesms.util.StorageUtil;
+import com.polli.android.util.StorageUtil;
 
 public class DocumentSlide extends Slide {
   private int dcMsgType = DcMsg.DC_MSG_UNDEFINED;

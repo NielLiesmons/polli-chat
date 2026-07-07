@@ -1,6 +1,6 @@
 package com.b44t.messenger;
 
-import org.thoughtcrime.securesms.util.Util;
+import com.polli.android.util.Util;
 
 public class DcChat {
 

@@ -18,9 +18,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.thoughtcrime.securesms.util.FileProviderUtil;
-import org.thoughtcrime.securesms.util.MediaUtil;
-import org.thoughtcrime.securesms.util.Util;
+import com.polli.android.util.FileProviderUtil;
+import com.polli.android.util.MediaUtil;
+import com.polli.android.util.Util;
 
 public class PersistentBlobProvider {
 

@@ -32,7 +32,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
-import org.thoughtcrime.securesms.util.JsonUtils;
+import com.polli.android.util.JsonUtils;
 
 public final class KeyStoreHelper {
 

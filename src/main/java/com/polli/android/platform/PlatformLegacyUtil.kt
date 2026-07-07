@@ -8,10 +8,10 @@ import androidx.appcompat.app.AlertDialog
 import com.polli.android.qr.WifiSsid
 import org.thoughtcrime.securesms.connect.DcHelper
 import com.polli.android.notifications.FcmReceiveService
-import org.thoughtcrime.securesms.util.FileProviderUtil
-import org.thoughtcrime.securesms.util.IntentUtils
-import org.thoughtcrime.securesms.util.Prefs
-import org.thoughtcrime.securesms.util.Util
+import com.polli.android.util.FileProviderUtil
+import com.polli.android.util.IntentUtils
+import com.polli.android.util.Prefs
+import com.polli.android.util.Util
 import java.io.File
 
 object PlatformLegacyUtil {

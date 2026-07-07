@@ -45,12 +45,12 @@ import org.thoughtcrime.securesms.contacts.avatars.ContactPhoto;
 import org.thoughtcrime.securesms.mms.GlideApp;
 import com.polli.android.preferences.widgets.NotificationPrivacyPreference;
 import com.polli.android.recipients.Recipient;
-import org.thoughtcrime.securesms.util.BitmapUtil;
-import org.thoughtcrime.securesms.util.IntentUtils;
-import org.thoughtcrime.securesms.util.JsonUtils;
-import org.thoughtcrime.securesms.util.Pair;
-import org.thoughtcrime.securesms.util.Prefs;
-import org.thoughtcrime.securesms.util.Util;
+import com.polli.android.util.BitmapUtil;
+import com.polli.android.util.IntentUtils;
+import com.polli.android.util.JsonUtils;
+import com.polli.android.util.Pair;
+import com.polli.android.util.Prefs;
+import com.polli.android.util.Util;
 
 public class NotificationCenter {
   private static final String TAG = "NotificationCenter";

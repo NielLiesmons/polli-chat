@@ -16,9 +16,9 @@ import com.polli.android.onboarding.WelcomeActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.connect.DcHelper;
 import com.polli.android.service.GenericForegroundService;
-import org.thoughtcrime.securesms.util.DynamicTheme;
-import org.thoughtcrime.securesms.util.Prefs;
-import org.thoughtcrime.securesms.util.ViewUtil;
+import com.polli.android.util.DynamicTheme;
+import com.polli.android.util.Prefs;
+import com.polli.android.util.ViewUtil;
 
 /**
  * Base for Polli View-based (AppCompat) activities. Combines dynamic theming and edge-to-edge

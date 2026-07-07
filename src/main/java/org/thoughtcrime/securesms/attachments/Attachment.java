@@ -7,7 +7,7 @@ import androidx.annotation.Nullable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.thoughtcrime.securesms.connect.DcHelper;
-import org.thoughtcrime.securesms.util.MediaUtil;
+import com.polli.android.util.MediaUtil;
 
 public abstract class Attachment {
 

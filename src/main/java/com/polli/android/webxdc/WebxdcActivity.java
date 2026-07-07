@@ -56,10 +56,10 @@ import org.thoughtcrime.securesms.WebViewActivity;
 import org.thoughtcrime.securesms.connect.AccountManager;
 import org.thoughtcrime.securesms.connect.DcEventCenter;
 import org.thoughtcrime.securesms.connect.DcHelper;
-import org.thoughtcrime.securesms.util.IntentUtils;
-import org.thoughtcrime.securesms.util.JsonUtils;
-import org.thoughtcrime.securesms.util.MediaUtil;
-import org.thoughtcrime.securesms.util.Util;
+import com.polli.android.util.IntentUtils;
+import com.polli.android.util.JsonUtils;
+import com.polli.android.util.MediaUtil;
+import com.polli.android.util.Util;
 
 public class WebxdcActivity extends WebViewActivity implements DcEventCenter.DcEventDelegate {
   private static final String TAG = "WebxdcActivity";

@@ -1,7 +1,7 @@
 package com.polli.android.platform
 
 import android.content.Context
-import org.thoughtcrime.securesms.util.DateUtils
+import com.polli.android.util.DateUtils
 
 object PlatformDates {
     fun relativeDate(context: Context, timestampMs: Long): String =

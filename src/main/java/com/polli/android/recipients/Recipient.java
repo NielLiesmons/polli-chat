@@ -41,9 +41,9 @@ import org.thoughtcrime.securesms.contacts.avatars.ProfileContactPhoto;
 import org.thoughtcrime.securesms.contacts.avatars.SystemContactPhoto;
 import org.thoughtcrime.securesms.contacts.avatars.VcardContactPhoto;
 import com.polli.android.database.Address;
-import org.thoughtcrime.securesms.util.Hash;
-import org.thoughtcrime.securesms.util.Prefs;
-import org.thoughtcrime.securesms.util.Util;
+import com.polli.android.util.Hash;
+import com.polli.android.util.Prefs;
+import com.polli.android.util.Util;
 
 public class Recipient {
 

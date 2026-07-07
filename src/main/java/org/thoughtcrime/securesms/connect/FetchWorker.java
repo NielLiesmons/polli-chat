@@ -5,7 +5,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
-import org.thoughtcrime.securesms.util.Util;
+import com.polli.android.util.Util;
 
 public class FetchWorker extends Worker {
   private final @NonNull Context context;

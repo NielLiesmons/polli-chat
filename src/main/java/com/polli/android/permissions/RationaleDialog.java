@@ -13,7 +13,7 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.util.ViewUtil;
+import com.polli.android.util.ViewUtil;
 
 public class RationaleDialog {
 

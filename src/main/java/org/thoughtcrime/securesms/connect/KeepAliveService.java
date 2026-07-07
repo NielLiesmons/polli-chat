@@ -16,8 +16,8 @@ import androidx.core.content.ContextCompat;
 import com.polli.android.navigation.AppNav;
 import org.thoughtcrime.securesms.R;
 import com.polli.android.notifications.NotificationCenter;
-import org.thoughtcrime.securesms.util.IntentUtils;
-import org.thoughtcrime.securesms.util.Prefs;
+import com.polli.android.util.IntentUtils;
+import com.polli.android.util.Prefs;
 
 public class KeepAliveService extends Service {
 

@@ -26,10 +26,10 @@ import java.net.IDN;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import com.polli.android.qr.QrCodeHandler;
-import org.thoughtcrime.securesms.util.DynamicTheme;
-import org.thoughtcrime.securesms.util.IntentUtils;
-import org.thoughtcrime.securesms.util.Util;
-import org.thoughtcrime.securesms.util.ViewUtil;
+import com.polli.android.util.DynamicTheme;
+import com.polli.android.util.IntentUtils;
+import com.polli.android.util.Util;
+import com.polli.android.util.ViewUtil;
 
 public class WebViewActivity extends PolliBaseActivity
     implements SearchView.OnQueryTextListener, WebView.FindListener {

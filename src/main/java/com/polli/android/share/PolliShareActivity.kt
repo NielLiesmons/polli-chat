@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 import com.polli.android.ui.PolliBaseActivity
 import org.thoughtcrime.securesms.R
 import com.polli.android.permissions.Permissions
-import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme
+import com.polli.android.util.DynamicNoActionBarTheme
 
 /**
  * OS share target — resolves inbound URIs and routes to [HomeRelayingActivity] or a direct chat.

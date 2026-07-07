@@ -1,7 +1,7 @@
 package com.polli.android.platform
 
 import android.content.Context
-import org.thoughtcrime.securesms.util.views.ProgressDialog
+import com.polli.android.util.views.ProgressDialog
 
 object PlatformDialogs {
     fun createProgressDialog(context: Context): ProgressDialog = ProgressDialog(context)

@@ -2,8 +2,8 @@ package com.polli.android.platform
 
 import android.app.Activity
 import android.content.Intent
-import org.thoughtcrime.securesms.util.SendRelayedMessageUtil
-import org.thoughtcrime.securesms.util.ShareUtil
+import com.polli.android.util.SendRelayedMessageUtil
+import com.polli.android.util.ShareUtil
 
 object PlatformShare {
     fun isForwarding(activity: Activity): Boolean = ShareUtil.isForwarding(activity)

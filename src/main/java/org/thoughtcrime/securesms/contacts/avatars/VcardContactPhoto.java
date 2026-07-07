@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
-import org.thoughtcrime.securesms.util.JsonUtils;
+import com.polli.android.util.JsonUtils;
 
 public class VcardContactPhoto implements ContactPhoto {
   private final VcardContact vContact;

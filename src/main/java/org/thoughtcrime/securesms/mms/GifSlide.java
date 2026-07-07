@@ -3,7 +3,7 @@ package org.thoughtcrime.securesms.mms;
 import android.content.Context;
 import android.net.Uri;
 import com.b44t.messenger.DcMsg;
-import org.thoughtcrime.securesms.util.MediaUtil;
+import com.polli.android.util.MediaUtil;
 
 public class GifSlide extends ImageSlide {
 

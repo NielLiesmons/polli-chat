@@ -3,7 +3,7 @@ package com.polli.android.service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import org.thoughtcrime.securesms.util.Prefs;
+import com.polli.android.util.Prefs;
 
 /**
  * Respond to a PanicKit trigger Intent by locking the app. PanicKit provides a common framework for

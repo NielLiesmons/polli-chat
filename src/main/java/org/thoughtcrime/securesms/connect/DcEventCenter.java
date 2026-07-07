@@ -11,7 +11,7 @@ import java.util.Hashtable;
 import org.thoughtcrime.securesms.ApplicationContext;
 import org.thoughtcrime.securesms.R;
 import com.polli.android.service.FetchForegroundService;
-import org.thoughtcrime.securesms.util.Util;
+import com.polli.android.util.Util;
 
 public class DcEventCenter {
   private static final String TAG = "DcEventCenter";

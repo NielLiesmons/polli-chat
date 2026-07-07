@@ -15,7 +15,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.Objects;
-import org.thoughtcrime.securesms.util.MediaUtil;
+import com.polli.android.util.MediaUtil;
 
 public class AttachmentsContentProvider extends ContentProvider {
 

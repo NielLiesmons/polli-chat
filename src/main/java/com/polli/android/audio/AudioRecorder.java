@@ -12,9 +12,9 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
 import com.polli.android.providers.PersistentBlobProvider;
-import org.thoughtcrime.securesms.util.MediaUtil;
-import org.thoughtcrime.securesms.util.ThreadUtil;
-import org.thoughtcrime.securesms.util.Util;
+import com.polli.android.util.MediaUtil;
+import com.polli.android.util.ThreadUtil;
+import com.polli.android.util.Util;
 
 public class AudioRecorder {
 

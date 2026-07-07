@@ -31,17 +31,17 @@ import java.util.Date;
 import java.util.HashMap;
 import org.thoughtcrime.securesms.ApplicationContext;
 import org.thoughtcrime.securesms.BuildConfig;
-import org.thoughtcrime.securesms.util.IntentUtils;
+import com.polli.android.util.IntentUtils;
 import org.thoughtcrime.securesms.R;
 import com.polli.android.share.PolliShareActivity;
 import org.thoughtcrime.securesms.mms.PartAuthority;
 import com.polli.android.notifications.NotificationCenter;
 import com.polli.android.providers.PersistentBlobProvider;
 import com.polli.android.qr.QrHubActivity;
-import org.thoughtcrime.securesms.util.FileUtils;
-import org.thoughtcrime.securesms.util.MediaUtil;
-import org.thoughtcrime.securesms.util.ShareUtil;
-import org.thoughtcrime.securesms.util.Util;
+import com.polli.android.util.FileUtils;
+import com.polli.android.util.MediaUtil;
+import com.polli.android.util.ShareUtil;
+import com.polli.android.util.Util;
 
 public class DcHelper {
 

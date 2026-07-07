@@ -1,7 +1,7 @@
 package com.polli.android.platform
 
 import android.content.Context
-import org.thoughtcrime.securesms.util.Util
+import com.polli.android.util.Util
 
 object PlatformClipboard {
     fun copyText(context: Context, text: String) {

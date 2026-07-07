@@ -21,7 +21,7 @@ import java.io.File;
 import org.thoughtcrime.securesms.attachments.Attachment;
 import org.thoughtcrime.securesms.attachments.DcAttachment;
 import org.thoughtcrime.securesms.connect.DcHelper;
-import org.thoughtcrime.securesms.util.MediaUtil;
+import com.polli.android.util.MediaUtil;
 
 public class VideoSlide extends Slide {
 

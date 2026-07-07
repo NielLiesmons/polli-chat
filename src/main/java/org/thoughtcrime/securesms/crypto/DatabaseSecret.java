@@ -2,7 +2,7 @@ package org.thoughtcrime.securesms.crypto;
 
 import androidx.annotation.NonNull;
 import java.io.IOException;
-import org.thoughtcrime.securesms.util.Hex;
+import com.polli.android.util.Hex;
 
 public class DatabaseSecret {
 

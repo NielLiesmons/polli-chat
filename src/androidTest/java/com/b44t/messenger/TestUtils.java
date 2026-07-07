@@ -23,9 +23,9 @@ import com.polli.android.HomeActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.connect.AccountManager;
 import org.thoughtcrime.securesms.connect.DcHelper;
-import org.thoughtcrime.securesms.util.AccessibilityUtil;
-import org.thoughtcrime.securesms.util.Prefs;
-import org.thoughtcrime.securesms.util.Util;
+import com.polli.android.util.AccessibilityUtil;
+import com.polli.android.util.Prefs;
+import com.polli.android.util.Util;
 
 public class TestUtils {
   private static int createdAccountId = 0;

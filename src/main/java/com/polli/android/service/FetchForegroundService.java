@@ -13,7 +13,7 @@ import org.thoughtcrime.securesms.ApplicationContext;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.connect.ForegroundDetector;
 import com.polli.android.notifications.NotificationCenter;
-import org.thoughtcrime.securesms.util.Util;
+import com.polli.android.util.Util;
 
 public final class FetchForegroundService extends Service {
   private static final String TAG = "FetchForegroundService";

@@ -24,12 +24,12 @@ import com.polli.android.ui.PolliBaseActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.connect.DcHelper;
 import com.polli.android.providers.PersistentBlobProvider;
-import org.thoughtcrime.securesms.util.IntentUtils;
-import org.thoughtcrime.securesms.util.JsonUtils;
-import org.thoughtcrime.securesms.util.MediaUtil;
-import org.thoughtcrime.securesms.util.Prefs;
-import org.thoughtcrime.securesms.util.Util;
-import org.thoughtcrime.securesms.util.ViewUtil;
+import com.polli.android.util.IntentUtils;
+import com.polli.android.util.JsonUtils;
+import com.polli.android.util.MediaUtil;
+import com.polli.android.util.Prefs;
+import com.polli.android.util.Util;
+import com.polli.android.util.ViewUtil;
 
 public class WebxdcStoreActivity extends PolliBaseActivity {
   private static final String TAG = "WebxdcStoreActivity";

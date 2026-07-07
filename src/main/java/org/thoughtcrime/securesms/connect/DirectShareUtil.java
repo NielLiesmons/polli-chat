@@ -25,9 +25,9 @@ import org.thoughtcrime.securesms.contacts.avatars.ContactPhoto;
 import org.thoughtcrime.securesms.mms.GlideApp;
 import org.thoughtcrime.securesms.mms.GlideRequest;
 import com.polli.android.recipients.Recipient;
-import org.thoughtcrime.securesms.util.BitmapUtil;
-import org.thoughtcrime.securesms.util.DrawableUtil;
-import org.thoughtcrime.securesms.util.Util;
+import com.polli.android.util.BitmapUtil;
+import com.polli.android.util.DrawableUtil;
+import com.polli.android.util.Util;
 
 /**
  * The Signal code has a similar class called ConversationUtil.

@@ -19,7 +19,7 @@ import org.thoughtcrime.securesms.ApplicationContext;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.connect.DcHelper;
 import com.polli.android.notifications.FcmReceiveService;
-import org.thoughtcrime.securesms.util.Prefs;
+import com.polli.android.util.Prefs;
 
 @SuppressLint("BatteryLife")
 public class DozeReminder {

@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.concurrent.ConcurrentHashMap;
-import org.thoughtcrime.securesms.util.Prefs;
+import com.polli.android.util.Prefs;
 
 /**
  * It can be rather expensive to read from the keystore, so this class caches the key in memory

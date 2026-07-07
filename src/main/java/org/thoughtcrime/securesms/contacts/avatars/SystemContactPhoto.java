@@ -8,7 +8,7 @@ import androidx.annotation.Nullable;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import com.polli.android.database.Address;
-import org.thoughtcrime.securesms.util.Conversions;
+import com.polli.android.util.Conversions;
 
 public class SystemContactPhoto implements ContactPhoto {
 

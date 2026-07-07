@@ -3,7 +3,7 @@ package com.polli.android.platform
 import android.content.Context
 import android.net.Uri
 import com.polli.android.providers.PersistentBlobProvider
-import org.thoughtcrime.securesms.util.MediaUtil
+import com.polli.android.util.MediaUtil
 
 object PlatformMedia {
     fun mimeType(context: Context, uri: Uri): String? = MediaUtil.getMimeType(context, uri)

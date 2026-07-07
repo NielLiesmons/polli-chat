@@ -29,7 +29,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import org.thoughtcrime.securesms.connect.DcHelper;
 import org.thoughtcrime.securesms.connect.KeepAliveService;
 import com.polli.android.notifications.FcmReceiveService;
-import org.thoughtcrime.securesms.util.Prefs;
+import com.polli.android.util.Prefs;
 
 public class NotificationsPreferenceFragment extends ListSummaryPreferenceFragment
     implements Preference.OnPreferenceChangeListener {

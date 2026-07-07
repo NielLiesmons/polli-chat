@@ -12,7 +12,7 @@ import java.io.InputStream;
 import java.security.MessageDigest;
 import com.polli.android.database.Address;
 import com.polli.android.profiles.AvatarHelper;
-import org.thoughtcrime.securesms.util.Conversions;
+import com.polli.android.util.Conversions;
 
 public abstract class LocalFileContactPhoto implements ContactPhoto {
 

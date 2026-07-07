@@ -19,7 +19,7 @@ import com.polli.android.ui.PolliBaseActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.connect.DcHelper;
 import com.polli.android.qr.QrCodeHandler;
-import org.thoughtcrime.securesms.util.ViewUtil;
+import com.polli.android.util.ViewUtil;
 
 public class NewContactActivity extends PolliBaseActivity {
 

@@ -25,8 +25,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.util.LRUCache;
-import org.thoughtcrime.securesms.util.ServiceUtil;
+import com.polli.android.util.LRUCache;
+import com.polli.android.util.ServiceUtil;
 
 public class Permissions {
 
