@@ -51,7 +51,6 @@
     <string name="image">Slika</string>
     <string name="gif">Gif</string>
     <string name="video">Video</string>
-    <string name="camera">Kamera</string>
     <string name="location">Lokacija</string>
     <string name="file">Datoteka</string>
     <string name="unknown">Nepoznato</string>
@@ -70,7 +69,6 @@
     <string name="menu_new_contact">Novi kontakt</string>
     <string name="menu_new_group">Nova grupa</string>
     <string name="menu_send">Pošalji</string>
-    <string name="menu_add_attachment">Dodaj privitak</string>
     <string name="menu_copy_to_clipboard">Kopiraj u međuspremnik</string>
     <string name="menu_forward">Proslijedi poruku</string>
     <string name="menu_mute">Utišaj obavijesti</string>

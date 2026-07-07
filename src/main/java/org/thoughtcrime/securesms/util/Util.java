@@ -55,17 +55,12 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.components.ComposeText;
 
 public class Util {
   private static final String TAG = "Util";
   public static final String INVITE_DOMAIN = "i.delta.chat";
 
   public static final Handler handler = new Handler(Looper.getMainLooper());
-
-  public static boolean isEmpty(ComposeText value) {
-    return value == null || value.getText() == null || TextUtils.isEmpty(value.getTextTrimmed());
-  }
 
   public static boolean isInviteURL(Uri uri) {
     return INVITE_DOMAIN.equals(uri.getHost()) && uri.getEncodedFragment() != null;

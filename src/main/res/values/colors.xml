@@ -41,7 +41,6 @@
     <color name="status_dot_online">#34c759</color>
     <color name="status_dot_connecting">#ffcc00</color>
     <color name="status_dot_offline">#ff0c16</color>
-    <color name="slidearrow_color">#999999</color>
 
     <color name="universal_overlay">#55444444</color>
 
@@ -55,10 +54,7 @@
 
     <!-- unknown_sender fits in dark mode and lite mode (also other chat/contact colors fit in both modes);
         unknown_sender is used for the sender-name/quote-bar if the sender is unknown -->
-    <color name="unknown_sender">#ff999999</color>
 
-    <color name="reaction_pill_border">#88dddddd</color>
-    <color name="reaction_pill_text_color">#545863</color>
 
     <color name="delete_account_item_bg">#eeeeee</color>
 

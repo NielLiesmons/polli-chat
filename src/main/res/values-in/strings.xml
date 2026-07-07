@@ -76,17 +76,13 @@
     <string name="audio">Audio</string>
     <string name="voice_message">Pesan suara</string>
     <string name="forwarded">Diteruskan</string>
-    <string name="forwarded_message">Pesan yang diteruskan</string>
     <!-- %1$s will be replaced by the name of the person who forwarded the message -->
-    <string name="forwarded_by">Diteruskan oleh %1$s</string>
     <string name="video">Video</string>
-    <string name="camera">Kamera</string>
     <!-- As in "start a video recording" or "take a photo"; eg. the description of the "shutter button" in cameras -->
     <!-- Switch eg. from front to back camera -->
     <string name="location">Lokasi</string>
     <string name="file">Berkas</string>
     <!-- "App" is used to present "Webxdc App" (https://webxdc.org) in a user friendly way. Please stay close to the original term and keep it short (it is used in menus with few screen space). -->
-    <string name="webxdc_app">Aplikasi</string>
     <!-- plural of "App"; used to present "Webxdc App" (https://webxdc.org) in a user friendly way. Please stay close to the original term and keep it short (it is used in menus with few screen space). -->
     <string name="webxdc_apps">Aplikasi</string>
     <string name="unknown">Tak dikenal</string>
@@ -106,8 +102,6 @@
     <string name="menu_new_contact">Kontak baru</string>
     <string name="menu_new_group">Grup baru</string>
     <string name="menu_send">Terkirim</string>
-    <string name="menu_toggle_keyboard">Tekan tombol emoji keyboard</string>
-    <string name="menu_add_attachment">Tambah lampiran</string>
     <!-- Command to delete all messages in a chat. The chat itself will not be deleted but will be empty afterwards, so make sure to be different from "Delete Chat" here. "Clear" is a verb here, "Empty Chat" would also be fine (eg. in German "Chat leeren") -->
     <string name="delete_contact">Hapus kontak</string>
     <string name="menu_copy_to_clipboard">Kopi ke papan klip</string>
@@ -123,8 +117,6 @@
     <!-- Verb "to block sth." usually a mailing list or a contact, not a noun -->
     <string name="menu_block_contact">Blokir kontak</string>
     <string name="menu_unblock_contact">Buka blokir kontak</string>
-    <string name="menu_play">Mainkan</string>
-    <string name="menu_pause">Jeda</string>
     <string name="menu_scroll_to_bottom">Gelincir ke bawah</string>
     <string name="menu_scroll_to_top">Gelincir ke atas</string>
     <string name="menu_select_all">Pilih semua</string>

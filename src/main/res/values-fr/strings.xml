@@ -98,28 +98,21 @@
     <string name="sticker">Vignette</string>
     <!-- deprecated, use sticker_picker_empty_hint instead -->
     <!-- deprecated -->
-    <string name="ask_delete_sticker">Supprimer cette vignette ?</string>
-    <string name="sticker_picker_empty_hint">Touchez une vignette pour l\'ajouter ici</string>
     <!-- a noun, used for "Music" and other "Audio" files -->
     <string name="audio">Audio</string>
     <string name="voice_message">Message vocal</string>
     <string name="forwarded">Transféré</string>
-    <string name="forwarded_message">Message transféré</string>
     <!-- %1$s will be replaced by the name of the person who forwarded the message -->
-    <string name="forwarded_by">Transféré par %1$s</string>
     <string name="video">Vidéo</string>
     <string name="bot">Robot</string>
-    <string name="camera">Caméra</string>
     <!-- As in "start a video recording" or "take a photo"; eg. the description of the "shutter button" in cameras -->
     <!-- Switch eg. from front to back camera -->
     <string name="location">Position</string>
     <string name="file">Fichier</string>
     <!-- "Files" here means the "Files Selector App" or "Files Manager App" -->
     <!-- "App" is used to present "Webxdc App" (https://webxdc.org) in a user friendly way. Please stay close to the original term and keep it short (it is used in menus with few screen space). -->
-    <string name="webxdc_app">Appli</string>
     <!-- plural of "App"; used to present "Webxdc App" (https://webxdc.org) in a user friendly way. Please stay close to the original term and keep it short (it is used in menus with few screen space). -->
     <string name="webxdc_apps">Applis</string>
-    <string name="webxdc_draft_hint">Appuyez sur \"Envoyer\" pour partager</string>
     <!-- Used as a headline for a date. E.g. in the details of a mini app in the app picker -->
     <!-- short for "Browse through the App Picker/Store/Catalogue"; could also be translated as "Discover" or "Search" -->
     <string name="unknown">Inconnu</string>
@@ -153,8 +146,6 @@
     <string name="new_email">Nouveau courriel</string>
     <!-- the "Subject" of an email, use the term common in classic email apps -->
     <string name="menu_send">Envoyer</string>
-    <string name="menu_toggle_keyboard">Basculer le clavier emoji</string>
-    <string name="menu_add_attachment">Ajouter une pièce jointe</string>
     <!-- Command to delete all messages in a chat. The chat itself will not be deleted but will be empty afterwards, so make sure to be different from "Delete Chat" here. "Clear" is a verb here, "Empty Chat" would also be fine (eg. in German "Chat leeren") -->
     <string name="delete_contact">Supprimer le contact</string>
     <string name="menu_copy_to_clipboard">Copier vers presse-papiers</string>
@@ -171,8 +162,6 @@
     <!-- Verb "to block sth." usually a mailing list or a contact, not a noun -->
     <string name="menu_block_contact">Bloquer ce contact</string>
     <string name="menu_unblock_contact">Débloquer ce contact</string>
-    <string name="menu_play">Jouer</string>
-    <string name="menu_pause">Pause</string>
     <string name="menu_scroll_to_bottom">Faire défiler jusqu\'en bas</string>
     <string name="menu_scroll_to_top">Faire défiler jusqu\'en haut</string>
     <!-- use the same term for "Apps" as elsewhere -->
@@ -264,7 +253,6 @@
     <string name="saved_messages_explain">• Transférez les messages ici pour les retrouver facilement\n\n• Prenez des notes ou enregistrez des vocaux\n\n• Ajoutez des fichiers multimédias en pièces jointes pour les enregistrer</string>
     <!-- Should match "Saved" from "Saved messages" -->
     <!-- For recording Voice messages: Description for the "Lock" button allowing to lift the thumb from the record button while recording continues -->
-    <string name="lock_recording">Maintenir l\'enregistrement</string>
 
     <!-- mailing lists -->
     <string name="mailing_list">Liste de diffusion</string>

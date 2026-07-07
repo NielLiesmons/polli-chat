@@ -82,25 +82,18 @@
     <string name="sticker">Lipdukas</string>
     <!-- deprecated, use sticker_picker_empty_hint instead -->
     <!-- deprecated -->
-    <string name="ask_delete_sticker">Ištrinti šį lipduką?</string>
-    <string name="sticker_picker_empty_hint">Spustelėkite ant lipduko norėdami jį čia pridėti.</string>
     <!-- a noun, used for "Music" and other "Audio" files -->
     <string name="audio">Garso įrašai</string>
     <string name="voice_message">Balso žinutė</string>
     <string name="forwarded">Persiųsta</string>
-    <string name="forwarded_message">Persiųsta žinutė</string>
     <!-- %1$s will be replaced by the name of the person who forwarded the message -->
-    <string name="forwarded_by">Persiuntė %1$s</string>
     <string name="video">Vaizdo įrašai</string>
-    <string name="camera">Kamera</string>
     <!-- Switch eg. from front to back camera -->
     <string name="location">Vieta</string>
     <string name="file">Failas</string>
     <!-- "App" is used to present "Webxdc App" (https://webxdc.org) in a user friendly way. Please stay close to the original term and keep it short (it is used in menus with few screen space). -->
-    <string name="webxdc_app">Privati programėlė</string>
     <!-- plural of "App"; used to present "Webxdc App" (https://webxdc.org) in a user friendly way. Please stay close to the original term and keep it short (it is used in menus with few screen space). -->
     <string name="webxdc_apps">Programėlės</string>
-    <string name="webxdc_draft_hint">Norėdami bendrinti bakstelėkite „Siųsti“</string>
     <!-- Used as a headline for a date. E.g. in the details of a mini app in the app picker -->
     <!-- short for "Browse through the App Picker/Store/Catalogue"; could also be translated as "Discover" or "Search" -->
     <string name="unknown">Nežinoma</string>
@@ -133,8 +126,6 @@
     <string name="new_email">Naujas el. laiškas</string>
     <!-- the "Subject" of an email, use the term common in classic email apps -->
     <string name="menu_send">Siųsti</string>
-    <string name="menu_toggle_keyboard">Perjungti šypsniukų klaviatūrą</string>
-    <string name="menu_add_attachment">Pridėti priedą</string>
     <!-- Command to delete all messages in a chat. The chat itself will not be deleted but will be empty afterwards, so make sure to be different from "Delete Chat" here. "Clear" is a verb here, "Empty Chat" would also be fine (eg. in German "Chat leeren") -->
     <string name="delete_contact">Ištrinti adresatą</string>
     <string name="menu_copy_to_clipboard">Kopijuoti į iškarpinę</string>
@@ -151,8 +142,6 @@
     <!-- Verb "to block sth." usually a mailing list or a contact, not a noun -->
     <string name="menu_block_contact">Užblokuoti adresatą</string>
     <string name="menu_unblock_contact">Atblokuoti adresatą</string>
-    <string name="menu_play">Atkurti</string>
-    <string name="menu_pause">Pristabdyti</string>
     <string name="menu_scroll_to_bottom">Slinkti į apačią</string>
     <string name="menu_scroll_to_top">Slinkti į viršų</string>
     <!-- use the same term for "Apps" as elsewhere -->

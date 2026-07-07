@@ -40,9 +40,7 @@
     <!-- a noun, used for "Music" and other "Audio" files -->
     <string name="audio">ఆడియో</string>
     <string name="voice_message">మాట సందేశం</string>
-    <string name="forwarded_message">ఫార్వర్డ్ చేయబడిన సందేసం</string>
     <string name="video">వీడియో</string>
-    <string name="camera">కెమేరా</string>
     <string name="location">స్థానం</string>
     <string name="file">ఫైల్</string>
     <string name="unknown">తెలియని</string>
@@ -62,16 +60,12 @@
     <string name="menu_new_contact">కొత్త పరిచయం</string>
     <string name="menu_new_group">కొత్త సమూహము</string>
     <string name="menu_send">పంపు</string>
-    <string name="menu_toggle_keyboard">టోగుల్ ఎమోజి కీబోర్డు</string>
-    <string name="menu_add_attachment">జతచెసిన‌ ఫైళ్ళు</string>
     <string name="menu_copy_to_clipboard">క్లిప్బోర్డ్ కు కాపీ చేయి</string>
     <string name="menu_forward">సందేశాన్ని బదలాయించు</string>
     <string name="menu_mute">నోటిఫికేషన్ల ను నిలిపివేయి</string>
     <string name="menu_unmute">మ్యూట్ తీసివేయి</string>
     <string name="menu_share">పంచుకో</string>
     <string name="menu_block_contact">పరిచయాన్ని నిరోధించు</string>
-    <string name="menu_play">ప్లే</string>
-    <string name="menu_pause">పాజ్</string>
     <string name="menu_select_all">అన్నీ ఎంచుకో</string>
     <string name="menu_edit_name">పేరును మార్చు</string>
     <string name="menu_zoom_in">పెద్దదిగా చూపు</string>

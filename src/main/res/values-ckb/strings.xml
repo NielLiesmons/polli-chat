@@ -59,11 +59,8 @@
     <!-- a noun, used for "Music" and other "Audio" files -->
     <string name="audio">دەنگ</string>
     <string name="voice_message">پەیامی دەنگی</string>
-    <string name="forwarded_message">پەیامی هاوبەشکراو</string>
     <!-- %1$s will be replaced by the name of the person who forwarded the message -->
-    <string name="forwarded_by">هاوبەشکراو لە لایەن%1$s</string>
     <string name="video">ڤیدیۆ</string>
-    <string name="camera">کامێرا</string>
     <string name="location">شوێن</string>
     <string name="file">پەڕگە</string>
     <string name="unknown">نەناسراو</string>
@@ -83,7 +80,6 @@
     <string name="menu_new_contact">بەردەنگی نوێ</string>
     <string name="menu_new_group">کۆڕی نوێ</string>
     <string name="menu_send">بینێرە</string>
-    <string name="menu_add_attachment">زیاد کردنی پێوەلکاو</string>
     <string name="delete_contact">سڕینەوەی بەردەنگ</string>
     <string name="menu_copy_to_clipboard">ڕوونووس کردن</string>
     <string name="paste_from_clipboard">ڕوونووسەکە بلکێنە</string>
@@ -96,8 +92,6 @@
     <!-- Verb "to block sth." usually a mailing list or a contact, not a noun -->
     <string name="menu_block_contact">ئاستەنگ کردنی بەردەنگ</string>
     <string name="menu_unblock_contact">لابردنی ئاستەنگ</string>
-    <string name="menu_play">خستنەسەر</string>
-    <string name="menu_pause">وەستان</string>
     <string name="menu_scroll_to_bottom">ڕۆیشتن بەرەو خوار</string>
     <string name="menu_scroll_to_top">ڕۆیشتن بەرەو ژوور</string>
     <string name="menu_select_all">هەمووی هەڵبژێرە</string>

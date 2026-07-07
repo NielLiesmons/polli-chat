@@ -80,17 +80,13 @@
     <string name="audio">Audio</string>
     <string name="voice_message">Mesaj vocal</string>
     <string name="forwarded">Redirecționat</string>
-    <string name="forwarded_message">Mesaj redirecționat</string>
     <!-- %1$s will be replaced by the name of the person who forwarded the message -->
-    <string name="forwarded_by">Redirecționat de %1$s</string>
     <string name="video">Video</string>
-    <string name="camera">Cameră</string>
     <!-- As in "start a video recording" or "take a photo"; eg. the description of the "shutter button" in cameras -->
     <!-- Switch eg. from front to back camera -->
     <string name="location">Locație</string>
     <string name="file">Fișier</string>
     <!-- "App" is used to present "Webxdc App" (https://webxdc.org) in a user friendly way. Please stay close to the original term and keep it short (it is used in menus with few screen space). -->
-    <string name="webxdc_app">App</string>
     <!-- plural of "App"; used to present "Webxdc App" (https://webxdc.org) in a user friendly way. Please stay close to the original term and keep it short (it is used in menus with few screen space). -->
     <string name="webxdc_apps">App-uri</string>
     <string name="unknown">Necunoscut</string>
@@ -110,8 +106,6 @@
     <string name="menu_new_contact">Contact Nou</string>
     <string name="menu_new_group">Grup Nou</string>
     <string name="menu_send">Trimiteți</string>
-    <string name="menu_toggle_keyboard">Comutați Tastatura Emoji</string>
-    <string name="menu_add_attachment">Adăugați Atașament</string>
     <!-- Command to delete all messages in a chat. The chat itself will not be deleted but will be empty afterwards, so make sure to be different from "Delete Chat" here. "Clear" is a verb here, "Empty Chat" would also be fine (eg. in German "Chat leeren") -->
     <string name="delete_contact">Ștergeți Contactul</string>
     <string name="menu_copy_to_clipboard">Copiați în clipboard</string>
@@ -127,8 +121,6 @@
     <!-- Verb "to block sth." usually a mailing list or a contact, not a noun -->
     <string name="menu_block_contact">Blocare Contact</string>
     <string name="menu_unblock_contact">Deblocare Contact</string>
-    <string name="menu_play">Joacă</string>
-    <string name="menu_pause">Pauză</string>
     <string name="menu_scroll_to_bottom">Derulați până jos</string>
     <string name="menu_scroll_to_top">Derulați până Sus</string>
     <string name="menu_select_all">Selectați toate</string>
@@ -190,7 +182,6 @@
     <string name="saved_messages_explain">• Redirecționați mesajele aici pentru acces ușor\n\n• Luați notițe sau notițe vocale\n\n\n• Atașați fișiere media pentru a le salva</string>
     <!-- Should match "Saved" from "Saved messages" -->
     <!-- For recording Voice messages: Description for the "Lock" button allowing to lift the thumb from the record button while recording continues -->
-    <string name="lock_recording">Blocarea înregistrării</string>
 
     <!-- mailing lists -->
     <string name="mailing_list">Lista de corespondență</string>

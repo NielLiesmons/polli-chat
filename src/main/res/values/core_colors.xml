@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="audio_icon">#f68751</color>
-    <color name="document_icon">#34a0f4</color>
-    <color name="document_icon_text">#34a0f4</color>
 
     <color name="core_white">#ffffff</color>
     <color name="core_light_02">#F9FAFA</color>

@@ -90,22 +90,17 @@
     <string name="audio">دونگ</string>
     <string name="voice_message">پیوم دونگ</string>
     <string name="forwarded">فوروارد وابیڌه</string>
-    <string name="forwarded_message">پیوم فوروارد وابیڌه</string>
     <!-- %1$s will be replaced by the name of the person who forwarded the message -->
-    <string name="forwarded_by">و دست %1$s فوروارد وابیڌه</string>
     <string name="video">فیلم</string>
     <string name="bot">روبات</string>
-    <string name="camera">شؽواتگر</string>
     <!-- As in "start a video recording" or "take a photo"; eg. the description of the "shutter button" in cameras -->
     <!-- Switch eg. from front to back camera -->
     <string name="location">جاگه</string>
     <string name="file">فایل</string>
     <!-- "Files" here means the "Files Selector App" or "Files Manager App" -->
     <!-- "App" is used to present "Webxdc App" (https://webxdc.org) in a user friendly way. Please stay close to the original term and keep it short (it is used in menus with few screen space). -->
-    <string name="webxdc_app">برنومه</string>
     <!-- plural of "App"; used to present "Webxdc App" (https://webxdc.org) in a user friendly way. Please stay close to the original term and keep it short (it is used in menus with few screen space). -->
     <string name="webxdc_apps">برنومه یل</string>
-    <string name="webxdc_draft_hint">سی یک رسۊوی ری «فشناڌن» بزنین</string>
     <!-- Used as a headline for a date. E.g. in the details of a mini app in the app picker -->
     <!-- short for "Browse through the App Picker/Store/Catalogue"; could also be translated as "Discover" or "Search" -->
     <string name="unknown">ناشناس</string>
@@ -137,8 +132,6 @@
     <string name="new_email">ایمیل نۊ</string>
     <!-- the "Subject" of an email, use the term common in classic email apps -->
     <string name="menu_send">فشناڌن</string>
-    <string name="menu_toggle_keyboard">آلشت تخته کیلیت ایموجی یل</string>
-    <string name="menu_add_attachment">ازاف کردن پیوست</string>
     <!-- Command to delete all messages in a chat. The chat itself will not be deleted but will be empty afterwards, so make sure to be different from "Delete Chat" here. "Clear" is a verb here, "Empty Chat" would also be fine (eg. in German "Chat leeren") -->
     <string name="delete_contact">پاک کردن هومدنگ</string>
     <string name="menu_copy_to_clipboard">لف گیری من ویرگه</string>
@@ -150,8 +143,6 @@
     <!-- Command to jump to the original message corresponding to a gallery image or document -->
     <string name="show_in_chat">نشووݩ داڌن من گوفت وو لوفت</string>
     <string name="menu_share">یک رسۊوی</string>
-    <string name="menu_play">پشک</string>
-    <string name="menu_pause">واڌاشتن</string>
     <string name="menu_scroll_to_bottom">رئڌن ب لم</string>
     <string name="menu_scroll_to_top">رئڌن ب روء</string>
     <string name="menu_select_all">پسند پوی</string>

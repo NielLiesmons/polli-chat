@@ -71,17 +71,13 @@
     <string name="audio">오디오</string>
     <string name="voice_message">음성 메시지</string>
     <string name="forwarded">전달됨</string>
-    <string name="forwarded_message">전달된 메시지</string>
     <!-- %1$s will be replaced by the name of the person who forwarded the message -->
-    <string name="forwarded_by">%1$s에 의해 전달됨</string>
     <string name="video">동영상</string>
-    <string name="camera">카메라</string>
     <!-- As in "start a video recording" or "take a photo"; eg. the description of the "shutter button" in cameras -->
     <!-- Switch eg. from front to back camera -->
     <string name="location">위치</string>
     <string name="file">파일</string>
     <!-- "App" is used to present "Webxdc App" (https://webxdc.org) in a user friendly way. Please stay close to the original term and keep it short (it is used in menus with few screen space). -->
-    <string name="webxdc_app">개인 앱</string>
     <!-- plural of "App"; used to present "Webxdc App" (https://webxdc.org) in a user friendly way. Please stay close to the original term and keep it short (it is used in menus with few screen space). -->
     <string name="webxdc_apps">개인 앱</string>
     <string name="unknown">알 수 없음</string>
@@ -101,8 +97,6 @@
     <string name="menu_new_contact">대화상대 추가</string>
     <string name="menu_new_group">새 그룹</string>
     <string name="menu_send">보내기</string>
-    <string name="menu_toggle_keyboard">이모티콘 키보드 전환</string>
-    <string name="menu_add_attachment">첨부 파일 추가</string>
     <string name="delete_contact">연락처 삭제</string>
     <string name="menu_copy_to_clipboard">클립보드에 복사하기</string>
     <string name="menu_copy_text_to_clipboard">텍스트 복사</string>
@@ -117,8 +111,6 @@
     <!-- Verb "to block sth." usually a mailing list or a contact, not a noun -->
     <string name="menu_block_contact">차단</string>
     <string name="menu_unblock_contact">차단 해제</string>
-    <string name="menu_play">재생</string>
-    <string name="menu_pause">일시정지</string>
     <string name="menu_scroll_to_bottom">맨 밑으로 스크롤</string>
     <string name="menu_scroll_to_top">맨 위로 스크롤</string>
     <string name="menu_select_all">모두 선택</string>

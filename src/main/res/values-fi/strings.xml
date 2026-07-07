@@ -82,17 +82,13 @@
     <string name="audio">Äänite</string>
     <string name="voice_message">Ääniviesti</string>
     <string name="forwarded">Välitetty</string>
-    <string name="forwarded_message">Välitetty viesti</string>
     <!-- %1$s will be replaced by the name of the person who forwarded the message -->
-    <string name="forwarded_by">Välittäjä: %1$s</string>
     <string name="video">Video</string>
-    <string name="camera">Kamera</string>
     <!-- As in "start a video recording" or "take a photo"; eg. the description of the "shutter button" in cameras -->
     <!-- Switch eg. from front to back camera -->
     <string name="location">Sijainti</string>
     <string name="file">Tiedosto</string>
     <!-- "App" is used to present "Webxdc App" (https://webxdc.org) in a user friendly way. Please stay close to the original term and keep it short (it is used in menus with few screen space). -->
-    <string name="webxdc_app">Sovellus</string>
     <!-- plural of "App"; used to present "Webxdc App" (https://webxdc.org) in a user friendly way. Please stay close to the original term and keep it short (it is used in menus with few screen space). -->
     <string name="webxdc_apps">Sovellukset</string>
     <string name="unknown">Tuntematon</string>
@@ -115,8 +111,6 @@
     <string name="menu_new_group">Uusi ryhmä</string>
     <string name="clone_chat">Kloonaa keskustelu</string>
     <string name="menu_send">Lähetä</string>
-    <string name="menu_toggle_keyboard">Näytä emoji-näppäimistö</string>
-    <string name="menu_add_attachment">Lisää liite</string>
     <!-- Command to delete all messages in a chat. The chat itself will not be deleted but will be empty afterwards, so make sure to be different from "Delete Chat" here. "Clear" is a verb here, "Empty Chat" would also be fine (eg. in German "Chat leeren") -->
     <string name="delete_contact">Poista yhteystieto</string>
     <string name="menu_copy_to_clipboard">Kopioi leikepöydälle</string>
@@ -132,8 +126,6 @@
     <!-- Verb "to block sth." usually a mailing list or a contact, not a noun -->
     <string name="menu_block_contact">Estä yhteystieto</string>
     <string name="menu_unblock_contact">Salli yhteystieto</string>
-    <string name="menu_play">Soita</string>
-    <string name="menu_pause">Tauko</string>
     <string name="menu_scroll_to_bottom">Vieritä alas</string>
     <string name="menu_scroll_to_top">Vieritä ylös</string>
     <!-- use the same term for "Apps" as elsewhere -->
@@ -198,7 +190,6 @@
     <string name="saved_messages_explain">• Välitä viestejä tänne helppoa pääsyä varten\n\n• Kirjoita tai äänitä muistiinpanoja\n\n• Liitä mediaa tallentaaksesi ne</string>
     <!-- Should match "Saved" from "Saved messages" -->
     <!-- For recording Voice messages: Description for the "Lock" button allowing to lift the thumb from the record button while recording continues -->
-    <string name="lock_recording">Lukitse äänitys</string>
 
     <!-- mailing lists -->
     <string name="mailing_list">Sähköpostilista</string>

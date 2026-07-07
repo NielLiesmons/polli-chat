@@ -63,11 +63,8 @@
     <string name="audio">音楽</string>
     <string name="voice_message">音声メッセージ</string>
     <string name="forwarded">転送された</string>
-    <string name="forwarded_message">転送されたメッセージ</string>
     <!-- %1$s will be replaced by the name of the person who forwarded the message -->
-    <string name="forwarded_by">%1$sが転送しました</string>
     <string name="video">動画</string>
-    <string name="camera">カメラ</string>
     <!-- As in "start a video recording" or "take a photo"; eg. the description of the "shutter button" in cameras -->
     <!-- Switch eg. from front to back camera -->
     <string name="location">場所</string>
@@ -89,8 +86,6 @@
     <string name="menu_new_contact">新規連絡先</string>
     <string name="menu_new_group">新規グループ</string>
     <string name="menu_send">送信</string>
-    <string name="menu_toggle_keyboard">絵文字キーボードを呼び出す</string>
-    <string name="menu_add_attachment">ファイルを添付する</string>
     <string name="delete_contact">連絡先を解除する</string>
     <string name="menu_copy_to_clipboard">クリップボードにコピー</string>
     <string name="menu_copy_text_to_clipboard">テキストをコピー</string>
@@ -104,8 +99,6 @@
     <!-- Verb "to block sth." usually a mailing list or a contact, not a noun -->
     <string name="menu_block_contact">拒否する</string>
     <string name="menu_unblock_contact">拒否を解除</string>
-    <string name="menu_play">再生</string>
-    <string name="menu_pause">一時停止</string>
     <string name="menu_scroll_to_bottom">一番下までスクロールする</string>
     <string name="menu_scroll_to_top">一番上までスクロールする</string>
     <string name="menu_select_all">全選択</string>
@@ -163,7 +156,6 @@
     <string name="saved_messages_explain">ここにメッセージを転送しておけば、簡単にアクセスできます。メモやボイスメモも保存できます。メディアを添付して保存します。</string>
     <!-- Should match "Saved" from "Saved messages" -->
     <!-- For recording Voice messages: Description for the "Lock" button allowing to lift the thumb from the record button while recording continues -->
-    <string name="lock_recording">ずっと録音</string>
 
     <!-- mailing lists -->
     <string name="mailing_list">メーリングリスト</string>

@@ -96,27 +96,20 @@
     <string name="sticker">Ngjitës</string>
     <!-- deprecated, use sticker_picker_empty_hint instead -->
     <!-- deprecated -->
-    <string name="ask_delete_sticker">Të fshihet ky ngjitës?</string>
-    <string name="sticker_picker_empty_hint">Prekni një ngjitës që të shtohet këtu.</string>
     <!-- a noun, used for "Music" and other "Audio" files -->
     <string name="audio">Audio</string>
     <string name="voice_message">Mesazh Zanor</string>
     <string name="forwarded">Përcjellë</string>
-    <string name="forwarded_message">Mesazhi u Përcoll</string>
     <!-- %1$s will be replaced by the name of the person who forwarded the message -->
-    <string name="forwarded_by">Përcjellë nga %1$s</string>
     <string name="video">Video</string>
     <string name="bot">Robot</string>
-    <string name="camera">Kamerë</string>
     <!-- Switch eg. from front to back camera -->
     <string name="location">Vendndodhje</string>
     <string name="file">Kartelë</string>
     <!-- "Files" here means the "Files Selector App" or "Files Manager App" -->
     <!-- "App" is used to present "Webxdc App" (https://webxdc.org) in a user friendly way. Please stay close to the original term and keep it short (it is used in menus with few screen space). -->
-    <string name="webxdc_app">Aplikacion</string>
     <!-- plural of "App"; used to present "Webxdc App" (https://webxdc.org) in a user friendly way. Please stay close to the original term and keep it short (it is used in menus with few screen space). -->
     <string name="webxdc_apps">Aplikacione</string>
-    <string name="webxdc_draft_hint">Për ta ndarë me të tjerë, prekni “Dërgoje”</string>
     <!-- Used as a headline for a date. E.g. in the details of a mini app in the app picker -->
     <!-- short for "Browse through the App Picker/Store/Catalogue"; could also be translated as "Discover" or "Search" -->
     <string name="unknown">E panjohur</string>
@@ -150,8 +143,6 @@
     <string name="new_email">Email i Ri</string>
     <!-- the "Subject" of an email, use the term common in classic email apps -->
     <string name="menu_send">Dërgoje</string>
-    <string name="menu_toggle_keyboard">Shfaq/fshih Tastierë Emoji-sh</string>
-    <string name="menu_add_attachment">Shtoni Bashkëngjitje</string>
     <!-- Command to delete all messages in a chat. The chat itself will not be deleted but will be empty afterwards, so make sure to be different from "Delete Chat" here. "Clear" is a verb here, "Empty Chat" would also be fine (eg. in German "Chat leeren") -->
     <string name="delete_contact">Fshije Kontaktin</string>
     <string name="menu_copy_to_clipboard">Kopjoje në të Papastër</string>
@@ -168,8 +159,6 @@
     <!-- Verb "to block sth." usually a mailing list or a contact, not a noun -->
     <string name="menu_block_contact">Bllokoje Kontaktin</string>
     <string name="menu_unblock_contact">Zhbllokoje Kontaktin</string>
-    <string name="menu_play">Luaje</string>
-    <string name="menu_pause">Pushoje</string>
     <string name="menu_scroll_to_bottom">Rrëshqit drejt Fundit</string>
     <string name="menu_scroll_to_top">Rrëshqit sipër në Krye</string>
     <!-- use the same term for "Apps" as elsewhere -->
@@ -272,7 +261,6 @@
     <string name="saved_messages_explain">• Përcillini mesazhet këtu për përdorim të lehtë\n\n• Mbani shënime ose kujtesa zanore\n\n• Bashkëngjitni media për t’i ruajtur</string>
     <!-- Should match "Saved" from "Saved messages" -->
     <!-- For recording Voice messages: Description for the "Lock" button allowing to lift the thumb from the record button while recording continues -->
-    <string name="lock_recording">Kyçe Incizimin</string>
 
     <!-- mailing lists -->
     <string name="mailing_list">Listë Postimesh</string>

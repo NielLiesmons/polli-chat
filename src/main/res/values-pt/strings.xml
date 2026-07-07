@@ -81,14 +81,11 @@
     <!-- a noun, used for "Music" and other "Audio" files -->
     <string name="audio">Áudio</string>
     <string name="voice_message">Mensagem de voz</string>
-    <string name="forwarded_message">Reencaminhada</string>
     <string name="video">Vídeo</string>
-    <string name="camera">Câmera</string>
     <!-- Toggle camera on/off eg. during an video call -->
     <string name="location">Local</string>
     <string name="file">Ficheiro</string>
     <!-- "App" is used to present "Webxdc App" (https://webxdc.org) in a user friendly way. Please stay close to the original term and keep it short (it is used in menus with few screen space). -->
-    <string name="webxdc_app">App</string>
     <!-- plural of "App"; used to present "Webxdc App" (https://webxdc.org) in a user friendly way. Please stay close to the original term and keep it short (it is used in menus with few screen space). -->
     <string name="webxdc_apps">Apps</string>
     <!-- Used as a headline for a date. E.g. in the details of a mini app in the app picker -->
@@ -119,8 +116,6 @@
     <string name="new_email">Novo E-mail</string>
     <!-- the "Subject" of an email, use the term common in classic email apps -->
     <string name="menu_send">Enviar</string>
-    <string name="menu_toggle_keyboard">Alternar teclado emoji</string>
-    <string name="menu_add_attachment">Juntar anexo</string>
     <string name="menu_copy_to_clipboard">Copiar para área de transferência</string>
     <string name="menu_forward">Reencaminhar mensagem</string>
     <string name="menu_mute">Silenciar notificações</string>
@@ -129,8 +124,6 @@
     <!-- Verb "to block sth." usually a mailing list or a contact, not a noun -->
     <string name="menu_block_contact">Bloquear contacto</string>
     <string name="menu_unblock_contact">Desbloquear contacto</string>
-    <string name="menu_play">Tocar</string>
-    <string name="menu_pause">Pausar</string>
     <string name="menu_scroll_to_bottom">Ir para o fim</string>
     <string name="menu_scroll_to_top">Ir para o início</string>
     <string name="menu_select_all">Selecionar tudo</string>

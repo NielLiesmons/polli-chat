@@ -1,7 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-    <color name="reaction_pill_border">#80414347</color>
-    <color name="reaction_pill_text_color">@color/core_dark_05</color>
 
     <color name="dummy_avatar_color">#808080</color>
 

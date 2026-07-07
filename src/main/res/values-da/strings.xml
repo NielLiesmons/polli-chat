@@ -65,11 +65,8 @@
     <string name="audio">Lyd</string>
     <string name="voice_message">Tale besked</string>
     <string name="forwarded">Videresendt</string>
-    <string name="forwarded_message">Videresendt besked</string>
     <!-- %1$s will be replaced by the name of the person who forwarded the message -->
-    <string name="forwarded_by">Videresendt af %1$s</string>
     <string name="video">Video</string>
-    <string name="camera">Kamera</string>
     <!-- Switch eg. from front to back camera -->
     <string name="location">Placering</string>
     <string name="file">Fil</string>
@@ -90,8 +87,6 @@
     <string name="menu_new_contact">Ny kontakt</string>
     <string name="menu_new_group">Ny gruppe</string>
     <string name="menu_send">Send</string>
-    <string name="menu_toggle_keyboard">Skift emoji tastatur</string>
-    <string name="menu_add_attachment">Tilføj vedhæftning</string>
     <string name="delete_contact">Slet kontakt</string>
     <string name="menu_copy_to_clipboard">Kopiér til udklipsholder</string>
     <string name="menu_copy_text_to_clipboard">Kopier tekst</string>
@@ -106,8 +101,6 @@
     <!-- Verb "to block sth." usually a mailing list or a contact, not a noun -->
     <string name="menu_block_contact">Bloker kontakt</string>
     <string name="menu_unblock_contact">Fjern blokering af kontakt</string>
-    <string name="menu_play">Afspil</string>
-    <string name="menu_pause">Pause</string>
     <string name="menu_scroll_to_bottom">Rul til bunden</string>
     <string name="menu_scroll_to_top">Rul til toppen</string>
     <string name="menu_select_all">Vælg alle</string>

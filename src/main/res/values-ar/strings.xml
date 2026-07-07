@@ -40,7 +40,6 @@
     <string name="audio">الصوت</string>
     <string name="voice_message">رسالة صوتية</string>
     <string name="video">فيديو</string>
-    <string name="camera">آلة التصوير</string>
     <string name="location">المَوقع</string>
     <string name="file">ملف</string>
     <string name="unknown">مجهول</string>
@@ -58,8 +57,6 @@
 
     <string name="menu_new_group">فريق جديد</string>
     <string name="menu_send">إرسال</string>
-    <string name="menu_toggle_keyboard">تبديل لوحة مفاتيح إيموجي</string>
-    <string name="menu_add_attachment">إضافة مرفقات</string>
     <string name="menu_copy_to_clipboard">انسخ إلى الحافظة</string>
     <string name="menu_forward">إعادة توجيه الرسالة</string>
     <string name="menu_mute">كتم الإشعارات</string>
@@ -67,8 +64,6 @@
     <!-- Command to jump to the original message corresponding to a gallery image or document -->
     <string name="show_in_chat">إظهار في المحادثة</string>
     <string name="menu_share">شارك</string>
-    <string name="menu_play">شغّل</string>
-    <string name="menu_pause">تعليق مؤقت</string>
     <string name="menu_select_all">اختر الكل</string>
     <string name="menu_edit_name">تعديل الإسم</string>
     <string name="menu_view_profile">عرض الملف الشخصي</string>
