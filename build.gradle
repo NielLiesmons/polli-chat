@@ -6,6 +6,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.compose' version '2.0.21'
     id 'org.jetbrains.kotlin.jvm' version '2.0.21' apply false
     id 'org.jetbrains.kotlin.multiplatform' version '2.0.21' apply false
+    id 'org.jetbrains.kotlin.plugin.serialization' version '2.0.21' apply false
     id 'com.android.library' version '8.11.1' apply false
     id 'org.jetbrains.compose' version '1.7.1' apply false
 }
@@ -255,6 +256,9 @@ dependencies {
     implementation "androidx.media3:media3-exoplayer:$media3_version"
     implementation "androidx.media3:media3-session:$media3_version"
     implementation "androidx.media3:media3-ui:$media3_version"
+    implementation "androidx.media3:media3-transformer:$media3_version" // video trim/crop export
+    implementation "androidx.media3:media3-effect:$media3_version"
+    implementation "androidx.media3:media3-common:$media3_version"
     implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
     implementation 'com.google.zxing:core:3.3.0' // fixed version to support SDK<24
     implementation ('com.journeyapps:zxing-android-embedded:4.3.0') { transitive = false } // QR Code scanner

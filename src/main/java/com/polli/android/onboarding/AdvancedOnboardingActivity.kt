@@ -23,7 +23,7 @@ import com.b44t.messenger.DcEvent
 import com.b44t.messenger.DcLot
 import com.google.zxing.integration.android.IntentIntegrator
 import com.polli.android.BaseAppCompatComposeActivity
-import com.polli.android.media.ImageEditLauncher
+import com.polli.android.media.MediaEditLauncher
 import com.polli.android.navigation.AppNav
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.PolliTheme
@@ -67,14 +67,14 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
     private var pendingAvatar by mutableStateOf<Bitmap?>(null)
     private var avatarChanged = false
 
-    private val imageEditor = ImageEditLauncher(
+    private val imageEditor = MediaEditLauncher(
         activity = this,
         onEdited = { uri -> applyAvatarUri(uri) },
     )
 
     private val pickAvatar = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
-            imageEditor.launch(uri, cropAvatar = true)
+            imageEditor.launchImage(uri, cropAvatar = true)
         }
     }
 

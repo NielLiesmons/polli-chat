@@ -19,7 +19,7 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import com.polli.android.BaseComposeActivity
-import com.polli.android.media.ImageEditLauncher
+import com.polli.android.media.MediaEditLauncher
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.PolliTheme
 import com.polli.android.data.engine.PolliRepositories
@@ -48,7 +48,7 @@ class ChatActivity : BaseComposeActivity() {
     private var chatId: Int = -1
     private var mediaControllerFuture: ListenableFuture<MediaController>? = null
 
-    private val imageEditor = ImageEditLauncher(
+    private val imageEditor = MediaEditLauncher(
         activity = this,
         onEdited = { uri -> stageAttachment(uri) },
     )
@@ -222,14 +222,14 @@ class ChatActivity : BaseComposeActivity() {
         val mime = PlatformMedia.mimeType(this, uri) ?: "application/octet-stream"
         when {
             PlatformMedia.isGif(mime) -> stageAttachment(uri, mime)
-            PlatformMedia.isVideoType(mime) -> stageAttachment(uri, mime)
+            PlatformMedia.isVideoType(mime) -> imageEditor.launchVideo(uri)
             PlatformMedia.isImageType(mime) -> openImageEditorOrSend(uri)
             else -> stageAttachment(uri, mime)
         }
     }
 
     private fun openImageEditorOrSend(uri: Uri) {
-        imageEditor.launch(uri)
+        imageEditor.launchImage(uri)
     }
 
     private fun stageAttachment(uri: Uri, mimeType: String? = null) {

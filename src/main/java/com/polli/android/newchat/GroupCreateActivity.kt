@@ -37,7 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import chat.delta.rpc.RpcException
 import com.polli.android.BaseComposeActivity
-import com.polli.android.media.ImageEditLauncher
+import com.polli.android.media.MediaEditLauncher
 import com.polli.android.navigation.AppNav
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.PolliColors
@@ -72,14 +72,14 @@ class GroupCreateActivity : BaseComposeActivity() {
     private var pendingAvatar by mutableStateOf<Bitmap?>(null)
     private var avatarChanged = false
 
-    private val imageEditor = ImageEditLauncher(
+    private val imageEditor = MediaEditLauncher(
         activity = this,
         onEdited = { uri -> applyAvatarUri(uri) },
     )
 
     private val pickAvatar = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
-            imageEditor.launch(uri, cropAvatar = true)
+            imageEditor.launchImage(uri, cropAvatar = true)
         }
     }
 

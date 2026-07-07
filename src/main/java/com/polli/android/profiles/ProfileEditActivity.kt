@@ -35,7 +35,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.polli.android.BaseComposeActivity
-import com.polli.android.media.ImageEditLauncher
+import com.polli.android.media.MediaEditLauncher
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.PolliColors
 import com.polli.android.theme.PolliTheme
@@ -50,14 +50,14 @@ import java.io.IOException
 class ProfileEditActivity : BaseComposeActivity() {
     private var avatarRevision by mutableIntStateOf(0)
 
-    private val imageEditor = ImageEditLauncher(
+    private val imageEditor = MediaEditLauncher(
         activity = this,
         onEdited = { uri -> saveAvatarFromUri(uri) },
     )
 
     private val pickAvatar = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
-            imageEditor.launch(uri, cropAvatar = true)
+            imageEditor.launchImage(uri, cropAvatar = true)
         }
     }
 
