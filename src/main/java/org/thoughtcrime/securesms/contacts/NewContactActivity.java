@@ -15,13 +15,13 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.polli.android.navigation.AppNav;
-import org.thoughtcrime.securesms.PassphraseRequiredActionBarActivity;
+import com.polli.android.ui.PolliBaseActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.connect.DcHelper;
 import org.thoughtcrime.securesms.qr.QrCodeHandler;
 import org.thoughtcrime.securesms.util.ViewUtil;
 
-public class NewContactActivity extends PassphraseRequiredActionBarActivity {
+public class NewContactActivity extends PolliBaseActivity {
 
   public static final String ADDR_EXTRA = "contact_addr";
   public static final String CONTACT_ID_EXTRA = "contact_id";

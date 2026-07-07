@@ -1,10 +1,9 @@
-package org.thoughtcrime.securesms;
+package com.polli.android.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewConfiguration;
 import android.view.WindowManager;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.IdRes;
@@ -13,14 +12,21 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
 import androidx.fragment.app.Fragment;
-import java.lang.reflect.Field;
+import com.polli.android.onboarding.WelcomeActivity;
+import org.thoughtcrime.securesms.R;
+import org.thoughtcrime.securesms.connect.DcHelper;
+import org.thoughtcrime.securesms.service.GenericForegroundService;
 import org.thoughtcrime.securesms.util.DynamicTheme;
 import org.thoughtcrime.securesms.util.Prefs;
 import org.thoughtcrime.securesms.util.ViewUtil;
 
-public abstract class BaseActionBarActivity extends AppCompatActivity {
+/**
+ * Base for Polli View-based (AppCompat) activities. Combines dynamic theming and edge-to-edge
+ * chrome with the account-configured gate (redirect to onboarding when the app is not yet set up).
+ * Replaces the former Signal BaseActionBarActivity / PassphraseRequiredActionBarActivity pair.
+ */
+public abstract class PolliBaseActivity extends AppCompatActivity {
 
-  private static final String TAG = "BaseActionBarActivity";
   protected DynamicTheme dynamicTheme = new DynamicTheme();
 
   protected void onPreCreate() {
@@ -28,57 +34,68 @@ public abstract class BaseActionBarActivity extends AppCompatActivity {
   }
 
   @Override
-  protected void onCreate(Bundle savedInstanceState) {
+  protected final void onCreate(Bundle savedInstanceState) {
     onPreCreate();
+
+    if (allowInLockedMode()) {
+      chromeCreate(savedInstanceState);
+      onCreate(savedInstanceState, true);
+      return;
+    }
+
+    if (GenericForegroundService.isForegroundTaskStarted()) {
+      chromeCreate(savedInstanceState);
+      finish();
+      return;
+    }
+
+    if (!DcHelper.isConfigured(getApplicationContext())) {
+      startActivity(new Intent(this, WelcomeActivity.class));
+      chromeCreate(savedInstanceState);
+      finish();
+    } else {
+      chromeCreate(savedInstanceState);
+    }
+
+    if (!isFinishing()) {
+      onCreate(savedInstanceState, true);
+    }
+  }
+
+  private void chromeCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-
-    // Only enable Edge-to-Edge if it is well supported
     if (ViewUtil.isEdgeToEdgeSupported()) {
-      // docs says to use: WindowCompat.enableEdgeToEdge(getWindow());
-      // but it actually makes things worse, the next takes care of setting the 3-buttons navigation
-      // bar background
       EdgeToEdge.enable(this);
-
-      // force white text in status bar so it visible over background color
       WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
           .setAppearanceLightStatusBars(false);
     }
   }
 
+  /** Screen bring-up hook; {@code ready} is always true (kept for source compatibility). */
+  protected void onCreate(Bundle savedInstanceState, boolean ready) {}
+
+  /**
+   * "Locked Mode" is when the account is not configured (Welcome screen) or when sharing a backup.
+   * The app is locked to that activity; tapping the app icon or notifications must not replace the
+   * stack. Override to allow pushing this activity in those situations (e.g. logs, offline help).
+   */
+  protected boolean allowInLockedMode() {
+    return false;
+  }
+
   @Override
   protected void onPostCreate(@Nullable Bundle savedInstanceState) {
     super.onPostCreate(savedInstanceState);
-    // Apply adjustments to the toolbar for edge-to-edge display
     ViewUtil.adjustToolbarForE2E(this);
   }
 
   @Override
   protected void onResume() {
     super.onResume();
-    initializeScreenshotSecurity();
-    dynamicTheme.onResume(this);
-  }
-
-  private void initializeScreenshotSecurity() {
     if (Prefs.isScreenSecurityEnabled(this)) {
       getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
     }
-  }
-
-  /** Modified from: http://stackoverflow.com/a/13098824 */
-  private void forceOverflowMenu() {
-    try {
-      ViewConfiguration config = ViewConfiguration.get(this);
-      Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
-      if (menuKeyField != null) {
-        menuKeyField.setAccessible(true);
-        menuKeyField.setBoolean(config, false);
-      }
-    } catch (IllegalAccessException e) {
-      Log.w(TAG, "Failed to force overflow menu.");
-    } catch (NoSuchFieldException e) {
-      Log.w(TAG, "Failed to force overflow menu.");
-    }
+    dynamicTheme.onResume(this);
   }
 
   public void makeSearchMenuVisible(final Menu menu, final MenuItem searchItem) {
@@ -88,7 +105,7 @@ public abstract class BaseActionBarActivity extends AppCompatActivity {
       if (id == R.id.menu_search_up || id == R.id.menu_search_down) {
         item.setVisible(true);
       } else if (item != searchItem) {
-        item.setVisible(false); // hide all other items
+        item.setVisible(false);
       }
     }
   }
@@ -100,11 +117,9 @@ public abstract class BaseActionBarActivity extends AppCompatActivity {
   protected <T extends Fragment> T initFragment(
       @IdRes int target, @NonNull T fragment, @Nullable Bundle extras) {
     Bundle args = new Bundle();
-
     if (extras != null) {
       args.putAll(extras);
     }
-
     fragment.setArguments(args);
     getSupportFragmentManager()
         .beginTransaction()

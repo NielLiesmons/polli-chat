@@ -5,8 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import chat.delta.rpc.Rpc;
@@ -21,7 +19,6 @@ import org.thoughtcrime.securesms.connect.AccountManager;
 import org.thoughtcrime.securesms.connect.DcHelper;
 import com.polli.android.transports.RelayListActivity;
 import org.thoughtcrime.securesms.util.IntentUtils;
-import org.thoughtcrime.securesms.util.ScreenLockUtil;
 import org.thoughtcrime.securesms.util.Util;
 import org.thoughtcrime.securesms.util.views.ProgressDialog;
 
@@ -126,43 +123,23 @@ public class QrCodeHandler {
   }
 
   /** Process only QR about adding relays/profiles (DCACCOUNT: / DCLOGIN:) */
-  public void handleOnlyAddRelayQr(
-      String rawString, @Nullable ActivityResultLauncher<Intent> screenLockLauncher) {
+  public void handleOnlyAddRelayQr(String rawString) {
     final DcLot qrParsed = dcContext.checkQr(rawString);
-    if (!handleAddRelayQr(qrParsed, rawString, screenLockLauncher)) {
+    if (!handleAddRelayQr(qrParsed, rawString)) {
       AlertDialog.Builder builder = new AlertDialog.Builder(activity);
       handleDefault(builder, rawString, qrParsed);
       builder.create().show();
     }
   }
 
-  private boolean handleAddRelayQr(
-      DcLot qrParsed,
-      String rawString,
-      @Nullable ActivityResultLauncher<Intent> screenLockLauncher) {
+  private boolean handleAddRelayQr(DcLot qrParsed, String rawString) {
     switch (qrParsed.getState()) {
       case DcContext.DC_QR_ACCOUNT:
       case DcContext.DC_QR_LOGIN:
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle(R.string.confirm_add_transport);
         builder.setMessage(qrParsed.getText1());
-        builder.setPositiveButton(
-            R.string.ok,
-            (d, w) -> {
-              if (screenLockLauncher != null) {
-                boolean result =
-                    ScreenLockUtil.applyScreenLock(
-                        activity,
-                        activity.getString(R.string.add_transport),
-                        activity.getString(R.string.enter_system_secret_to_continue),
-                        screenLockLauncher);
-                if (!result) {
-                  addRelay(rawString);
-                }
-              } else { // Screen lock not needed
-                addRelay(rawString);
-              }
-            });
+        builder.setPositiveButton(R.string.ok, (d, w) -> addRelay(rawString));
         builder.setNegativeButton(R.string.cancel, null);
         builder.setCancelable(false);
         builder.create().show();
@@ -245,13 +222,10 @@ public class QrCodeHandler {
 
   /** Handle any kind of QR showing an AlertDialog adapted to the QR type. */
   public void handleQrData(
-      String rawString,
-      SecurejoinSource source,
-      SecurejoinUiPath uiPath,
-      ActivityResultLauncher<Intent> relayLockLauncher) {
+      String rawString, SecurejoinSource source, SecurejoinUiPath uiPath) {
     final DcLot qrParsed = dcContext.checkQr(rawString);
     if (handleSecureJoinQr(qrParsed, rawString, source, uiPath)
-        || handleAddRelayQr(qrParsed, rawString, relayLockLauncher)
+        || handleAddRelayQr(qrParsed, rawString)
         || handleProxyQr(qrParsed, rawString)
         || handleBackupQr(qrParsed, rawString)) return;
 

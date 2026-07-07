@@ -20,7 +20,7 @@ import chat.delta.rpc.types.HttpResponse;
 import com.b44t.messenger.DcContext;
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
-import org.thoughtcrime.securesms.PassphraseRequiredActionBarActivity;
+import com.polli.android.ui.PolliBaseActivity;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.connect.DcHelper;
 import org.thoughtcrime.securesms.providers.PersistentBlobProvider;
@@ -31,7 +31,7 @@ import org.thoughtcrime.securesms.util.Prefs;
 import org.thoughtcrime.securesms.util.Util;
 import org.thoughtcrime.securesms.util.ViewUtil;
 
-public class WebxdcStoreActivity extends PassphraseRequiredActionBarActivity {
+public class WebxdcStoreActivity extends PolliBaseActivity {
   private static final String TAG = "WebxdcStoreActivity";
 
   private DcContext dcContext;

@@ -67,7 +67,6 @@ import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.connect.DcEventCenter
 import com.polli.android.qr.QrActivity
 import org.thoughtcrime.securesms.qr.QrCodeHandler
-import org.thoughtcrime.securesms.util.ScreenLockUtil
 
 /** Compose relay (transport) list — replaces the legacy Java RelayListActivity. */
 class RelayListActivity : BaseComposeActivity(), DcEventCenter.DcEventDelegate {
@@ -80,7 +79,6 @@ class RelayListActivity : BaseComposeActivity(), DcEventCenter.DcEventDelegate {
     private var qrData: String? = null
 
     private lateinit var qrScannerLauncher: ActivityResultLauncher<Intent>
-    private lateinit var screenLockLauncher: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,33 +89,14 @@ class RelayListActivity : BaseComposeActivity(), DcEventCenter.DcEventDelegate {
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == Activity.RESULT_OK) {
                     val scan = IntentIntegrator.parseActivityResult(result.resultCode, result.data)
-                    QrCodeHandler(this).handleOnlyAddRelayQr(scan?.contents, null)
-                }
-            }
-        screenLockLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode != Activity.RESULT_OK) {
-                    finish()
-                    return@registerForActivityResult
-                }
-                qrData?.let {
-                    QrCodeHandler(this).handleOnlyAddRelayQr(it, null)
-                    qrData = null
+                    QrCodeHandler(this).handleOnlyAddRelayQr(scan?.contents)
                 }
             }
 
         qrData = intent.getStringExtra(EXTRA_QR_DATA)
-        if (qrData != null) {
-            val locked =
-                ScreenLockUtil.applyScreenLock(
-                    this,
-                    getString(R.string.add_transport),
-                    getString(R.string.enter_system_secret_to_continue),
-                    screenLockLauncher,
-                )
-            if (!locked) {
-                QrCodeHandler(this).handleOnlyAddRelayQr(qrData, null)
-            }
+        qrData?.let {
+            QrCodeHandler(this).handleOnlyAddRelayQr(it)
+            qrData = null
         }
 
         val eventCenter = EngineBridge.getEventCenter(this)

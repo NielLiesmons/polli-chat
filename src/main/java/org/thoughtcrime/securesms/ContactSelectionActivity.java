@@ -18,6 +18,7 @@ package org.thoughtcrime.securesms;
 
 import android.os.Bundle;
 import android.view.MenuItem;
+import com.polli.android.ui.PolliBaseActivity;
 import org.thoughtcrime.securesms.components.ContactFilterToolbar;
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme;
 import org.thoughtcrime.securesms.util.ViewUtil;
@@ -27,7 +28,7 @@ import org.thoughtcrime.securesms.util.ViewUtil;
  *
  * @author Moxie Marlinspike
  */
-public abstract class ContactSelectionActivity extends PassphraseRequiredActionBarActivity
+public abstract class ContactSelectionActivity extends PolliBaseActivity
     implements ContactSelectionListFragment.OnContactSelectedListener {
   private static final String TAG = "ContactSelectionActivity";
 

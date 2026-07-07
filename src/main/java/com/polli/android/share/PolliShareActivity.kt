@@ -19,7 +19,7 @@ import com.polli.android.platform.PlatformMedia
 import com.polli.android.platform.PlatformShare
 import com.polli.domain.navigation.ChatIntentExtras
 import kotlinx.coroutines.launch
-import org.thoughtcrime.securesms.PassphraseRequiredActionBarActivity
+import com.polli.android.ui.PolliBaseActivity
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.permissions.Permissions
 import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme
@@ -27,7 +27,7 @@ import org.thoughtcrime.securesms.util.DynamicNoActionBarTheme
 /**
  * OS share target — resolves inbound URIs and routes to [HomeRelayingActivity] or a direct chat.
  */
-class PolliShareActivity : PassphraseRequiredActionBarActivity() {
+class PolliShareActivity : PolliBaseActivity() {
     private lateinit var dcContext: DcContext
     private val resolvedExtras = ArrayList<Uri>()
 

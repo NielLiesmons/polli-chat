@@ -21,6 +21,7 @@ import androidx.webkit.ProxyController;
 import androidx.webkit.WebSettingsCompat;
 import androidx.webkit.WebViewFeature;
 import chat.delta.rpc.types.SecurejoinSource;
+import com.polli.android.ui.PolliBaseActivity;
 import java.net.IDN;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,7 +31,7 @@ import org.thoughtcrime.securesms.util.IntentUtils;
 import org.thoughtcrime.securesms.util.Util;
 import org.thoughtcrime.securesms.util.ViewUtil;
 
-public class WebViewActivity extends PassphraseRequiredActionBarActivity
+public class WebViewActivity extends PolliBaseActivity
     implements SearchView.OnQueryTextListener, WebView.FindListener {
   private static final String TAG = "WebViewActivity";
   // Regex to extract the host from a URL for IDN conversion.
