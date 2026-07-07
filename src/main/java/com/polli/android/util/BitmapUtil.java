@@ -1,13 +1,18 @@
 package com.polli.android.util;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.ImageFormat;
+import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Shader;
 import android.graphics.YuvImage;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.util.Log;
 import android.util.Pair;
 import androidx.annotation.NonNull;
@@ -256,5 +261,67 @@ public class BitmapUtil {
     egl.eglTerminate(display);
 
     return Math.min(maximumTextureSize, MAX_ALLOWED_TEXTURE_SIZE);
+  }
+
+  private static int calculateInSampleSize(BitmapFactory.Options bounds, int reqWidth, int reqHeight) {
+    int inSampleSize = 1;
+    if (reqWidth <= 0 || reqHeight <= 0) return inSampleSize;
+    int height = bounds.outHeight;
+    int width = bounds.outWidth;
+    while ((height / inSampleSize) > reqHeight || (width / inSampleSize) > reqWidth) {
+      inSampleSize *= 2;
+    }
+    return inSampleSize;
+  }
+
+  /** Decode a file down to roughly reqSize (memory-friendly). Null on failure. */
+  @Nullable
+  public static Bitmap decodeScaled(@Nullable String path, int reqSize) {
+    if (path == null || path.isEmpty()) return null;
+    BitmapFactory.Options bounds = new BitmapFactory.Options();
+    bounds.inJustDecodeBounds = true;
+    BitmapFactory.decodeFile(path, bounds);
+    if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null;
+    BitmapFactory.Options opts = new BitmapFactory.Options();
+    opts.inSampleSize = calculateInSampleSize(bounds, reqSize, reqSize);
+    return BitmapFactory.decodeFile(path, opts);
+  }
+
+  /** Decode a content Uri down to roughly reqSize. Null on failure. */
+  @Nullable
+  public static Bitmap decodeScaled(@NonNull Context context, @NonNull Uri uri, int reqSize) {
+    try {
+      BitmapFactory.Options bounds = new BitmapFactory.Options();
+      bounds.inJustDecodeBounds = true;
+      try (InputStream in = context.getContentResolver().openInputStream(uri)) {
+        BitmapFactory.decodeStream(in, null, bounds);
+      }
+      if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null;
+      BitmapFactory.Options opts = new BitmapFactory.Options();
+      opts.inSampleSize = calculateInSampleSize(bounds, reqSize, reqSize);
+      try (InputStream in = context.getContentResolver().openInputStream(uri)) {
+        return BitmapFactory.decodeStream(in, null, opts);
+      }
+    } catch (Exception e) {
+      Log.w(TAG, "decodeScaled(uri) failed", e);
+      return null;
+    }
+  }
+
+  /** Center-crop [src] to a circle of [size]px. */
+  public static Bitmap circleCrop(@NonNull Bitmap src, int size) {
+    if (size <= 0) size = Math.max(1, Math.min(src.getWidth(), src.getHeight()));
+    int min = Math.min(src.getWidth(), src.getHeight());
+    int x = (src.getWidth() - min) / 2;
+    int y = (src.getHeight() - min) / 2;
+    Bitmap square = Bitmap.createBitmap(src, x, y, min, min);
+    Bitmap scaled = Bitmap.createScaledBitmap(square, size, size, true);
+    Bitmap out = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+    Canvas canvas = new Canvas(out);
+    Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    paint.setShader(new BitmapShader(scaled, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP));
+    float r = size / 2f;
+    canvas.drawCircle(r, r, r, paint);
+    return out;
   }
 }

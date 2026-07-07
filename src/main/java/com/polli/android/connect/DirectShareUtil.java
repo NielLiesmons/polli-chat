@@ -15,15 +15,10 @@ import androidx.core.graphics.drawable.IconCompat;
 import com.b44t.messenger.DcChat;
 import com.b44t.messenger.DcChatlist;
 import com.b44t.messenger.DcContext;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import com.polli.android.share.PolliShareActivity;
-import com.polli.android.contacts.avatars.ContactPhoto;
-import com.polli.android.mms.GlideApp;
-import com.polli.android.mms.GlideRequest;
 import com.polli.android.recipients.Recipient;
 import com.polli.android.util.BitmapUtil;
 import com.polli.android.util.DrawableUtil;
@@ -146,17 +141,16 @@ public class DirectShareUtil {
 
   public static Bitmap getIconForShortcut(@NonNull Context context, @NonNull Recipient recipient) {
     try {
-      return getShortcutInfoBitmap(context, recipient);
-    } catch (ExecutionException | InterruptedException | NullPointerException e) {
-      return getFallbackDrawable(context, recipient);
+      int size =
+          context.getResources().getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
+      Bitmap photo = recipient.getContactPhotoBitmap(context, size);
+      if (photo != null) {
+        return DrawableUtil.wrapBitmapForShortcutInfo(photo);
+      }
+    } catch (Exception e) {
+      // fall through to the generated avatar
     }
-  }
-
-  private static @NonNull Bitmap getShortcutInfoBitmap(
-      @NonNull Context context, @NonNull Recipient recipient)
-      throws ExecutionException, InterruptedException {
-    return DrawableUtil.wrapBitmapForShortcutInfo(
-        request(GlideApp.with(context).asBitmap(), context, recipient).submit().get());
+    return getFallbackDrawable(context, recipient);
   }
 
   private static Bitmap getFallbackDrawable(Context context, @NonNull Recipient recipient) {
@@ -166,18 +160,5 @@ public class DirectShareUtil {
         context
             .getResources()
             .getDimensionPixelSize(android.R.dimen.notification_large_icon_height));
-  }
-
-  private static <T> GlideRequest<T> request(
-      @NonNull GlideRequest<T> glideRequest,
-      @NonNull Context context,
-      @NonNull Recipient recipient) {
-    final ContactPhoto photo;
-    photo = recipient.getContactPhoto(context);
-
-    return glideRequest
-        .load(photo)
-        .error(getFallbackDrawable(context, recipient))
-        .diskCacheStrategy(DiskCacheStrategy.ALL);
   }
 }

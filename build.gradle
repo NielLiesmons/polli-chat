@@ -265,8 +265,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.1' // used as JSON library
     implementation 'com.github.Baseflow:PhotoView:2.3.0' // does the zooming on photos / media
     implementation 'com.caverock:androidsvg-aar:1.4' // SVG support.
-    implementation 'com.github.bumptech.glide:glide:4.16.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
+    implementation 'io.coil-kt:coil-compose:2.7.0' // Compose-native image loading (replaced Glide)
+    implementation 'io.coil-kt:coil-video:2.7.0' // video-frame thumbnails
     annotationProcessor 'androidx.annotation:annotation:1.9.1'
     implementation 'com.makeramen:roundedimageview:2.3.0' // crops the avatars to circles
     implementation 'com.github.amulyakhare:TextDrawable:558677ea31'  // number of unread messages,

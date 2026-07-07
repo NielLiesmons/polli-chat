@@ -24,13 +24,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import android.widget.ImageView
+import coil.compose.AsyncImage
 import com.polli.android.data.engine.PolliRepositories
 import com.polli.core.chat.ChatMediaFilter
-import com.bumptech.glide.Glide
 import com.polli.android.BaseComposeActivity
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.PolliColors
@@ -155,14 +154,11 @@ fun GalleryThumb(msgId: Int, onClick: () -> Unit, modifier: Modifier = Modifier)
             .clickable(onClick = onClick),
     ) {
         if (file != null) {
-            AndroidView(
+            AsyncImage(
+                model = file,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
-                factory = { ctx ->
-                    ImageView(ctx).apply { scaleType = ImageView.ScaleType.CENTER_CROP }
-                },
-                update = { view ->
-                    Glide.with(view).load(file).centerCrop().into(view)
-                },
             )
         }
     }

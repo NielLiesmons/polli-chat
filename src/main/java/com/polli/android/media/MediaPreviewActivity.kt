@@ -25,12 +25,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import android.widget.ImageView
+import coil.compose.AsyncImage
+import coil.decode.VideoFrameDecoder
+import coil.request.ImageRequest
+import coil.request.videoFrameMillis
 import com.b44t.messenger.DcMsg
-import com.bumptech.glide.Glide
 import com.polli.android.BaseComposeActivity
 import com.polli.android.icons.PolliIcon
 import com.polli.android.icons.PolliIconName
@@ -237,14 +239,11 @@ private fun AvatarPreviewScreen(
                 }
             }
         }
-        AndroidView(
+        AsyncImage(
+            model = uri,
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
             modifier = Modifier.fillMaxSize(),
-            factory = { ctx ->
-                ImageView(ctx).apply { scaleType = ImageView.ScaleType.FIT_CENTER }
-            },
-            update = { view ->
-                Glide.with(view).load(uri).fitCenter().into(view)
-            },
         )
     }
 }
@@ -271,26 +270,26 @@ private fun MediaPage(msgId: Int) {
                 .clickable { EngineBridge.openForViewOrShare(context, msgId, Intent.ACTION_VIEW) },
             contentAlignment = Alignment.Center,
         ) {
-            AndroidView(
+            AsyncImage(
+                model = remember(file) {
+                    ImageRequest.Builder(context)
+                        .data(file)
+                        .videoFrameMillis(1000)
+                        .decoderFactory(VideoFrameDecoder.Factory())
+                        .build()
+                },
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
                 modifier = Modifier.fillMaxSize(),
-                factory = { ctx ->
-                    ImageView(ctx).apply { scaleType = ImageView.ScaleType.FIT_CENTER }
-                },
-                update = { view ->
-                    Glide.with(view).asBitmap().load(file).frame(1_000_000).fitCenter().into(view)
-                },
             )
             Text("▶ Tap to play", color = PolliColors.White85)
         }
     } else {
-        AndroidView(
+        AsyncImage(
+            model = file,
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
             modifier = Modifier.fillMaxSize(),
-            factory = { ctx ->
-                ImageView(ctx).apply { scaleType = ImageView.ScaleType.FIT_CENTER }
-            },
-            update = { view ->
-                Glide.with(view).load(file).fitCenter().into(view)
-            },
         )
     }
 }

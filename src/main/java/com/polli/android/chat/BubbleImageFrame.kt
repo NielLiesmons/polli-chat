@@ -1,7 +1,6 @@
 package com.polli.android.chat
 
 import android.graphics.BitmapFactory
-import android.widget.ImageView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -13,12 +12,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
+import coil.compose.AsyncImage
+import coil.decode.VideoFrameDecoder
+import coil.request.ImageRequest
+import coil.request.videoFrameMillis
 import com.polli.android.theme.PolliColors
 import com.polli.android.theme.PolliDimens
 import java.io.File
@@ -56,13 +57,6 @@ fun BubbleImageFrame(
     val frameHeight = remember(contentWidth, ratio) {
         bubbleImageHeight(contentWidth, ratio)
     }
-    val density = LocalDensity.current
-    val targetWidthPx = remember(contentWidth, density) {
-        with(density) { contentWidth.roundToPx() }
-    }
-    val targetHeightPx = remember(frameHeight, density) {
-        with(density) { frameHeight.roundToPx() }
-    }
 
     Box(
         modifier = modifier
@@ -73,27 +67,13 @@ fun BubbleImageFrame(
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
         contentAlignment = Alignment.Center,
     ) {
-        AndroidView(
+        AsyncImage(
+            model = model,
+            contentDescription = contentDescription,
+            contentScale = ContentScale.Fit,
             modifier = Modifier
                 .width(contentWidth)
                 .height(frameHeight),
-            factory = { ctx ->
-                ImageView(ctx).apply {
-                    scaleType = ImageView.ScaleType.FIT_CENTER
-                    adjustViewBounds = true
-                    contentDescription?.let { this.contentDescription = it }
-                }
-            },
-            update = { view ->
-                if (view.tag == model) return@AndroidView
-                view.tag = model
-                Glide.with(view)
-                    .load(model)
-                    .fitCenter()
-                    .override(targetWidthPx.coerceAtLeast(1), targetHeightPx.coerceAtLeast(1))
-                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-                    .into(view)
-            },
         )
     }
 }
@@ -111,13 +91,7 @@ fun BubbleVideoThumbnailFrame(
     val frameHeight = remember(contentWidth, ratio) {
         bubbleImageHeight(contentWidth, ratio)
     }
-    val density = LocalDensity.current
-    val targetWidthPx = remember(contentWidth, density) {
-        with(density) { contentWidth.roundToPx() }
-    }
-    val targetHeightPx = remember(frameHeight, density) {
-        with(density) { frameHeight.roundToPx() }
-    }
+    val context = LocalContext.current
 
     Box(
         modifier = modifier
@@ -128,28 +102,19 @@ fun BubbleVideoThumbnailFrame(
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        AndroidView(
+        AsyncImage(
+            model = remember(file) {
+                ImageRequest.Builder(context)
+                    .data(file)
+                    .videoFrameMillis(1000)
+                    .decoderFactory(VideoFrameDecoder.Factory())
+                    .build()
+            },
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
             modifier = Modifier
                 .width(contentWidth)
                 .height(frameHeight),
-            factory = { ctx ->
-                ImageView(ctx).apply {
-                    scaleType = ImageView.ScaleType.FIT_CENTER
-                    adjustViewBounds = true
-                }
-            },
-            update = { view ->
-                if (view.tag == file) return@AndroidView
-                view.tag = file
-                Glide.with(view)
-                    .asBitmap()
-                    .load(file)
-                    .frame(1_000_000)
-                    .fitCenter()
-                    .override(targetWidthPx.coerceAtLeast(1), targetHeightPx.coerceAtLeast(1))
-                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-                    .into(view)
-            },
         )
         Box(
             modifier = Modifier

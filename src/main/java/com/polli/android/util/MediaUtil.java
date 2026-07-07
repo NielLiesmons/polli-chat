@@ -12,8 +12,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 import com.b44t.messenger.DcMsg;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.resource.gif.GifDrawable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -21,10 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 import com.polli.android.mms.AudioSlide;
-import com.polli.android.mms.DecryptableStreamUriLoader.DecryptableUri;
 import com.polli.android.mms.DocumentSlide;
 import com.polli.android.mms.GifSlide;
-import com.polli.android.mms.GlideApp;
 import com.polli.android.mms.ImageSlide;
 import com.polli.android.mms.PartAuthority;
 import com.polli.android.mms.Slide;
@@ -157,23 +153,7 @@ public class MediaUtil {
 
     Pair<Integer, Integer> dimens = null;
 
-    if (MediaUtil.isGif(contentType)) {
-      try {
-        GifDrawable drawable =
-            GlideApp.with(context)
-                .asGif()
-                .skipMemoryCache(true)
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .load(new DecryptableUri(uri))
-                .submit()
-                .get();
-        dimens = new Pair<>(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
-      } catch (InterruptedException e) {
-        Log.w(TAG, "Was unable to complete work for GIF dimensions.", e);
-      } catch (ExecutionException e) {
-        Log.w(TAG, "Glide experienced an exception while trying to get GIF dimensions.", e);
-      }
-    } else {
+    {
       InputStream attachmentStream = null;
       try {
         if (MediaUtil.isJpegType(contentType)) {

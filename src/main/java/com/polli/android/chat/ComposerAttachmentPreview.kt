@@ -1,6 +1,5 @@
 package com.polli.android.chat
 
-import android.widget.ImageView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -13,11 +12,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
-import com.bumptech.glide.Glide
+import coil.compose.AsyncImage
 import com.polli.android.icons.PolliIcon
 import com.polli.android.icons.PolliIconName
 import com.polli.android.theme.PolliColors
@@ -36,18 +35,13 @@ fun ComposerAttachmentPreview(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (attachment.isImage) {
-            AndroidView(
+            AsyncImage(
+                model = attachment.uri,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(44.dp)
                     .clip(RoundedCornerShape(8.dp)),
-                factory = { ctx ->
-                    ImageView(ctx).apply {
-                        scaleType = ImageView.ScaleType.CENTER_CROP
-                    }
-                },
-                update = { view ->
-                    Glide.with(view).load(attachment.uri).centerCrop().into(view)
-                },
             )
         } else {
             Box(

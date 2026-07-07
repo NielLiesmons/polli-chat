@@ -29,7 +29,6 @@ import com.b44t.messenger.DcChat;
 import com.b44t.messenger.DcContact;
 import com.b44t.messenger.DcContext;
 import com.b44t.messenger.DcMsg;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.polli.android.navigation.AppNav;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -41,8 +40,6 @@ import java.util.concurrent.TimeUnit;
 import org.json.JSONObject;
 import com.polli.android.ApplicationContext;
 import com.polli.android.R;
-import com.polli.android.contacts.avatars.ContactPhoto;
-import com.polli.android.mms.GlideApp;
 import com.polli.android.preferences.widgets.NotificationPrivacyPreference;
 import com.polli.android.recipients.Recipient;
 import com.polli.android.util.BitmapUtil;
@@ -746,31 +743,14 @@ public class NotificationCenter {
   public Bitmap getAvatar(DcChat dcChat) {
     Recipient recipient = new Recipient(context, dcChat);
     try {
-      Drawable drawable;
-      ContactPhoto contactPhoto = recipient.getContactPhoto(context);
-      if (contactPhoto != null) {
-        drawable =
-            GlideApp.with(context.getApplicationContext())
-                .load(contactPhoto)
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .circleCrop()
-                .submit(
-                    context
-                        .getResources()
-                        .getDimensionPixelSize(android.R.dimen.notification_large_icon_width),
-                    context
-                        .getResources()
-                        .getDimensionPixelSize(android.R.dimen.notification_large_icon_height))
-                .get();
-
-      } else {
-        drawable =
-            recipient
-                .getFallbackContactPhoto()
-                .asDrawable(context, recipient.getFallbackAvatarColor());
+      int wh = context.getResources().getDimensionPixelSize(R.dimen.contact_photo_target_size);
+      Bitmap photo = recipient.getContactPhotoBitmap(context, wh);
+      if (photo != null) {
+        return photo;
       }
+      Drawable drawable =
+          recipient.getFallbackContactPhoto().asDrawable(context, recipient.getFallbackAvatarColor());
       if (drawable != null) {
-        int wh = context.getResources().getDimensionPixelSize(R.dimen.contact_photo_target_size);
         return BitmapUtil.createFromDrawable(drawable, wh, wh);
       }
     } catch (Exception e) {

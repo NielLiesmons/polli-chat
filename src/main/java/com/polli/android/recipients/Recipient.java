@@ -18,6 +18,7 @@
 package com.polli.android.recipients;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -33,14 +34,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.WeakHashMap;
 import com.polli.android.connect.DcHelper;
-import com.polli.android.contacts.avatars.ContactPhoto;
 import com.polli.android.contacts.avatars.GeneratedContactPhoto;
-import com.polli.android.contacts.avatars.GroupRecordContactPhoto;
-import com.polli.android.contacts.avatars.LocalFileContactPhoto;
-import com.polli.android.contacts.avatars.ProfileContactPhoto;
-import com.polli.android.contacts.avatars.SystemContactPhoto;
-import com.polli.android.contacts.avatars.VcardContactPhoto;
 import com.polli.android.database.Address;
+import com.polli.android.util.BitmapUtil;
 import com.polli.android.util.Hash;
 import com.polli.android.util.Prefs;
 import com.polli.android.util.Util;
@@ -215,30 +211,26 @@ public class Recipient {
     else return new GeneratedContactPhoto("#");
   }
 
-  public synchronized @Nullable ContactPhoto getContactPhoto(Context context) {
-    LocalFileContactPhoto contactPhoto = null;
+  /**
+   * Circular avatar bitmap from the chat/contact profile image (or system contact photo),
+   * or null when there is no real photo (callers fall back to {@link #getFallbackAvatarDrawable}).
+   */
+  public synchronized @Nullable Bitmap getContactPhotoBitmap(Context context, int sizePx) {
+    String path = null;
     if (dcChat != null) {
-      contactPhoto = new GroupRecordContactPhoto(context, address, dcChat);
+      path = dcChat.getProfileImage();
     } else if (dcContact != null) {
-      contactPhoto = new ProfileContactPhoto(context, address, dcContact);
+      path = dcContact.getProfileImage();
     }
 
-    if (contactPhoto != null) {
-      String path = contactPhoto.getPath(context);
-      if (path != null && !path.isEmpty()) {
-        return contactPhoto;
-      }
+    Bitmap src = BitmapUtil.decodeScaled(path, sizePx);
+    if (src == null && systemContactPhoto != null) {
+      src = BitmapUtil.decodeScaled(context, systemContactPhoto, sizePx);
     }
-
-    if (vContact != null && vContact.profileImage != null) {
-      return new VcardContactPhoto(vContact);
+    if (src == null) {
+      return null;
     }
-
-    if (systemContactPhoto != null) {
-      return new SystemContactPhoto(address, systemContactPhoto, 0);
-    }
-
-    return null;
+    return BitmapUtil.circleCrop(src, sizePx);
   }
 
   private void maybeSetSystemContactPhoto(@NonNull Context context, DcContact contact) {
