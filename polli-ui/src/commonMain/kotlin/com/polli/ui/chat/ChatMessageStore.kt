@@ -22,6 +22,7 @@ class ChatMessageStore(
     }
 
     private val stubById = LinkedHashMap<Int, MessageStub>()
+    private val stubLock = Any()
     private var msgIds: IntArray = intArrayOf()
     private var feedItemsCache: List<FeedItem> = emptyList()
 
@@ -37,11 +38,11 @@ class ChatMessageStore(
     }
 
     fun getStub(msgId: Int): MessageStub? {
-        stubById[msgId]?.let { return it }
+        synchronized(stubLock) { stubById[msgId]?.let { return it } }
         if (msgId <= MSG_ID_DAYMARKER) return null
         val stub = messages.getStub(msgId) ?: return null
         if (!stub.isDisplayable) return null
-        stubById[msgId] = stub
+        synchronized(stubLock) { stubById[msgId] = stub }
         return stub
     }
 
@@ -52,13 +53,13 @@ class ChatMessageStore(
     }
 
     fun invalidateStub(msgId: Int) {
-        stubById.remove(msgId)
+        synchronized(stubLock) { stubById.remove(msgId) }
     }
 
     /** Drop cached rows after engine events (edit, reaction, delivery state). */
     fun invalidateAllCaches() {
         clearMessageCache()
-        stubById.clear()
+        synchronized(stubLock) { stubById.clear() }
     }
 
     fun clearMessageCache() {
@@ -69,7 +70,7 @@ class ChatMessageStore(
 
     fun reset() {
         clearMessageCache()
-        stubById.clear()
+        synchronized(stubLock) { stubById.clear() }
         msgIds = intArrayOf()
         feedItemsCache = emptyList()
     }
@@ -94,7 +95,7 @@ class ChatMessageStore(
         if (ids.contentEquals(msgIds) && nextFeed == feedItemsCache) return null
         msgIds = ids
         val valid = ids.toSet()
-        stubById.keys.retainAll(valid)
+        synchronized(stubLock) { stubById.keys.retainAll(valid) }
         pruneCache(valid)
         feedItemsCache = nextFeed
         return feedItemsCache

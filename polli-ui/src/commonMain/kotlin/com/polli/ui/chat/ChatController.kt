@@ -10,6 +10,7 @@ import com.polli.domain.model.chat.displayIndexForMessage
 import com.polli.domain.model.chat.messageIdAtDisplayIndex
 import com.polli.domain.repository.MessageRepository
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -100,7 +101,9 @@ class ChatController(
         if (!fromArchived) {
             messages.marknoticedChat(chatId)
         }
-        scope.launch {
+        // Warm the rest of the stub cache off the main thread so the chat can
+        // open (and its enter transition run) without blocking on per-message RPC.
+        scope.launch(Dispatchers.Default) {
             store.preloadStubs()
         }
     }
@@ -250,7 +253,7 @@ class ChatController(
                     store.syncFeedIds(chatId, showNewMessagesMarker, fresh)
                         ?: store.buildFeed(showNewMessagesMarker, fresh)
                 reloadGeneration++
-                store.preloadStubs()
+                launch(Dispatchers.Default) { store.preloadStubs() }
             }
     }
 

@@ -11,10 +11,15 @@ import com.polli.domain.model.chat.MessageStub
 import com.polli.domain.model.chat.OutgoingState
 
 internal object RpcMessageMapper {
-    private const val STATE_OUT_PENDING = 16
-    private const val STATE_OUT_DELIVERED = 17
-    private const val STATE_OUT_FAILED = 18
-    private const val STATE_OUT_READ = 19
+    // Delta Chat core message states (see DcMsg): in-states are < 18, out-states >= 18.
+    private const val CONTACT_ID_SELF = 1
+    private const val STATE_OUT_PREPARING = 18
+    private const val STATE_OUT_PENDING = 20
+    private const val STATE_OUT_FAILED = 24
+    private const val STATE_OUT_DELIVERED = 26
+    private const val STATE_OUT_READ = 28
+
+    private fun isOutgoing(msg: Message): Boolean = (msg.fromId ?: 0) == CONTACT_ID_SELF
 
     fun toStub(msg: Message, selfName: String = "You"): MessageStub? {
         val id = msg.id ?: return null
@@ -24,7 +29,7 @@ internal object RpcMessageMapper {
             MessageStub(
                 id = id,
                 timestamp = normalizeTimestamp(msg.timestamp),
-                isOutgoing = msg.state?.let { it >= STATE_OUT_PENDING } == true,
+                isOutgoing = isOutgoing(msg),
                 authorId = fromId,
                 authorName = authorName,
                 authorColorSeed = authorColorSeed(msg, authorName),
@@ -45,7 +50,7 @@ internal object RpcMessageMapper {
             id = id,
             text = msg.text?.trim().orEmpty(),
             timestamp = normalizeTimestamp(msg.timestamp),
-            isOutgoing = msg.state?.let { it >= STATE_OUT_PENDING } == true,
+            isOutgoing = isOutgoing(msg),
             authorId = fromId,
             authorName = authorName,
             authorColorSeed = authorColorSeed(msg, authorName),
@@ -91,9 +96,7 @@ internal object RpcMessageMapper {
         }
 
     private fun authorName(msg: Message, selfName: String): String {
-        val fromId = msg.fromId ?: 0
-        val outgoing = msg.state?.let { it >= STATE_OUT_PENDING } == true
-        if (outgoing) return selfName
+        if (isOutgoing(msg)) return selfName
         return msg.overrideSenderName?.takeIf { it.isNotBlank() }
             ?: msg.sender?.displayName?.takeIf { it.isNotBlank() }
             ?: "Unknown"
@@ -131,7 +134,7 @@ internal object RpcMessageMapper {
 
     private fun outgoingState(state: Int?): OutgoingState? {
         return when (state) {
-            STATE_OUT_PENDING -> OutgoingState.Sending
+            in STATE_OUT_PREPARING..STATE_OUT_PENDING -> OutgoingState.Sending
             STATE_OUT_DELIVERED -> OutgoingState.Sent
             STATE_OUT_READ -> OutgoingState.Read
             STATE_OUT_FAILED -> OutgoingState.Failed
