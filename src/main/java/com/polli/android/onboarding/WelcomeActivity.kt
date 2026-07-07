@@ -9,8 +9,7 @@ import com.google.zxing.integration.android.IntentIntegrator
 import com.polli.android.BaseComposeActivity
 import com.polli.android.navigation.AppNav
 import com.polli.android.permissions.BackgroundSetup
-import com.polli.android.platform.LegacyBackupTransferActivity
-import com.polli.android.platform.LegacyQrExtras
+import com.polli.android.qr.BackupTransferActivity
 import com.polli.android.qr.QrResultHandler
 import com.polli.android.qr.RegistrationQrActivity
 import com.polli.android.settings.AppPrefs
@@ -66,12 +65,7 @@ class WelcomeActivity : BaseComposeActivity() {
     private fun handleBackupQrExtra(intent: Intent?) {
         val backupQr = intent?.getStringExtra(BACKUP_QR_EXTRA) ?: return
         intent.removeExtra(BACKUP_QR_EXTRA)
-        startActivity(
-            Intent(this, LegacyBackupTransferActivity::class.java).apply {
-                putExtra(LegacyQrExtras.TRANSFER_MODE, LegacyQrExtras.receiverScanQrMode())
-                putExtra(LegacyQrExtras.QR_CODE, backupQr)
-            },
-        )
+        startActivity(BackupTransferActivity.receiverIntent(this, backupQr))
     }
 
     companion object {

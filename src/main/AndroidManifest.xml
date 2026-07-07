@@ -448,8 +448,7 @@
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
 
         <activity
-            android:name=".qr.BackupTransferActivity"
-            android:theme="@style/TextSecure.LightTheme"
+            android:name="com.polli.android.qr.BackupTransferActivity"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
 
         <activity

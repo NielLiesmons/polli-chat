@@ -225,7 +225,8 @@ public class QrCodeHandler {
 
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
-        BackupTransferActivity.appendSSID(activity, alertDialog.findViewById(android.R.id.message));
+        com.polli.android.platform.PlatformLegacyUtil.INSTANCE.appendBackupTransferSsid(
+            activity, alertDialog.findViewById(android.R.id.message));
         return true;
 
       case DcContext.DC_QR_BACKUP_TOO_NEW:
