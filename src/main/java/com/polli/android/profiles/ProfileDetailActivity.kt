@@ -40,7 +40,7 @@ import com.polli.android.platform.PlatformMedia
 import com.polli.android.platform.PlatformPrefs
 import com.polli.android.platform.PlatformShare
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.connect.DcEventCenter
+import com.polli.android.connect.DcEventCenter
 import java.io.File
 import java.util.Collections
 

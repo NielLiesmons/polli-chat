@@ -1,0 +1,20 @@
+package com.polli.android.mms;
+
+import android.content.Context;
+import android.net.Uri;
+import com.b44t.messenger.DcMsg;
+import com.polli.android.util.MediaUtil;
+
+public class GifSlide extends ImageSlide {
+
+  public GifSlide(Context context, DcMsg dcMsg) {
+    super(context, dcMsg);
+  }
+
+  public GifSlide(Context context, Uri uri, String fileName, long size, int width, int height) {
+    super(
+        context,
+        constructAttachmentFromUri(
+            context, uri, MediaUtil.IMAGE_GIF, size, width, height, uri, fileName, false));
+  }
+}

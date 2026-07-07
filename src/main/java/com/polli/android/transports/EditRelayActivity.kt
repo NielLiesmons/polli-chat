@@ -77,7 +77,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.connect.DcEventCenter
+import com.polli.android.connect.DcEventCenter
 
 /** Compose manual transport (IMAP/SMTP) config form — replaces legacy Java EditRelayActivity. */
 class EditRelayActivity : BaseComposeActivity(), DcEventCenter.DcEventDelegate {

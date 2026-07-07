@@ -6,7 +6,7 @@ import android.net.Uri
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import com.polli.android.qr.WifiSsid
-import org.thoughtcrime.securesms.connect.DcHelper
+import com.polli.android.connect.DcHelper
 import com.polli.android.notifications.FcmReceiveService
 import com.polli.android.util.FileProviderUtil
 import com.polli.android.util.IntentUtils

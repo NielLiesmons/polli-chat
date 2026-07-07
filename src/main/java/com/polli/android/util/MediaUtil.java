@@ -20,17 +20,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
-import org.thoughtcrime.securesms.mms.AudioSlide;
-import org.thoughtcrime.securesms.mms.DecryptableStreamUriLoader.DecryptableUri;
-import org.thoughtcrime.securesms.mms.DocumentSlide;
-import org.thoughtcrime.securesms.mms.GifSlide;
-import org.thoughtcrime.securesms.mms.GlideApp;
-import org.thoughtcrime.securesms.mms.ImageSlide;
-import org.thoughtcrime.securesms.mms.PartAuthority;
-import org.thoughtcrime.securesms.mms.Slide;
-import org.thoughtcrime.securesms.mms.StickerSlide;
-import org.thoughtcrime.securesms.mms.VcardSlide;
-import org.thoughtcrime.securesms.mms.VideoSlide;
+import com.polli.android.mms.AudioSlide;
+import com.polli.android.mms.DecryptableStreamUriLoader.DecryptableUri;
+import com.polli.android.mms.DocumentSlide;
+import com.polli.android.mms.GifSlide;
+import com.polli.android.mms.GlideApp;
+import com.polli.android.mms.ImageSlide;
+import com.polli.android.mms.PartAuthority;
+import com.polli.android.mms.Slide;
+import com.polli.android.mms.StickerSlide;
+import com.polli.android.mms.VcardSlide;
+import com.polli.android.mms.VideoSlide;
 import com.polli.android.providers.PersistentBlobProvider;
 
 public class MediaUtil {

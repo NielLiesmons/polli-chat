@@ -41,7 +41,7 @@ object PlatformMedia {
         )
 
     fun isLocalAttachmentUri(uri: Uri): Boolean =
-        org.thoughtcrime.securesms.mms.PartAuthority.isLocalUri(uri)
+        com.polli.android.mms.PartAuthority.isLocalUri(uri)
 
     fun deletePersistentBlob(context: Context, uri: Uri) {
         PersistentBlobProvider.getInstance().delete(context, uri)

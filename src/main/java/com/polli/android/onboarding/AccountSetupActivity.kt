@@ -21,7 +21,7 @@ import com.polli.android.platform.PlatformDialogs
 import com.polli.android.platform.PlatformThread
 import com.polli.android.platform.LegacyProgressDialog
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.connect.DcEventCenter
+import com.polli.android.connect.DcEventCenter
 import java.util.concurrent.Executors
 
 class AccountSetupActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEventDelegate {

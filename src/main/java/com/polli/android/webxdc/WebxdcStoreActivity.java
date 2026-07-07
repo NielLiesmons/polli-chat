@@ -22,7 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import com.polli.android.ui.PolliBaseActivity;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.connect.DcHelper;
+import com.polli.android.connect.DcHelper;
 import com.polli.android.providers.PersistentBlobProvider;
 import com.polli.android.util.IntentUtils;
 import com.polli.android.util.JsonUtils;

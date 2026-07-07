@@ -59,7 +59,7 @@ import com.polli.android.theme.PolliColors
 import com.polli.android.theme.PolliTheme
 import com.polli.android.ui.AppInsets
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.connect.DcEventCenter
+import com.polli.android.connect.DcEventCenter
 import com.polli.android.service.GenericForegroundService
 import com.polli.android.service.NotificationController
 import java.util.Locale

@@ -42,7 +42,7 @@ import com.polli.android.theme.accent
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
 import com.polli.android.platform.EngineBridge
-import org.thoughtcrime.securesms.mms.Slide
+import com.polli.android.mms.Slide
 import com.polli.android.util.SaveAttachmentTask
 import com.polli.android.util.StorageUtil
 import java.io.File

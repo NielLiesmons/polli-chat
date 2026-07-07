@@ -9,9 +9,9 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
-import org.thoughtcrime.securesms.ApplicationContext;
+import com.polli.android.ApplicationContext;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.connect.ForegroundDetector;
+import com.polli.android.connect.ForegroundDetector;
 import com.polli.android.notifications.NotificationCenter;
 import com.polli.android.util.Util;
 

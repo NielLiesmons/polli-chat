@@ -7,7 +7,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 
-/** Binds [PolliEngine] after [org.thoughtcrime.securesms.ApplicationContext] creates Rpc. */
+/** Binds [PolliEngine] after [com.polli.android.ApplicationContext] creates Rpc. */
 object PolliEngineHost {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var eventLoop: RpcEventLoop? = null

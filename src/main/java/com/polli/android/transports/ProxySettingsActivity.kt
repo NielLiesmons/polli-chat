@@ -55,7 +55,7 @@ import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
 import com.polli.android.ui.ShellDivider
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.connect.DcEventCenter
+import com.polli.android.connect.DcEventCenter
 
 /** Compose proxy settings — replaces legacy Java ProxySettingsActivity. */
 class ProxySettingsActivity : BaseComposeActivity(), DcEventCenter.DcEventDelegate {

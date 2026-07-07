@@ -1,6 +1,6 @@
 package com.polli.android.notifications;
 
-import static org.thoughtcrime.securesms.connect.DcHelper.CONFIG_PRIVATE_TAG;
+import static com.polli.android.connect.DcHelper.CONFIG_PRIVATE_TAG;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -39,10 +39,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.json.JSONObject;
-import org.thoughtcrime.securesms.ApplicationContext;
+import com.polli.android.ApplicationContext;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.contacts.avatars.ContactPhoto;
-import org.thoughtcrime.securesms.mms.GlideApp;
+import com.polli.android.contacts.avatars.ContactPhoto;
+import com.polli.android.mms.GlideApp;
 import com.polli.android.preferences.widgets.NotificationPrivacyPreference;
 import com.polli.android.recipients.Recipient;
 import com.polli.android.util.BitmapUtil;

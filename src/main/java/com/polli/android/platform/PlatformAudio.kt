@@ -1,8 +1,8 @@
 package com.polli.android.platform
 
-import org.thoughtcrime.securesms.components.audioplay.AudioPlaybackState
-import org.thoughtcrime.securesms.components.audioplay.AudioPlaybackViewModel
-import org.thoughtcrime.securesms.components.audioplay.ChatAudioQueueProvider
+import com.polli.android.components.audioplay.AudioPlaybackState
+import com.polli.android.components.audioplay.AudioPlaybackViewModel
+import com.polli.android.components.audioplay.ChatAudioQueueProvider
 import com.polli.android.service.AudioPlaybackService
 
 typealias PolliAudioPlaybackViewModel = AudioPlaybackViewModel

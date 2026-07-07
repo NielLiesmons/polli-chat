@@ -13,7 +13,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.b44t.messenger.DcContext
 import com.b44t.messenger.DcEvent
-import org.thoughtcrime.securesms.connect.DcEventCenter
+import com.polli.android.connect.DcEventCenter
 import com.polli.android.platform.EngineBridge
 
 @Composable

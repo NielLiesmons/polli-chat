@@ -6,8 +6,8 @@ import android.net.Uri
 import chat.delta.rpc.Rpc
 import com.b44t.messenger.DcAccounts
 import com.b44t.messenger.DcContext
-import org.thoughtcrime.securesms.connect.DcEventCenter
-import org.thoughtcrime.securesms.connect.DcHelper
+import com.polli.android.connect.DcEventCenter
+import com.polli.android.connect.DcHelper
 import com.polli.android.notifications.NotificationCenter
 
 /** JNI/RPC engine access — sole `DcHelper` entry from Polli UI code. */

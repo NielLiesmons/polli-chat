@@ -11,7 +11,7 @@ import com.b44t.messenger.DcEvent
 import com.b44t.messenger.DcMsg
 import com.polli.android.stories.ChannelStoryRingLogic
 import kotlinx.coroutines.launch
-import org.thoughtcrime.securesms.connect.DcEventCenter
+import com.polli.android.connect.DcEventCenter
 import com.polli.android.platform.EngineBridge
 
 class StoriesViewModel(application: Application) : AndroidViewModel(application), DcEventCenter.DcEventDelegate {

@@ -11,7 +11,7 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
-import org.thoughtcrime.securesms.ApplicationContext;
+import com.polli.android.ApplicationContext;
 import org.thoughtcrime.securesms.BuildConfig;
 import com.polli.android.service.FetchForegroundService;
 import com.polli.android.util.Util;

@@ -55,7 +55,7 @@ import com.polli.android.theme.PolliTheme
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.connect.DcEventCenter
+import com.polli.android.connect.DcEventCenter
 
 /** Compose "show my invite QR" screen — replaces legacy Java QrShowActivity + QrShowFragment. */
 class QrShowActivity : BaseComposeActivity(), DcEventCenter.DcEventDelegate {

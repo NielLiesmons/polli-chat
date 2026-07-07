@@ -11,7 +11,7 @@ import com.b44t.messenger.DcContext;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import org.thoughtcrime.securesms.connect.DcHelper;
+import com.polli.android.connect.DcHelper;
 
 public class AvatarHelper {
   /* the maximum width/height an avatar should have */

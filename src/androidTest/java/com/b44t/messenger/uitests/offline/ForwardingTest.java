@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import com.polli.android.HomeActivity;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.connect.DcHelper;
+import com.polli.android.connect.DcHelper;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest

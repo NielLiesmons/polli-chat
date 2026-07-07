@@ -13,7 +13,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.thoughtcrime.securesms.connect.DcHelper;
+import com.polli.android.connect.DcHelper;
 
 public class WebxdcGarbageCollectionWorker extends ListenableWorker {
   private static final String TAG = "WebxdcGarbageCollectionWorker";

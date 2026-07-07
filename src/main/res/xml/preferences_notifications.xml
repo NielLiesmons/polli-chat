@@ -2,12 +2,12 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <org.thoughtcrime.securesms.components.SwitchPreferenceCompat
+    <com.polli.android.components.SwitchPreferenceCompat
         android:key="pref_enable_notifications"
         android:title="@string/pref_notifications"
         android:defaultValue="true" />
 
-    <org.thoughtcrime.securesms.components.SwitchPreferenceCompat
+    <com.polli.android.components.SwitchPreferenceCompat
         android:dependency="pref_enable_notifications"
         android:key="pref_enable_mention_notifications"
         android:title="@string/pref_mention_notifications"
@@ -21,7 +21,7 @@
         android:persistent="false"
         android:defaultValue="content://settings/system/notification_sound" />
 
-    <org.thoughtcrime.securesms.components.SwitchPreferenceCompat
+    <com.polli.android.components.SwitchPreferenceCompat
         android:dependency="pref_enable_notifications"
         android:key="pref_key_vibrate"
         android:defaultValue="true"
@@ -51,25 +51,25 @@
         android:entries="@array/pref_notification_priority_entries"
         android:entryValues="@array/pref_notification_priority_values" />
 
-    <org.thoughtcrime.securesms.components.SwitchPreferenceCompat
+    <com.polli.android.components.SwitchPreferenceCompat
         android:key="pref_key_inthread_notifications"
         android:title="@string/pref_in_chat_sounds"
         android:defaultValue="true" />
 
-    <org.thoughtcrime.securesms.components.SwitchPreferenceCompat
+    <com.polli.android.components.SwitchPreferenceCompat
         android:key="pref_notify_calls"
         android:title="@string/pref_calls"
         android:summary="@string/pref_calls_explain"
         android:defaultValue="true" />
 
     <PreferenceCategory android:title="@string/pref_instant_delivery">
-        <org.thoughtcrime.securesms.components.SwitchPreferenceCompat
+        <com.polli.android.components.SwitchPreferenceCompat
             android:key="pref_ignore_battery_optimizations"
             android:defaultValue="false"
             android:title="@string/pref_background_notifications"
             android:summary="@string/pref_background_notifications_explain" />
 
-        <org.thoughtcrime.securesms.components.SwitchPreferenceCompat
+        <com.polli.android.components.SwitchPreferenceCompat
             android:key="pref_reliable_service2"
             android:defaultValue="false"
             android:title="@string/pref_reliable_service"

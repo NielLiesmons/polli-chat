@@ -27,7 +27,7 @@ import android.os.Bundle;
 import androidx.core.app.RemoteInput;
 import com.b44t.messenger.DcContext;
 import com.b44t.messenger.DcMsg;
-import org.thoughtcrime.securesms.connect.DcHelper;
+import com.polli.android.connect.DcHelper;
 import com.polli.android.util.Util;
 
 /** Get the response text from the Wearable Device and sends an message as a reply */

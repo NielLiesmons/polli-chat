@@ -29,7 +29,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.mms.PartAuthority;
+import com.polli.android.mms.PartAuthority;
 import com.polli.android.util.task.ProgressDialogAsyncTask;
 
 public class SaveAttachmentTask

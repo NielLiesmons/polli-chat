@@ -21,7 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.thoughtcrime.securesms.DummyActivity;
+import com.polli.android.DummyActivity;
 import org.thoughtcrime.securesms.R;
 import com.polli.android.notifications.NotificationCenter;
 import com.polli.android.util.IntentUtils;

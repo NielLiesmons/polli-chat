@@ -26,8 +26,8 @@ import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import org.thoughtcrime.securesms.R;
 import androidx.appcompat.app.AppCompatActivity;
-import org.thoughtcrime.securesms.connect.DcHelper;
-import org.thoughtcrime.securesms.connect.KeepAliveService;
+import com.polli.android.connect.DcHelper;
+import com.polli.android.connect.KeepAliveService;
 import com.polli.android.notifications.FcmReceiveService;
 import com.polli.android.util.Prefs;
 

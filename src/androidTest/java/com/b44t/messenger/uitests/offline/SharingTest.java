@@ -30,7 +30,7 @@ import org.thoughtcrime.securesms.BuildConfig;
 import com.polli.android.HomeActivity;
 import org.thoughtcrime.securesms.R;
 import com.polli.android.share.PolliShareActivity;
-import org.thoughtcrime.securesms.connect.DcHelper;
+import com.polli.android.connect.DcHelper;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest

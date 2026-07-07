@@ -27,8 +27,8 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.polli.android.navigation.AppNav;
 import java.io.IOException;
-import org.thoughtcrime.securesms.connect.DcHelper;
-import org.thoughtcrime.securesms.mms.AudioSlide;
+import com.polli.android.connect.DcHelper;
+import com.polli.android.mms.AudioSlide;
 
 public class AudioPlaybackService extends MediaSessionService {
 

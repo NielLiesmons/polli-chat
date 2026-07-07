@@ -21,7 +21,7 @@ import chat.delta.rpc.Rpc;
 import chat.delta.rpc.RpcException;
 import com.polli.android.navigation.AppNav;
 import org.thoughtcrime.securesms.R;
-import org.thoughtcrime.securesms.connect.DcHelper;
+import com.polli.android.connect.DcHelper;
 
 public class LocationStreamingService extends Service {
 

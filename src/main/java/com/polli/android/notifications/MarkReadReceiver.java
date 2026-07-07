@@ -8,7 +8,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import com.b44t.messenger.DcContext;
-import org.thoughtcrime.securesms.connect.DcHelper;
+import com.polli.android.connect.DcHelper;
 import com.polli.android.util.Util;
 
 public class MarkReadReceiver extends BroadcastReceiver {

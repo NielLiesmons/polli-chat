@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.thoughtcrime.securesms.BuildConfig;
-import org.thoughtcrime.securesms.connect.DcHelper;
+import com.polli.android.connect.DcHelper;
 import com.polli.android.preferences.widgets.NotificationPrivacyPreference;
 
 public class Prefs {

@@ -73,7 +73,7 @@
 
     <!-- force compiling libs on older sdk than supported; runtime checks are required -->
     <application
-        android:name=".ApplicationContext"
+        android:name="com.polli.android.ApplicationContext"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
@@ -317,7 +317,7 @@
             android:exported="false" />
 
         <activity
-            android:name=".contacts.NewContactActivity"
+            android:name="com.polli.android.contacts.NewContactActivity"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
 
         <activity
@@ -382,7 +382,7 @@
             android:exported="false" />
 
         <activity
-            android:name=".DummyActivity"
+            android:name="com.polli.android.DummyActivity"
             android:theme="@android:style/Theme.NoDisplay"
             android:enabled="true"
             android:allowTaskReparenting="true"
@@ -509,7 +509,7 @@
         </provider>
 
         <provider
-            android:name=".connect.AttachmentsContentProvider"
+            android:name="com.polli.android.connect.AttachmentsContentProvider"
             android:authorities="${applicationId}.attachments"
             android:grantUriPermissions="true"
             android:exported="false">
