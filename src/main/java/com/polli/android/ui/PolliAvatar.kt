@@ -1,6 +1,8 @@
 package com.polli.android.ui
 
 import android.content.Context
+import android.graphics.BitmapFactory
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -17,10 +19,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.b44t.messenger.DcChat
@@ -37,7 +41,6 @@ import com.polli.android.theme.PolliDimens
 import com.polli.android.theme.ProfileColors
 import com.polli.core.sigil.SigilIdentity
 import dev.chrisbanes.haze.HazeState
-import org.thoughtcrime.securesms.components.AvatarImageView
 import com.polli.android.platform.EngineBridge
 
 /**
@@ -72,11 +75,17 @@ fun ProfilePic(
     val settingsTick = AppSettingsNotifier.generation
     val sigilOnlyMode = remember(resumeTick, settingsTick) { prefs.sigilOnlyMode }
 
-    val recipient = remember(chatId, contactId, dcContext) {
-        AvatarBinder.resolveRecipient(context, chatId, contactId, dcContext)
+    val photoPath = remember(chatId, contactId, dcContext, resumeTick) {
+        AvatarPhoto.storedImagePath(context, chatId, contactId, dcContext)
     }
-    val hasPhoto = remember(chatId, contactId, dcContext, resumeTick) {
-        AvatarPhoto.hasStoredImage(context, chatId, contactId, dcContext)
+    val photoBitmap: ImageBitmap? = remember(photoPath) {
+        photoPath?.let {
+            try {
+                BitmapFactory.decodeFile(it)?.asImageBitmap()
+            } catch (_: Throwable) {
+                null
+            }
+        }
     }
     val identity = remember(chatId, contactId, dcContext, seed, sigilIdentity) {
         resolveSigilIdentity(context, seed, sigilIdentity, chatId, contactId, dcContext)
@@ -84,8 +93,8 @@ fun ProfilePic(
     val sigil = remember(identity) { SigilIdentity.resolve(identity) }
     val sigilColor = remember(sigil.name) { ProfileColors.stringToColor(sigil.name) }
 
-    val showPhoto = !sigilOnlyMode && hasPhoto && recipient != null
-    val showSigil = sigilOnlyMode || !hasPhoto
+    val showPhoto = !sigilOnlyMode && photoBitmap != null
+    val showSigil = sigilOnlyMode || !showPhoto
 
     val clickMod = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
     val sigilBgMod = if (showSigil) Modifier.background(PolliColors.Gray33) else Modifier
@@ -96,18 +105,12 @@ fun ProfilePic(
             .then(sigilBgMod)
             .then(clickMod),
     ) {
-        if (showPhoto) {
-            AndroidView(
+        if (showPhoto && photoBitmap != null) {
+            Image(
+                bitmap = photoBitmap,
+                contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
-                factory = { ctx ->
-                    AvatarImageView(ctx).apply {
-                        onClick?.let { cb -> setOnClickListener { cb() } }
-                    }
-                },
-                update = { view ->
-                    AvatarBinder.bind(view, context, chatId, contactId, dcContext)
-                    onClick?.let { cb -> view.setOnClickListener { cb() } }
-                },
+                contentScale = ContentScale.Crop,
             )
         }
         if (showSigil) {

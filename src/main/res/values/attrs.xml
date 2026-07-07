@@ -282,12 +282,6 @@
             format="integer" />
     </declare-styleable>
 
-    <declare-styleable name="AvatarImageView">
-        <attr
-            name="inverted"
-            format="boolean" />
-    </declare-styleable>
-
     <declare-styleable name="ThumbnailView">
         <attr
             name="minWidth"
