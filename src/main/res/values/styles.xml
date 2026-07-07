@@ -15,10 +15,6 @@
         parent="Theme.AppCompat.Light.Dialog">
     </style>
 
-    <style
-        name="AppCompatDialogStyleDark"
-        parent="Theme.AppCompat.Dialog">
-    </style>
 
     <!-- ActionBar styles -->
     <style
@@ -95,18 +91,7 @@
         <item name="android:contentDescription">@string/chat_input_placeholder</item>
     </style>
 
-    <style name="AttachmentTypeLabel">
-        <item name="android:textColor">#ff999999</item>
-        <item name="android:textSize">14sp</item>
-    </style>
 
-    <style name="ButtonPrimary">
-        <item name="drawableTint">@color/white</item>
-        <item name="android:textColor">@color/white</item>
-        <item name="android:paddingLeft">8dp</item>
-        <item name="android:paddingRight">8dp</item>
-        <item name="android:background">@drawable/button_background</item>
-    </style>
 
     <style name="ButtonSecondary">
         <item name="drawableTint">?attr/secondary_button_fg</item>
@@ -121,20 +106,7 @@
         parent="PreferenceThemeOverlay.v14.Material">
     </style>
 
-    <style name="NoMessagesTextView">
-        <item name="android:textColor">?attr/conversation_item_update_text_color</item>
-        <item name="android:textSize">16sp</item>
-        <item name="android:background">@drawable/conversation_item_update_background</item>
-        <item name="android:layout_marginLeft">12dp</item>
-        <item name="android:layout_marginRight">12dp</item>
-        <item name="android:padding">12dp</item>
-    </style>
 
-    <style
-        name="SwitchTheme"
-        parent="Theme.AppCompat.Light">
-        <item name="colorControlActivated">#ff2090ea</item>
-    </style>
 
     <style
         name="ShapeAppearanceOverlay.App.CornerSize10Percent"
