@@ -441,8 +441,7 @@
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
 
         <activity
-            android:name=".qr.QrShowActivity"
-            android:theme="@style/TextSecure.LightTheme"
+            android:name="com.polli.android.qr.QrShowActivity"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
 
         <activity

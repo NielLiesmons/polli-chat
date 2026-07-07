@@ -41,7 +41,6 @@ import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
 import org.thoughtcrime.securesms.R
 import com.polli.android.platform.EngineBridge
-import com.polli.android.platform.LegacyQrShowFragment
 import com.polli.android.platform.LegacyRegistrationQrActivity
 
 class QrHubActivity : BaseAppCompatComposeActivity() {
@@ -136,7 +135,7 @@ fun QrHubScreen(onBack: () -> Unit, onScan: () -> Unit, onPaste: () -> Unit) {
         when (tab) {
             0 -> {
                 val svg = remember {
-                    runCatching { LegacyQrShowFragment.fixSVG(dc.getSecurejoinQrSvg(0)) }.getOrNull()
+                    runCatching { QrSvg.fixSvg(dc.getSecurejoinQrSvg(0)) }.getOrNull()
                 }
                 Box(
                     modifier = Modifier

@@ -6,8 +6,6 @@ import org.thoughtcrime.securesms.ContactSelectionListFragment
 import org.thoughtcrime.securesms.LogViewActivity
 import org.thoughtcrime.securesms.MuteDialog
 import org.thoughtcrime.securesms.qr.BackupTransferActivity
-import org.thoughtcrime.securesms.qr.QrShowActivity
-import org.thoughtcrime.securesms.qr.QrShowFragment
 import org.thoughtcrime.securesms.qr.RegistrationQrActivity
 import org.thoughtcrime.securesms.scribbles.ScribbleActivity
 
@@ -17,7 +15,5 @@ typealias LegacyContactSelectionListFragment = ContactSelectionListFragment
 typealias LegacyLogViewActivity = LogViewActivity
 typealias LegacyMuteDialog = MuteDialog
 typealias LegacyBackupTransferActivity = BackupTransferActivity
-typealias LegacyQrShowActivity = QrShowActivity
-typealias LegacyQrShowFragment = QrShowFragment
 typealias LegacyRegistrationQrActivity = RegistrationQrActivity
 typealias LegacyScribbleActivity = ScribbleActivity

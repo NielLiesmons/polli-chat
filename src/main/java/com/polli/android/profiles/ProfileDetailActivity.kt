@@ -34,7 +34,7 @@ import com.polli.android.platform.EngineBridge
 import com.polli.android.platform.LegacyContactMultiSelectionActivity
 import com.polli.android.platform.LegacyContactSelectionListFragment
 import com.polli.android.platform.LegacyMuteDialog
-import com.polli.android.platform.LegacyQrShowActivity
+import com.polli.android.qr.QrShowActivity
 import com.polli.android.platform.PlatformClipboard
 import com.polli.android.platform.PlatformLegacyUtil
 import com.polli.android.platform.PlatformMedia
@@ -294,8 +294,8 @@ class ProfileDetailActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEv
 
     private fun qrInvite(chatId: Int) {
         startActivity(
-            Intent(this, LegacyQrShowActivity::class.java).apply {
-                putExtra(LegacyQrShowActivity.CHAT_ID, chatId)
+            Intent(this, QrShowActivity::class.java).apply {
+                putExtra(QrShowActivity.CHAT_ID, chatId)
             },
         )
     }
