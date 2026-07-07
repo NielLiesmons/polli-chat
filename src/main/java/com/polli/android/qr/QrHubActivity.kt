@@ -41,12 +41,11 @@ import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
 import org.thoughtcrime.securesms.R
 import com.polli.android.platform.EngineBridge
-import com.polli.android.platform.LegacyRegistrationQrActivity
 
 class QrHubActivity : BaseAppCompatComposeActivity() {
     private val scanQr = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val data = result.data ?: return@registerForActivityResult
-        val raw = data.getStringExtra(LegacyRegistrationQrActivity.QRDATA_EXTRA)
+        val raw = data.getStringExtra(RegistrationQrActivity.QRDATA_EXTRA)
             ?: IntentIntegrator.parseActivityResult(result.resultCode, data)?.contents
         if (!raw.isNullOrBlank()) {
             QrResultHandler.handle(this, raw)
@@ -68,7 +67,7 @@ class QrHubActivity : BaseAppCompatComposeActivity() {
     }
 
     private fun launchScan() {
-        scanQr.launch(Intent(this, LegacyRegistrationQrActivity::class.java))
+        scanQr.launch(Intent(this, RegistrationQrActivity::class.java))
     }
 
     private fun pasteFromClipboard() {
@@ -91,6 +90,7 @@ class QrHubActivity : BaseAppCompatComposeActivity() {
     private fun Boolean?.orFalse() = this == true
 
     companion object {
+        @JvmStatic
         fun intent(context: Context): Intent = Intent(context, QrHubActivity::class.java)
     }
 }

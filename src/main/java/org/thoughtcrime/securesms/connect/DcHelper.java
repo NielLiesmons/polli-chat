@@ -38,7 +38,7 @@ import org.thoughtcrime.securesms.database.model.ThreadRecord;
 import org.thoughtcrime.securesms.mms.PartAuthority;
 import org.thoughtcrime.securesms.notifications.NotificationCenter;
 import org.thoughtcrime.securesms.providers.PersistentBlobProvider;
-import org.thoughtcrime.securesms.qr.QrActivity;
+import com.polli.android.qr.QrHubActivity;
 import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.util.FileUtils;
 import org.thoughtcrime.securesms.util.MediaUtil;
@@ -511,7 +511,7 @@ public class DcHelper {
         .setNeutralButton(R.string.learn_more, (d, w) -> openHelp(context, "#howtoe2ee"))
         .setNegativeButton(
             R.string.qrscan_title,
-            (d, w) -> context.startActivity(new Intent(context, QrActivity.class)))
+            (d, w) -> context.startActivity(QrHubActivity.intent(context)))
         .setPositiveButton(R.string.ok, null)
         .setCancelable(true)
         .show();

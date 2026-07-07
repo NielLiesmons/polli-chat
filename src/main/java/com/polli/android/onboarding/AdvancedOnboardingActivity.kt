@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.polli.android.platform.EngineBridge
 import com.polli.android.platform.LegacyLogViewActivity
 import com.polli.android.platform.LegacyProgressDialog
-import com.polli.android.platform.LegacyRegistrationQrActivity
+import com.polli.android.qr.RegistrationQrActivity
 import com.polli.android.platform.PlatformAvatars
 import com.polli.android.transports.EditRelayActivity
 import com.polli.android.transports.ProxySettingsActivity
@@ -80,7 +80,7 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
 
     private val scanProviderQr = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val data = result.data ?: return@registerForActivityResult
-        val raw = data.getStringExtra(LegacyRegistrationQrActivity.QRDATA_EXTRA)
+        val raw = data.getStringExtra(RegistrationQrActivity.QRDATA_EXTRA)
             ?: IntentIntegrator.parseActivityResult(result.resultCode, data)?.contents
         if (!raw.isNullOrBlank()) {
             setProviderFromQr(raw)
@@ -295,7 +295,7 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
             dialog.dismiss()
         }
         view.findViewById<android.widget.Button>(R.id.scan_qr_button)?.setOnClickListener {
-            scanProviderQr.launch(Intent(this, LegacyRegistrationQrActivity::class.java))
+            scanProviderQr.launch(Intent(this, RegistrationQrActivity::class.java))
             dialog.dismiss()
         }
         dialog.show()

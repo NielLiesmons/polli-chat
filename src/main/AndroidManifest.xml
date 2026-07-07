@@ -436,8 +436,7 @@
         </activity>
 
         <activity
-            android:name=".qr.QrActivity"
-            android:theme="@style/TextSecure.LightTheme"
+            android:name="com.polli.android.qr.QrActivity"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
 
         <activity
@@ -445,8 +444,7 @@
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
 
         <activity
-            android:name=".qr.RegistrationQrActivity"
-            android:theme="@style/TextSecure.LightTheme"
+            android:name="com.polli.android.qr.RegistrationQrActivity"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
 
         <activity

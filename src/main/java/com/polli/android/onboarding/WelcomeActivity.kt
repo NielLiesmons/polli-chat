@@ -11,8 +11,8 @@ import com.polli.android.navigation.AppNav
 import com.polli.android.permissions.BackgroundSetup
 import com.polli.android.platform.LegacyBackupTransferActivity
 import com.polli.android.platform.LegacyQrExtras
-import com.polli.android.platform.LegacyRegistrationQrActivity
 import com.polli.android.qr.QrResultHandler
+import com.polli.android.qr.RegistrationQrActivity
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.PolliTheme
 import com.polli.android.ui.AppInsets
@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 class WelcomeActivity : BaseComposeActivity() {
     private val scanQr = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val data = result.data ?: return@registerForActivityResult
-        val raw = data.getStringExtra(LegacyRegistrationQrActivity.QRDATA_EXTRA)
+        val raw = data.getStringExtra(RegistrationQrActivity.QRDATA_EXTRA)
             ?: IntentIntegrator.parseActivityResult(result.resultCode, data)?.contents
         if (!raw.isNullOrBlank()) {
             QrResultHandler.handle(this, raw)
@@ -43,8 +43,8 @@ class WelcomeActivity : BaseComposeActivity() {
                     onLinkSecondDevice = {
                         BackgroundSetup.requestNotificationsThen(this) {
                             scanQr.launch(
-                                Intent(this, LegacyRegistrationQrActivity::class.java).apply {
-                                    putExtra(LegacyRegistrationQrActivity.ADD_AS_SECOND_DEVICE_EXTRA, true)
+                                Intent(this, RegistrationQrActivity::class.java).apply {
+                                    putExtra(RegistrationQrActivity.ADD_AS_SECOND_DEVICE_EXTRA, true)
                                 },
                             )
                         }

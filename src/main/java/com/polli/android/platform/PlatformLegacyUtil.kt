@@ -16,6 +16,8 @@ object PlatformLegacyUtil {
 
     fun isNetworkConnected(context: Context): Boolean = DcHelper.isNetworkConnected(context)
 
+    fun openHelp(context: Context, section: String) = DcHelper.openHelp(context, section)
+
     fun runOnAnyBackgroundThread(block: () -> Unit) {
         Util.runOnAnyBackgroundThread(block)
     }

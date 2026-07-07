@@ -65,7 +65,7 @@ import kotlinx.coroutines.withContext
 import androidx.lifecycle.lifecycleScope
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.connect.DcEventCenter
-import org.thoughtcrime.securesms.qr.QrActivity
+import com.polli.android.qr.QrActivity
 import org.thoughtcrime.securesms.qr.QrCodeHandler
 import org.thoughtcrime.securesms.util.ScreenLockUtil
 
