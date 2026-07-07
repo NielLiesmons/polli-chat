@@ -34,12 +34,10 @@ import org.thoughtcrime.securesms.BuildConfig;
 import org.thoughtcrime.securesms.util.IntentUtils;
 import org.thoughtcrime.securesms.R;
 import com.polli.android.share.PolliShareActivity;
-import org.thoughtcrime.securesms.database.model.ThreadRecord;
 import org.thoughtcrime.securesms.mms.PartAuthority;
 import org.thoughtcrime.securesms.notifications.NotificationCenter;
 import org.thoughtcrime.securesms.providers.PersistentBlobProvider;
 import com.polli.android.qr.QrHubActivity;
-import org.thoughtcrime.securesms.recipients.Recipient;
 import org.thoughtcrime.securesms.util.FileUtils;
 import org.thoughtcrime.securesms.util.MediaUtil;
 import org.thoughtcrime.securesms.util.ShareUtil;
@@ -430,34 +428,6 @@ public class DcHelper {
     OutputStream outputStream = new FileOutputStream(path);
     Util.copy(inputStream, outputStream);
     return path;
-  }
-
-  @NonNull
-  public static ThreadRecord getThreadRecord(
-      Context context, DcLot summary, DcChat chat) { // adapted from ThreadDatabase.getCurrent()
-    int chatId = chat.getId();
-
-    String body = summary.getText1();
-    if (!body.isEmpty()) {
-      body += ": ";
-    }
-    body += summary.getText2();
-
-    Recipient recipient = new Recipient(context, chat);
-    long date = summary.getTimestamp();
-    int unreadCount = getContext(context).getFreshMsgCount(chatId);
-
-    return new ThreadRecord(
-        body,
-        recipient,
-        date,
-        unreadCount,
-        chatId,
-        chat.getVisibility(),
-        chat.isSendingLocations(),
-        chat.isMuted(),
-        chat.isContactRequest(),
-        summary);
   }
 
   public static boolean isNetworkConnected(Context context) {

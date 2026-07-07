@@ -39,7 +39,6 @@ import org.thoughtcrime.securesms.connect.KeepAliveService;
 import org.thoughtcrime.securesms.connect.NetworkStateReceiver;
 import org.thoughtcrime.securesms.crypto.DatabaseSecret;
 import org.thoughtcrime.securesms.crypto.DatabaseSecretProvider;
-import org.thoughtcrime.securesms.jobmanager.JobManager;
 import org.thoughtcrime.securesms.notifications.FcmReceiveService;
 import org.thoughtcrime.securesms.notifications.InChatSounds;
 import org.thoughtcrime.securesms.notifications.NotificationCenter;
@@ -61,7 +60,6 @@ public class ApplicationContext extends MultiDexApplication {
 
   private DcEventCenter eventCenter;
   private NotificationCenter notificationCenter;
-  private JobManager jobManager;
 
   private int debugOnAvailableCount;
   private int debugOnBlockedStatusChangedCount;
@@ -329,7 +327,6 @@ public class ApplicationContext extends MultiDexApplication {
     KeepAliveService.maybeStartSelf(this);
 
     initializeLogging();
-    initializeJobManager();
     InChatSounds.getInstance(this);
 
     DynamicTheme.setDefaultDayNightMode(this);
@@ -389,15 +386,7 @@ public class ApplicationContext extends MultiDexApplication {
     Log.i("DeltaChat", "+++++++++++ ApplicationContext.onCreate() finished ++++++++++");
   }
 
-  public JobManager getJobManager() {
-    return jobManager;
-  }
-
   private void initializeLogging() {
     SignalProtocolLoggerProvider.setProvider(new AndroidSignalProtocolLogger());
-  }
-
-  private void initializeJobManager() {
-    this.jobManager = new JobManager(this, 5);
   }
 }
