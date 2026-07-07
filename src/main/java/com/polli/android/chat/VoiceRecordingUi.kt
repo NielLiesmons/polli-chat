@@ -40,7 +40,7 @@ import com.polli.android.theme.PolliColors
 import com.polli.android.theme.PolliDimens
 import com.polli.android.theme.accent
 import com.polli.android.theme.rougeGradient
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 import kotlin.math.roundToInt
 
 internal enum class VoiceRecordMode { Idle, Holding, Locked }

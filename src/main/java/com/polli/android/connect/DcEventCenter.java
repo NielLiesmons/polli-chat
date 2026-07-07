@@ -9,7 +9,7 @@ import com.b44t.messenger.DcEvent;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import com.polli.android.ApplicationContext;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 import com.polli.android.service.FetchForegroundService;
 import com.polli.android.util.Util;
 

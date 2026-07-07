@@ -63,7 +63,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.lifecycle.lifecycleScope
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 import com.polli.android.connect.DcEventCenter
 import com.polli.android.qr.QrActivity
 import com.polli.android.qr.QrCodeHandler

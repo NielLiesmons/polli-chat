@@ -6,7 +6,7 @@ import android.content.Intent
 import com.polli.android.HomeActivity
 import com.polli.android.HomeRelayingActivity
 import com.polli.android.platform.PlatformShare
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 
 /** Share / forward flows that pick a destination chat before opening the composer. */
 object ShareRelay {

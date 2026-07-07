@@ -20,7 +20,7 @@ import androidx.core.content.ContextCompat;
 import chat.delta.rpc.Rpc;
 import chat.delta.rpc.RpcException;
 import com.polli.android.navigation.AppNav;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 import com.polli.android.connect.DcHelper;
 
 public class LocationStreamingService extends Service {

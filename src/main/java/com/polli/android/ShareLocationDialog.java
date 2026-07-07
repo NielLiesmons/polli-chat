@@ -1,6 +1,6 @@
 package com.polli.android;
 
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 
 import android.content.Context;
 import androidx.annotation.NonNull;

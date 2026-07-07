@@ -7,7 +7,7 @@ import android.util.Log;
 import chat.delta.rpc.Rpc;
 import chat.delta.rpc.RpcException;
 
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 import com.polli.android.ShareLocationDialog;
 import com.polli.android.connect.DcHelper;
 import com.polli.android.permissions.Permissions;

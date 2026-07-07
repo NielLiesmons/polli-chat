@@ -9,7 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 
 enum class PolliIconName(@DrawableRes val resId: Int) {
     Bell(R.drawable.ic_polli_bell),

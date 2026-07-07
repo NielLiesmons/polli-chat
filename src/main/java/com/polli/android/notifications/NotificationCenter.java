@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.json.JSONObject;
 import com.polli.android.ApplicationContext;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 import com.polli.android.contacts.avatars.ContactPhoto;
 import com.polli.android.mms.GlideApp;
 import com.polli.android.preferences.widgets.NotificationPrivacyPreference;

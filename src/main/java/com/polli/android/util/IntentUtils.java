@@ -10,7 +10,7 @@ import android.os.Build;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import java.util.List;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 
 public class IntentUtils {
 

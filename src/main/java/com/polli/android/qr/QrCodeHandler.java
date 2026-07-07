@@ -14,7 +14,7 @@ import chat.delta.rpc.types.SecurejoinUiPath;
 import com.b44t.messenger.DcContext;
 import com.b44t.messenger.DcLot;
 import com.polli.android.navigation.AppNav;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 import com.polli.android.connect.AccountManager;
 import com.polli.android.connect.DcHelper;
 import com.polli.android.transports.RelayListActivity;

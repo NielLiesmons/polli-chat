@@ -51,7 +51,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import org.json.JSONObject;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 import com.polli.android.WebViewActivity;
 import com.polli.android.connect.AccountManager;
 import com.polli.android.connect.DcEventCenter;

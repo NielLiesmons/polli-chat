@@ -59,7 +59,7 @@ import com.polli.android.ui.rememberComposerChromeLayout
 import com.polli.android.ui.rememberPolliHazeState
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.delay
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 import com.polli.android.platform.EngineBridge
 
 private const val STORY_SEGMENT_MS = 5_500L

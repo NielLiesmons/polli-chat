@@ -20,7 +20,7 @@ import androidx.test.espresso.util.TreeIterables;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import org.hamcrest.Matcher;
 import com.polli.android.HomeActivity;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 import com.polli.android.connect.AccountManager;
 import com.polli.android.connect.DcHelper;
 import com.polli.android.util.AccessibilityUtil;

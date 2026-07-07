@@ -21,7 +21,7 @@ import com.b44t.messenger.DcContext;
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import com.polli.android.ui.PolliBaseActivity;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 import com.polli.android.connect.DcHelper;
 import com.polli.android.providers.PersistentBlobProvider;
 import com.polli.android.util.IntentUtils;

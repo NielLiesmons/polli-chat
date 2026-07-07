@@ -21,7 +21,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import com.polli.android.HomeActivity;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 
 @Ignore("This is not a test, but a benchmark. Remove the @Ignore to run it.")
 @RunWith(AndroidJUnit4.class)

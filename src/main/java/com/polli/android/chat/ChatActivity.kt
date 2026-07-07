@@ -31,7 +31,7 @@ import com.polli.android.platform.PlatformMedia
 import com.polli.android.platform.PolliAudioPlaybackService
 import com.polli.android.platform.PolliAudioPlaybackViewModel
 import com.polli.android.platform.PolliChatAudioQueueProvider
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 import chat.delta.rpc.RpcException
 import java.io.File
 import java.util.Collections

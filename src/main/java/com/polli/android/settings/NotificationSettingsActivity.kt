@@ -7,7 +7,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.NotificationManagerCompat
 import com.polli.android.BaseAppCompatComposeActivity
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 import com.polli.android.permissions.Permissions
 import com.polli.android.preferences.NotificationsPreferenceFragment
 

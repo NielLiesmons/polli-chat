@@ -10,7 +10,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 import com.polli.android.util.ViewUtil;
 
 public class AnimatingToggle extends FrameLayout {

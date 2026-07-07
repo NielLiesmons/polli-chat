@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 
 public class Util {
   private static final String TAG = "Util";

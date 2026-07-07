@@ -58,7 +58,7 @@ import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.PolliColors
 import com.polli.android.theme.PolliTheme
 import com.polli.android.ui.AppInsets
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 import com.polli.android.connect.DcEventCenter
 import com.polli.android.service.GenericForegroundService
 import com.polli.android.service.NotificationController

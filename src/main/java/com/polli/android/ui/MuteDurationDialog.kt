@@ -2,7 +2,7 @@ package com.polli.android.ui
 
 import android.content.Context
 import androidx.appcompat.app.AlertDialog
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 import java.util.concurrent.TimeUnit
 
 /** Mute-duration picker — Kotlin replacement for the legacy Java MuteDialog. */

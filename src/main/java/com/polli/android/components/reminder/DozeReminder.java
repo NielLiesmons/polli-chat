@@ -16,7 +16,7 @@ import com.b44t.messenger.DcContact;
 import com.b44t.messenger.DcContext;
 import com.b44t.messenger.DcMsg;
 import com.polli.android.ApplicationContext;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 import com.polli.android.connect.DcHelper;
 import com.polli.android.notifications.FcmReceiveService;
 import com.polli.android.util.Prefs;

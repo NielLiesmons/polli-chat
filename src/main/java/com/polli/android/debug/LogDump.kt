@@ -10,7 +10,7 @@ import androidx.core.content.PermissionChecker
 import chat.delta.rpc.RpcException
 import com.polli.android.platform.EngineBridge
 import com.polli.android.platform.PlatformLegacyUtil
-import org.thoughtcrime.securesms.BuildConfig
+import com.polli.android.BuildConfig
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter

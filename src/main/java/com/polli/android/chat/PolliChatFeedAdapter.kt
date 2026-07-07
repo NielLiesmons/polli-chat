@@ -20,7 +20,7 @@ import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.PolliTheme
 import com.polli.ui.components.chat.ChatDayMarkerPill
 import com.polli.ui.components.chat.ChatNewMessagesPill
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 import com.polli.android.platform.PolliAudioPlaybackViewModel
 
 private data class FeedRowKey(

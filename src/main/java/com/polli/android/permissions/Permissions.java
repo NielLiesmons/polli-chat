@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 import com.polli.android.util.LRUCache;
 import com.polli.android.util.ServiceUtil;
 

@@ -22,7 +22,7 @@ import androidx.annotation.NonNull;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 
 /** Utility methods to help display dates in a nice, easily readable way. */
 public class DateUtils extends android.text.format.DateUtils {

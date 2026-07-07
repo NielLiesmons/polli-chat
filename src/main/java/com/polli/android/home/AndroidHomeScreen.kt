@@ -18,7 +18,7 @@ import com.polli.ui.home.HomeNote
 import com.polli.ui.home.StoryRingEntry
 import com.polli.ui.home.StoryRingStyle
 import com.polli.ui.screens.HomeScreen
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 import com.polli.android.platform.EngineBridge
 
 /** Android host for the shared [HomeScreen] — supplies engine-backed avatars and story rings. */

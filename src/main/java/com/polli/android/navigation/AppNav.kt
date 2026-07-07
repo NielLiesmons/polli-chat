@@ -17,8 +17,8 @@ import com.polli.android.onboarding.WelcomeActivity
 import com.polli.android.qr.QrHubActivity
 import com.polli.android.profiles.ProfilesActivity
 import com.polli.android.notes.NoteEditorActivity
-import org.thoughtcrime.securesms.BuildConfig
-import org.thoughtcrime.securesms.R
+import com.polli.android.BuildConfig
+import com.polli.android.R
 import com.polli.domain.navigation.ChatIntentExtras
 import com.polli.android.settings.NotificationSettingsActivity
 import com.polli.android.profiles.ProfileDetailActivity

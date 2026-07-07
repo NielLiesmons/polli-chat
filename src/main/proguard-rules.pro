@@ -5,6 +5,6 @@
 -keepnames class com.fasterxml.jackson.** { *; }
 
 # Legacy crypto helper referenced by JSON utils.
--keep class org.thoughtcrime.securesms.crypto.KeyStoreHelper* { *; }
+-keep class com.polli.android.crypto.KeyStoreHelper* { *; }
 
 -dontwarn com.google.firebase.analytics.connector.AnalyticsConnector

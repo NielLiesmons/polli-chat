@@ -20,7 +20,7 @@ import com.polli.android.platform.PlatformShare
 import com.polli.domain.navigation.ChatIntentExtras
 import kotlinx.coroutines.launch
 import com.polli.android.ui.PolliBaseActivity
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 import com.polli.android.permissions.Permissions
 import com.polli.android.util.DynamicNoActionBarTheme
 

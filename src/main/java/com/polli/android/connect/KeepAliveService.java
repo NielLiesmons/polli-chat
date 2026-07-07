@@ -14,7 +14,7 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import com.polli.android.navigation.AppNav;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 import com.polli.android.notifications.NotificationCenter;
 import com.polli.android.util.IntentUtils;
 import com.polli.android.util.Prefs;

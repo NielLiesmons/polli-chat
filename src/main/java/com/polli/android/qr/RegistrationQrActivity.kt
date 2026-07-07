@@ -54,7 +54,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.lifecycle.lifecycleScope
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 
 /** Compose registration / add-second-device QR scanner (keeps zxing engine). */
 class RegistrationQrActivity : BaseComposeActivity() {

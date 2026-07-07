@@ -24,7 +24,7 @@ import androidx.core.content.ContextCompat;
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 import androidx.appcompat.app.AppCompatActivity;
 import com.polli.android.connect.DcHelper;
 import com.polli.android.connect.KeepAliveService;

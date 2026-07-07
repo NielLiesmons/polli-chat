@@ -21,7 +21,7 @@ repositories {
 }
 
 android {
-    namespace "org.thoughtcrime.securesms"
+    namespace "com.polli.android"
     flavorDimensions "none"
     compileSdk 36
 

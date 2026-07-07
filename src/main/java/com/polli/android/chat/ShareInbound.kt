@@ -5,7 +5,7 @@ import android.net.Uri
 import com.polli.android.data.engine.PolliRepositories
 import com.polli.android.platform.PlatformMedia
 import com.polli.android.platform.PlatformShare
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 
 /** Applies share / forward intent payloads when opening [ChatActivity]. */
 object ShareInbound {

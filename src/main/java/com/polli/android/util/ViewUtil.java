@@ -46,7 +46,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 import chat.delta.util.ListenableFuture;
 import chat.delta.util.SettableFuture;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 import com.polli.android.util.views.Stub;
 
 public class ViewUtil {

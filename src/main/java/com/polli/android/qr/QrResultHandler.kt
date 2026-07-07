@@ -13,7 +13,7 @@ import com.polli.android.onboarding.AccountSetupActivity
 import com.polli.android.platform.EngineBridge
 import com.polli.android.platform.PlatformAccounts
 import com.polli.android.platform.PlatformLegacyUtil
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 
 object QrResultHandler {
     fun handle(activity: Activity, rawQr: String) {

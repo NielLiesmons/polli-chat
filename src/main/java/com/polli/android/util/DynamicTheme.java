@@ -8,7 +8,7 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.StyleRes;
 import androidx.appcompat.app.AppCompatDelegate;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 
 public class DynamicTheme {
 

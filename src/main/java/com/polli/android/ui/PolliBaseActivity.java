@@ -13,7 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
 import androidx.fragment.app.Fragment;
 import com.polli.android.onboarding.WelcomeActivity;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 import com.polli.android.connect.DcHelper;
 import com.polli.android.service.GenericForegroundService;
 import com.polli.android.util.DynamicTheme;

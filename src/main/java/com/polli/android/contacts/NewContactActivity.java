@@ -16,7 +16,7 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.polli.android.navigation.AppNav;
 import com.polli.android.ui.PolliBaseActivity;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 import com.polli.android.connect.DcHelper;
 import com.polli.android.qr.QrCodeHandler;
 import com.polli.android.util.ViewUtil;

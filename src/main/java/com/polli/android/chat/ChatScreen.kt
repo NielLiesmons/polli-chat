@@ -52,7 +52,7 @@ import com.polli.android.ui.rememberPolliHazeState
 import dev.chrisbanes.haze.hazeSource
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 import com.polli.android.platform.PolliAudioPlaybackViewModel
 
 @Composable

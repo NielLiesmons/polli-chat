@@ -53,7 +53,7 @@ import com.polli.android.theme.PolliColors
 import com.polli.android.theme.PolliTheme
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.RoundBackButton
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 
 /** Scanner-only QR capture activity (zxing engine hosted in Compose). Returns [Intents.Scan.RESULT]. */
 class QrActivity : BaseComposeActivity() {

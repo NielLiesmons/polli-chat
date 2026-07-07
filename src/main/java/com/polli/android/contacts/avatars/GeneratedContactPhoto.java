@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 import com.amulyakhare.textdrawable.TextDrawable;
 import java.util.regex.Pattern;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 
 public class GeneratedContactPhoto implements FallbackContactPhoto {
 

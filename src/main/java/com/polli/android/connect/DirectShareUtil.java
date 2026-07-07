@@ -137,7 +137,7 @@ public class DirectShareUtil {
               .setIcon(IconCompat.createWithAdaptiveBitmap(avatar))
               .setCategories(Collections.singleton(SHORTCUT_CATEGORY))
               .setIntent(intent)
-              .setActivity(new ComponentName(context, "org.thoughtcrime.securesms.RoutingActivity"))
+              .setActivity(new ComponentName(context, "com.polli.android.RoutingActivity"))
               .build());
     }
 

@@ -54,7 +54,7 @@ import com.polli.android.ui.RoundBackButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 import java.io.File
 
 /** Compose debug log viewer — replaces the Java LogViewActivity + LogViewFragment. */

@@ -12,7 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 import com.polli.android.util.ViewUtil;
 
 public class RationaleDialog {

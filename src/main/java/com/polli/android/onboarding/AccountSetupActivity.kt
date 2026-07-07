@@ -20,7 +20,7 @@ import com.polli.android.platform.EngineBridge
 import com.polli.android.platform.PlatformDialogs
 import com.polli.android.platform.PlatformThread
 import com.polli.android.platform.LegacyProgressDialog
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 import com.polli.android.connect.DcEventCenter
 import java.util.concurrent.Executors
 

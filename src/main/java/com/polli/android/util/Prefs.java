@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.thoughtcrime.securesms.BuildConfig;
+import com.polli.android.BuildConfig;
 import com.polli.android.connect.DcHelper;
 import com.polli.android.preferences.widgets.NotificationPrivacyPreference;
 

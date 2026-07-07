@@ -6,7 +6,7 @@ import android.graphics.Color;
 import android.util.TypedValue;
 import androidx.annotation.AttrRes;
 import androidx.annotation.NonNull;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 
 public class ThemeUtil {
 

@@ -40,7 +40,7 @@ import com.polli.android.icons.PolliIcon
 import com.polli.android.icons.PolliIconName
 import com.polli.android.theme.PolliColors
 import com.polli.android.theme.PolliDimens
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 
 private val recentSearches = listOf(
     "Weekend plans",

@@ -75,7 +75,7 @@ import android.Manifest
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 import androidx.core.content.ContextCompat
 import android.view.HapticFeedbackConstants
 import androidx.compose.ui.platform.LocalView

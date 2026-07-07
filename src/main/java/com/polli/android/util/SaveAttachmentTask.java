@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 import com.polli.android.mms.PartAuthority;
 import com.polli.android.util.task.ProgressDialogAsyncTask;
 

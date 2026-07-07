@@ -17,7 +17,7 @@ import com.polli.core.PolliFeatures
 import com.polli.domain.model.chat.ChatActionContext
 import com.polli.domain.model.chat.ChatMessage
 import com.polli.domain.model.chat.ChatMessageRules
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 import com.polli.android.webxdc.WebxdcActivity
 import com.polli.android.platform.PlatformClipboard
 import com.polli.android.platform.PlatformShare

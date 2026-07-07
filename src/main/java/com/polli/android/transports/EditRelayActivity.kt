@@ -76,7 +76,7 @@ import com.polli.android.ui.RoundBackButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 import com.polli.android.connect.DcEventCenter
 
 /** Compose manual transport (IMAP/SMTP) config form — replaces legacy Java EditRelayActivity. */

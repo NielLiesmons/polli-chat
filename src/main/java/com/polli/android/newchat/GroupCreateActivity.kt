@@ -46,7 +46,7 @@ import com.polli.android.theme.accent
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.PolliAvatar
 import com.polli.android.ui.RoundBackButton
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 import com.polli.android.platform.EngineBridge
 import com.polli.android.platform.PlatformAvatars
 

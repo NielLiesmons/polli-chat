@@ -5,7 +5,7 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
 import java.io.File;
-import org.thoughtcrime.securesms.BuildConfig;
+import com.polli.android.BuildConfig;
 
 public class FileProviderUtil {
 

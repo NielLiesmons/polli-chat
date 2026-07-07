@@ -1,7 +1,7 @@
 package com.polli.android.util;
 
 import androidx.annotation.StyleRes;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 
 public class DynamicNoActionBarTheme extends DynamicTheme {
   protected @StyleRes int getLightThemeStyle() {

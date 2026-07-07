@@ -297,7 +297,7 @@ private fun MediaPage(msgId: Int) {
 
 private fun saveMessageToDisk(activity: Activity, msgId: Int) {
     if (!StorageUtil.canWriteToMediaStore(activity)) {
-        Toast.makeText(activity, org.thoughtcrime.securesms.R.string.error, Toast.LENGTH_SHORT).show()
+        Toast.makeText(activity, com.polli.android.R.string.error, Toast.LENGTH_SHORT).show()
         return
     }
     SaveAttachmentTask.showWarningDialog(activity) { _, _ ->

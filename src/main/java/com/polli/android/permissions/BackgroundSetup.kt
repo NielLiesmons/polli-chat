@@ -12,7 +12,7 @@ import com.b44t.messenger.DcMsg
 import chat.delta.rpc.types.SecurejoinSource
 import chat.delta.rpc.types.SecurejoinUiPath
 import com.polli.domain.navigation.ChatIntentExtras
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 import com.polli.android.components.reminder.DozeReminder
 import com.polli.android.platform.EngineBridge
 import com.polli.android.notifications.FcmReceiveService

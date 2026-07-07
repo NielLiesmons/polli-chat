@@ -42,7 +42,7 @@ import com.polli.android.platform.PlatformDialogs
 import com.polli.android.platform.PlatformLegacyUtil
 import com.polli.android.platform.PlatformPrefs
 import com.polli.android.platform.PlatformThread
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 import com.polli.android.connect.DcEventCenter
 import java.io.IOException
 import java.security.SecureRandom

@@ -7,7 +7,7 @@ import com.b44t.messenger.DcContact
 import com.b44t.messenger.DcContext
 import com.b44t.messenger.DcLot
 import chat.delta.rpc.RpcException
-import org.thoughtcrime.securesms.R
+import com.polli.android.R
 import com.polli.android.platform.EngineBridge
 import com.polli.android.platform.PlatformDates
 

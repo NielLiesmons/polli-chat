@@ -4,7 +4,7 @@ import android.content.Context;
 import android.media.AudioAttributes;
 import android.media.SoundPool;
 import android.util.Log;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 
 public class InChatSounds {
   private static final String TAG = "InChatSounds";

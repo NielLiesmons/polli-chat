@@ -13,7 +13,7 @@ import com.b44t.messenger.DcEvent;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import org.thoughtcrime.securesms.R;
+import com.polli.android.R;
 import com.polli.android.connect.DcEventCenter;
 import com.polli.android.connect.DcHelper;
 import com.polli.android.service.GenericForegroundService;
