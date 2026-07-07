@@ -31,13 +31,13 @@ import com.polli.android.ui.AppInsets
 import com.polli.ui.screens.AdvancedOnboardingScreen
 import androidx.compose.ui.unit.dp
 import com.polli.android.platform.EngineBridge
-import com.polli.android.platform.LegacyEditRelayActivity
 import com.polli.android.platform.LegacyLogViewActivity
 import com.polli.android.platform.LegacyProgressDialog
-import com.polli.android.platform.LegacyProxySettingsActivity
 import com.polli.android.platform.LegacyRegistrationQrActivity
-import com.polli.android.platform.LegacyRelayListActivity
 import com.polli.android.platform.PlatformAvatars
+import com.polli.android.transports.EditRelayActivity
+import com.polli.android.transports.ProxySettingsActivity
+import com.polli.android.transports.RelayListActivity
 import com.polli.android.platform.PlatformDialogs
 import com.polli.android.platform.PlatformLegacyUtil
 import com.polli.android.platform.PlatformPrefs
@@ -93,8 +93,8 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
             val uri = intent.data
             if (uri != null) {
                 startActivity(
-                    Intent(this, LegacyRelayListActivity::class.java).apply {
-                        putExtra(LegacyRelayListActivity.EXTRA_QR_DATA, uri.toString())
+                    Intent(this, RelayListActivity::class.java).apply {
+                        putExtra(RelayListActivity.EXTRA_QR_DATA, uri.toString())
                     },
                 )
             }
@@ -179,7 +179,7 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
                 true
             }
             R.id.menu_proxy_settings -> {
-                startActivity(Intent(this, LegacyProxySettingsActivity::class.java))
+                startActivity(Intent(this, ProxySettingsActivity::class.java))
                 true
             }
             R.id.menu_view_log -> {
@@ -291,7 +291,7 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
             dialog.dismiss()
         }
         view.findViewById<android.widget.Button>(R.id.login_button)?.setOnClickListener {
-            startActivity(Intent(this, LegacyEditRelayActivity::class.java))
+            startActivity(Intent(this, EditRelayActivity::class.java))
             dialog.dismiss()
         }
         view.findViewById<android.widget.Button>(R.id.scan_qr_button)?.setOnClickListener {

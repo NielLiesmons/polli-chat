@@ -17,6 +17,7 @@ object EngineBridge {
     const val CONFIG_BCC_SELF: String = DcHelper.CONFIG_BCC_SELF
     const val CONFIG_PROXY_ENABLED: String = DcHelper.CONFIG_PROXY_ENABLED
     const val CONFIG_PROXY_URL: String = DcHelper.CONFIG_PROXY_URL
+    const val CONFIG_FORCE_ENCRYPTION: String = DcHelper.CONFIG_FORCE_ENCRYPTION
 
     fun isConfigured(context: Context): Boolean = DcHelper.isConfigured(context)
 

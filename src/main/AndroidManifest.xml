@@ -333,19 +333,19 @@
             android:exported="false" />
 
         <activity
-            android:name=".relay.EditRelayActivity"
+            android:name="com.polli.android.transports.EditRelayActivity"
             android:launchMode="singleTask"
             android:windowSoftInputMode="stateUnchanged"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize">
         </activity>
 
         <activity
-            android:name=".relay.RelayListActivity"
+            android:name="com.polli.android.transports.RelayListActivity"
             android:windowSoftInputMode="stateHidden"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
 
         <activity
-            android:name=".proxy.ProxySettingsActivity"
+            android:name="com.polli.android.transports.ProxySettingsActivity"
             android:label="@string/proxy_settings"
             android:windowSoftInputMode="stateHidden"
             android:exported="true"

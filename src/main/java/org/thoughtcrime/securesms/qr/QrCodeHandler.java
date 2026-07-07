@@ -19,7 +19,7 @@ import com.polli.android.navigation.AppNav;
 import org.thoughtcrime.securesms.R;
 import org.thoughtcrime.securesms.connect.AccountManager;
 import org.thoughtcrime.securesms.connect.DcHelper;
-import org.thoughtcrime.securesms.relay.RelayListActivity;
+import com.polli.android.transports.RelayListActivity;
 import org.thoughtcrime.securesms.util.IntentUtils;
 import org.thoughtcrime.securesms.util.ScreenLockUtil;
 import org.thoughtcrime.securesms.util.Util;

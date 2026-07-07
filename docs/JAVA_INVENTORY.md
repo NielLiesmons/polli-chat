@@ -2,7 +2,9 @@
 
 Cross-reference: references from `com.polli.android` vs legacy-only Java.
 
-**2026-07 status:** 248 legacy `securesms` Java files remain (down from ~376). Polli chat/home/onboarding run on `polli-engine` JSON-RPC; legacy Java is JNI bootstrap + platform bridges only. Rust core is reached via `com.b44t.messenger` (JNI) and `chat.delta.rpc` (JSON-RPC) — those are the Rust interface and stay.
+**2026-07 status:** 241 legacy `securesms` Java files remain (down from ~376). Polli chat/home/onboarding run on `polli-engine` JSON-RPC; legacy Java is JNI bootstrap + platform bridges only. Rust core is reached via `com.b44t.messenger` (JNI) and `chat.delta.rpc` (JSON-RPC) — those are the Rust interface and stay.
+
+**Transport screens → Compose 2026-07-07:** Rewrote `relay/RelayListActivity` + `RelayListAdapter`, `relay/EditRelayActivity` (manual IMAP/SMTP config form), and `proxy/ProxySettingsActivity` + `ProxyListAdapter` as Kotlin/Compose in `com.polli.android.transports`. Same RPC surface (`chat.delta.rpc` transports/proxy), same string/color resources. Deleted the 5 Java files + 8 layouts + 1 menu; dropped `LegacyRelay/EditRelay/ProxySettings` typealiases; repointed `QrCodeHandler` + `AdvancedOnboardingActivity`; manifest updated (proxy deep-link `ss`/`socks5` preserved). ⚠ Manual test needed: adding a relay/proxy requires a real server.
 
 **Dead-code sweep 2026-07-07:** Removed 14 unreachable classes (video transcoding `video/recode/*` except Sample/Track, `TransportOptions*`, subsampling decoders, `FutureTaskListener`, span utils). Reachability computed via transitive closure from the kept surface (Kotlin/manifest/XML). Note: `@GlideModule SignalGlideModule` + `ContactPhotoLoader`/`ContactPhotoFetcher` look unreferenced but are discovered by Glide annotation processing and register the `ContactPhoto` loader used by avatars/quotes/notifications — keep them.
 
