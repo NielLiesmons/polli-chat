@@ -370,7 +370,7 @@
 
 
         <activity
-            android:name=".LogViewActivity"
+            android:name="com.polli.android.debug.LogViewActivity"
             android:label="@string/pref_log_header"
             android:windowSoftInputMode="stateHidden"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />

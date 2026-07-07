@@ -33,7 +33,7 @@ import com.polli.android.theme.PolliTheme
 import com.polli.android.platform.EngineBridge
 import com.polli.android.platform.LegacyContactMultiSelectionActivity
 import com.polli.android.platform.LegacyContactSelectionListFragment
-import com.polli.android.platform.LegacyMuteDialog
+import com.polli.android.ui.MuteDurationDialog
 import com.polli.android.qr.QrShowActivity
 import com.polli.android.platform.PlatformClipboard
 import com.polli.android.platform.PlatformLegacyUtil
@@ -353,7 +353,7 @@ class ProfileDetailActivity : BaseAppCompatComposeActivity(), DcEventCenter.DcEv
             dcContext.setChatMuteDuration(state.chatId, 0)
             reload()
         } else {
-            LegacyMuteDialog.show(this) { duration ->
+            MuteDurationDialog.show(this) { duration ->
                 dcContext.setChatMuteDuration(state.chatId, duration)
                 reload()
             }

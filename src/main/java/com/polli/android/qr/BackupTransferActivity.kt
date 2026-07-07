@@ -50,7 +50,7 @@ import com.caverock.androidsvg.SVGImageView
 import com.polli.android.BaseComposeActivity
 import com.polli.android.navigation.AppNav
 import com.polli.android.platform.EngineBridge
-import com.polli.android.platform.LegacyLogViewActivity
+import com.polli.android.debug.LogViewActivity
 import com.polli.android.platform.PlatformClipboard
 import com.polli.android.platform.PlatformLegacyUtil
 import com.polli.android.profiles.ProfilesActivity
@@ -139,7 +139,7 @@ class BackupTransferActivity : BaseComposeActivity(), DcEventCenter.DcEventDeleg
                     onBack = { finishOrAskToFinish() },
                     onCopy = { copyQr() },
                     onTroubleshooting = { PlatformLegacyUtil.openHelp(this, "#multiclient") },
-                    onViewLog = { startActivity(Intent(this, LegacyLogViewActivity::class.java)) },
+                    onViewLog = { startActivity(Intent(this, LogViewActivity::class.java)) },
                 )
             }
         }

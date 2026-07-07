@@ -31,7 +31,7 @@ import com.polli.android.ui.AppInsets
 import com.polli.ui.screens.AdvancedOnboardingScreen
 import androidx.compose.ui.unit.dp
 import com.polli.android.platform.EngineBridge
-import com.polli.android.platform.LegacyLogViewActivity
+import com.polli.android.debug.LogViewActivity
 import com.polli.android.platform.LegacyProgressDialog
 import com.polli.android.qr.RegistrationQrActivity
 import com.polli.android.platform.PlatformAvatars
@@ -183,7 +183,7 @@ class AdvancedOnboardingActivity : BaseAppCompatComposeActivity(), DcEventCenter
                 true
             }
             R.id.menu_view_log -> {
-                startActivity(Intent(this, LegacyLogViewActivity::class.java))
+                startActivity(Intent(this, LogViewActivity::class.java))
                 true
             }
             else -> super.onOptionsItemSelected(item)

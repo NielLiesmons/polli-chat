@@ -63,7 +63,7 @@ import com.polli.android.BaseComposeActivity
 import com.polli.android.navigation.AppNav
 import com.polli.android.onboarding.OnboardingErrors
 import com.polli.android.platform.EngineBridge
-import com.polli.android.platform.LegacyLogViewActivity
+import com.polli.android.debug.LogViewActivity
 import com.polli.android.platform.LegacyProgressDialog
 import com.polli.android.platform.PlatformDialogs
 import com.polli.android.platform.PlatformLegacyUtil
@@ -390,7 +390,7 @@ class EditRelayActivity : BaseComposeActivity(), DcEventCenter.DcEventDelegate {
                             color = PolliColors.White66,
                             modifier = Modifier
                                 .padding(vertical = 12.dp)
-                                .clickable { startActivity(Intent(this@EditRelayActivity, LegacyLogViewActivity::class.java)) },
+                                .clickable { startActivity(Intent(this@EditRelayActivity, LogViewActivity::class.java)) },
                         )
                     }
                 }
