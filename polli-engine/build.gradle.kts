@@ -34,6 +34,7 @@ kotlin {
             dependencies {
                 implementation(project(":polli-domain"))
                 implementation(project(":polli-core"))
+                implementation(project(":state-cryptree"))
                 implementation(project(":chatmail-rpc-client"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
                 implementation("com.fasterxml.jackson.core:jackson-databind:2.11.1")
