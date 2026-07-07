@@ -405,17 +405,6 @@
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
 
         <activity
-            android:name=".scribbles.ScribbleActivity"
-            android:theme="@style/TextSecure.ScribbleTheme"
-            android:windowSoftInputMode="stateHidden"
-            android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
-
-        <activity
-            android:name=".scribbles.StickerSelectActivity"
-            android:theme="@style/TextSecure.ScribbleTheme"
-            android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize" />
-
-        <activity
             android:name="com.polli.android.onboarding.AdvancedOnboardingActivity"
             android:theme="@style/Polli.NoActionBar"
             android:windowSoftInputMode="stateHidden|adjustResize"

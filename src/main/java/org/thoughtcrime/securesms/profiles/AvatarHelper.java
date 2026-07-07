@@ -12,7 +12,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import org.thoughtcrime.securesms.connect.DcHelper;
-import org.thoughtcrime.securesms.scribbles.ScribbleActivity;
 
 public class AvatarHelper {
   /* the maximum width/height an avatar should have */
@@ -60,12 +59,5 @@ public class AvatarHelper {
       //noinspection ResultOfMethodCallIgnored
       avatar.delete(); // ..., now we can delete it.
     }
-  }
-
-  public static void cropAvatar(Activity context, Uri imageUri) {
-    Intent intent = new Intent(context, ScribbleActivity.class);
-    intent.setData(imageUri);
-    intent.putExtra(ScribbleActivity.CROP_AVATAR, true);
-    context.startActivityForResult(intent, ScribbleActivity.SCRIBBLE_REQUEST_CODE);
   }
 }

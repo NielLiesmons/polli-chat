@@ -65,7 +65,6 @@ import org.thoughtcrime.securesms.database.AttachmentDatabase;
 import org.thoughtcrime.securesms.geolocation.LocationStreamingService;
 import org.thoughtcrime.securesms.permissions.Permissions;
 import org.thoughtcrime.securesms.providers.PersistentBlobProvider;
-import org.thoughtcrime.securesms.scribbles.ScribbleActivity;
 import org.thoughtcrime.securesms.util.MediaUtil;
 import org.thoughtcrime.securesms.util.Util;
 import org.thoughtcrime.securesms.util.ViewUtil;
@@ -114,7 +113,7 @@ public class AttachmentManager {
       this.removableMediaView = ViewUtil.findById(root, R.id.removable_media_view);
 
       removableMediaView.addRemoveClickListener(new RemoveButtonListener());
-      removableMediaView.setEditClickListener(new EditButtonListener());
+      removableMediaView.setEditClickListener(null);
       thumbnail.setOnClickListener(new ThumbnailClickListener());
     }
   }
@@ -685,18 +684,6 @@ public class AttachmentManager {
     public void onClick(View v) {
       cleanup();
       clear(GlideApp.with(context.getApplicationContext()), true);
-    }
-  }
-
-  private class EditButtonListener implements View.OnClickListener {
-    @Override
-    public void onClick(View v) {
-      Uri imgUri = getSlideUri();
-      if (imgUri != null) {
-        Intent intent = new Intent(context, ScribbleActivity.class);
-        intent.setData(imgUri);
-        ((Activity) context).startActivityForResult(intent, ScribbleActivity.SCRIBBLE_REQUEST_CODE);
-      }
     }
   }
 
