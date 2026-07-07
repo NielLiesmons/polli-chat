@@ -46,6 +46,54 @@ class ChatControllerTest {
         assertTrue(controller.reloadGeneration > before)
     }
 
+    @Test
+    fun sendReactionEmitsPulseThenClears() = runTest {
+        val repo = FakeMessageRepository()
+        val controller = ChatController(repo, this, formatDayLabel = { "Today" })
+        controller.bind(chatId = 1)
+        controller.sendReaction(42, "👍")
+        assertEquals(listOf(42 to "👍"), repo.reactions)
+        assertEquals(ReactionPulse(42, "👍"), controller.reactionPulse)
+        testScheduler.advanceUntilIdle()
+        assertEquals(null, controller.reactionPulse)
+    }
+
+    @Test
+    fun setReplyPersistsDraftWithQuoteAndBumpsComposer() = runTest {
+        val repo = FakeMessageRepository()
+        val controller = ChatController(repo, this, formatDayLabel = { "Today" })
+        controller.bind(chatId = 1)
+        val genBefore = controller.composerGeneration
+        controller.updateDraft("re: this")
+        controller.setReply(sampleMessage(id = 7, text = "quoted"))
+        assertEquals(7, repo.setDrafts.last().third)
+        assertTrue(controller.composerGeneration > genBefore)
+    }
+
+    @Test
+    fun editingDoesNotPersistDraft() = runTest {
+        val repo = FakeMessageRepository()
+        val controller = ChatController(repo, this, formatDayLabel = { "Today" })
+        controller.bind(chatId = 1)
+        controller.beginEdit(sampleMessage(id = 42, text = "old"))
+        repo.setDrafts.clear()
+        controller.updateDraft("typing an edit")
+        assertTrue(repo.setDrafts.isEmpty())
+    }
+
+    @Test
+    fun cancelEditRestoresPersistedDraft() = runTest {
+        val repo = FakeMessageRepository()
+        repo.draftValue = "unsent"
+        val controller = ChatController(repo, this, formatDayLabel = { "Today" })
+        controller.bind(chatId = 1)
+        controller.beginEdit(sampleMessage(id = 42, text = "old"))
+        assertEquals("old", controller.draft)
+        controller.cancelEdit()
+        assertEquals("unsent", controller.draft)
+        assertEquals(-1, controller.editingMessageId)
+    }
+
     private fun sampleMessage(id: Int, text: String) =
         ChatMessage(
             id = id,
@@ -72,6 +120,9 @@ class ChatControllerTest {
     private class FakeMessageRepository : MessageRepository {
         val sentDrafts = mutableListOf<Int>()
         val edits = mutableListOf<Pair<Int, String>>()
+        val setDrafts = mutableListOf<Triple<Int, String, Int?>>()
+        val reactions = mutableListOf<Pair<Int, String>>()
+        var draftValue: String = ""
         private var listener: (() -> Unit)? = null
 
         override fun getMessageIds(chatId: Int, addDaymarker: Boolean): IntArray = intArrayOf(42)
@@ -113,9 +164,11 @@ class ChatControllerTest {
                 hasAttachment = false,
             )
 
-        override fun getDraft(chatId: Int): String = ""
+        override fun getDraft(chatId: Int): String = draftValue
 
-        override fun setDraft(chatId: Int, text: String, quotedMessageId: Int?) {}
+        override fun setDraft(chatId: Int, text: String, quotedMessageId: Int?) {
+            setDrafts += Triple(chatId, text, quotedMessageId)
+        }
 
         override fun clearDraft(chatId: Int) {}
 
@@ -130,7 +183,9 @@ class ChatControllerTest {
 
         override fun getFreshMessageCount(chatId: Int): Int = 0
 
-        override fun sendReaction(msgId: Int, emoji: String) {}
+        override fun sendReaction(msgId: Int, emoji: String) {
+            reactions += msgId to emoji
+        }
 
         override fun getMessageReactions(msgId: Int): List<MessageReaction> = emptyList()
 
