@@ -1,0 +1,183 @@
+# Publish a sideloadable Polli test APK as a GitHub Release (pre-release).
+#
+# Triggers:
+#   • Manual: Actions → "Publish Test APK" → Run workflow
+#   • Tag push: git tag test/2.52.0 && git push origin test/2.52.0
+#
+# When the repo is public, anyone with the Releases URL can download the APK.
+# Optional release signing (minified release APK): add repository secrets
+#   POLLI_RELEASE_STORE_FILE       (base64-encoded .jks)
+#   POLLI_RELEASE_STORE_PASSWORD
+#   POLLI_RELEASE_KEY_ALIAS
+#   POLLI_RELEASE_KEY_PASSWORD
+# and set build_variant to fossRelease in the workflow_dispatch input.
+
+name: Publish Test APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Git tag for this build (e.g. test/2.52.0). Auto-generated if empty."
+        required: false
+        type: string
+      build_variant:
+        description: "Gradle variant to build"
+        required: true
+        type: choice
+        options:
+          - fossDebug
+          - fossRelease
+        default: fossDebug
+  push:
+    tags:
+      - "test/*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-test-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-publish:
+    name: Build & publish test APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: temurin
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r27
+
+      - name: Cache Rust (deltachat core)
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: jni/deltachat-core-rust
+
+      - name: Restore compiled native core
+        id: core-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            jni/arm64-v8a
+            libs/arm64-v8a
+          key: core-arm64-v8a-${{ hashFiles('jni/deltachat-core-rust/**', 'jni/Android.mk', 'jni/Application.mk', 'jni/dc_wrapper.c', 'scripts/ndk-make.sh') }}-ndk-r27
+
+      - name: Compile native core
+        if: steps.core-cache.outputs.cache-hit != 'true'
+        env:
+          ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
+        run: |
+          export PATH="${PATH}:${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/bin/"
+          scripts/install-toolchains.sh
+          scripts/ndk-make.sh arm64-v8a
+
+      - name: Resolve build variant
+        id: variant
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            NAME="${{ inputs.build_variant }}"
+          else
+            NAME="fossDebug"
+          fi
+          case "$NAME" in
+            fossRelease) TASK=assembleFossRelease; SUBDIR=release ;;
+            *)           TASK=assembleFossDebug;  SUBDIR=debug ;;
+          esac
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "task=$TASK" >> "$GITHUB_OUTPUT"
+          echo "subdir=$SUBDIR" >> "$GITHUB_OUTPUT"
+
+      - name: Import release keystore (optional)
+        if: steps.variant.outputs.name == 'fossRelease'
+        env:
+          POLLI_RELEASE_STORE_FILE: ${{ secrets.POLLI_RELEASE_STORE_FILE }}
+        run: |
+          if [[ -z "${POLLI_RELEASE_STORE_FILE:-}" ]]; then
+            echo "::error::fossRelease requires POLLI_RELEASE_* repository secrets."
+            exit 1
+          fi
+          echo "$POLLI_RELEASE_STORE_FILE" | base64 -d > "$RUNNER_TEMP/polli-release.jks"
+          cat >> gradle.properties <<EOF
+          DC_RELEASE_STORE_FILE=$RUNNER_TEMP/polli-release.jks
+          DC_RELEASE_STORE_PASSWORD=${{ secrets.POLLI_RELEASE_STORE_PASSWORD }}
+          DC_RELEASE_KEY_ALIAS=${{ secrets.POLLI_RELEASE_KEY_ALIAS }}
+          DC_RELEASE_KEY_PASSWORD=${{ secrets.POLLI_RELEASE_KEY_PASSWORD }}
+          EOF
+
+      - name: Build APK
+        run: ./gradlew --no-daemon -PABI_FILTER=arm64-v8a "${{ steps.variant.outputs.task }}"
+
+      - name: Resolve version & tag
+        id: meta
+        run: |
+          VERSION="$(grep 'versionName' build.gradle | head -1 | sed 's/.*"\([^"]*\)".*/\1/')"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            TAG="${{ github.ref_name }}"
+          elif [[ -n "${{ inputs.release_tag }}" ]]; then
+            TAG="${{ inputs.release_tag }}"
+          else
+            TAG="test/${VERSION}-$(date -u +%Y%m%d)-${GITHUB_SHA::7}"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Collect APK
+        id: apk
+        run: |
+          APK="$(ls -1 "build/outputs/apk/foss/${{ steps.variant.outputs.subdir }}/"*.apk 2>/dev/null | head -1)"
+          if [[ -z "$APK" || ! -f "$APK" ]]; then
+            echo "No APK found under build/outputs/apk/foss/${{ steps.variant.outputs.subdir }}/" >&2
+            find build/outputs/apk -type f 2>/dev/null || true
+            exit 1
+          fi
+          OUT="polli-test-${{ steps.meta.outputs.version }}-${{ steps.variant.outputs.name }}-arm64.apk"
+          cp "$APK" "$OUT"
+          echo "path=$OUT" >> "$GITHUB_OUTPUT"
+          ls -lh "$OUT"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: Polli Test ${{ steps.meta.outputs.version }} (${{ steps.variant.outputs.name }})
+          prerelease: true
+          generate_release_notes: true
+          files: ${{ steps.apk.outputs.path }}
+          body: |
+            ## Polli test build
+
+            | | |
+            |---|---|
+            | **Version** | `${{ steps.meta.outputs.version }}` |
+            | **Variant** | `${{ steps.variant.outputs.name }}` |
+            | **ABI** | `arm64-v8a` |
+            | **Package** | `com.polli.chat.beta` (debug) or `com.polli.chat` (release) |
+
+            ### Install
+
+            1. Download the APK below.
+            2. On Android: enable *Install unknown apps* for your browser/files app.
+            3. Open the APK and install.
+
+            > Internal test build — not for production distribution.
