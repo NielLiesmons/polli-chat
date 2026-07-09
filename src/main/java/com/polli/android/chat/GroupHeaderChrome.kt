@@ -1,7 +1,6 @@
 package com.polli.android.chat
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -30,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
@@ -43,20 +43,25 @@ import androidx.compose.ui.unit.sp
 import com.polli.android.icons.PolliIcon
 import com.polli.android.icons.PolliIconName
 import com.polli.android.theme.PolliColors
-import com.polli.android.theme.accent
 import com.polli.android.theme.PolliDimens
+import com.polli.android.theme.accent
 import com.polli.android.ui.AppInsets
+import com.polli.android.ui.FrostedChromeSurface
 import com.polli.android.ui.FrostedCircleButton
 import com.polli.android.ui.PolliAvatar
 import com.polli.android.ui.RoundBackButton
+import com.polli.android.ui.polliHazeStyle
 import com.polli.core.chat.ChatDetailTab
 import com.polli.core.chat.tabsForChat
+import com.polli.ui.components.TabCountBadge
+import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeState
 
 private val TAB_SELECTED_HEIGHT = PolliDimens.TabButtonHeight
 private val TAB_UNSELECTED_HEIGHT = PolliDimens.TabButtonUnselectedHeight
 private val TAB_SELECTED_FONT = 14.5.sp
 private val TAB_UNSELECTED_FONT = 13.sp
+private val TAB_SEARCH_FONT = 11.sp
 private val TAB_SELECTED_H_PADDING = PolliDimens.TabButtonHPadding
 private val TAB_UNSELECTED_H_PADDING = PolliDimens.TabButtonUnselectedHPadding
 private val TAB_SELECTED_CORNER = 17.dp
@@ -73,6 +78,7 @@ fun GroupHeaderChrome(
     selectedTab: ChatDetailTab,
     onTabSelected: (ChatDetailTab) -> Unit,
     onBack: () -> Unit,
+    onTitleClick: (() -> Unit)? = null,
     hazeState: HazeState? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -84,6 +90,7 @@ fun GroupHeaderChrome(
             chatId = chatId,
             chatSeed = chatTitle,
             onBack = onBack,
+            onTitleClick = onTitleClick,
             hazeState = hazeState,
         )
         if (tabs.size > 1) {
@@ -91,6 +98,7 @@ fun GroupHeaderChrome(
                 tabs = tabs,
                 selectedTab = selectedTab,
                 onTabSelected = onTabSelected,
+                hazeState = hazeState,
             )
         }
     }
@@ -102,20 +110,23 @@ internal fun ChatHeaderTitleRow(
     chatId: Int,
     chatSeed: String,
     onBack: () -> Unit,
+    onTitleClick: (() -> Unit)? = null,
     hazeState: HazeState? = null,
     modifier: Modifier = Modifier,
 ) {
     val sideInset = PolliDimens.DetailBackButtonSize + PolliDimens.HomeBarPadding
+    val titleInteraction = remember { MutableInteractionSource() }
 
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(
-                top = AppInsets.statusBarTop() + 6.dp,
-                start = PolliDimens.HomeBarPadding,
-                end = PolliDimens.HomeBarPadding,
-                bottom = 6.dp,
-            ),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(
+                    top = AppInsets.statusBarTop() + 6.dp,
+                    start = PolliDimens.HomeBarPadding,
+                    end = PolliDimens.HomeBarPadding,
+                    bottom = 6.dp,
+                ),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -135,21 +146,38 @@ internal fun ChatHeaderTitleRow(
                 hazeState = hazeState,
             )
         }
-        Text(
-            text = title,
-            color = PolliColors.White85,
-            style = TextStyle(
-                fontSize = 15.sp,
-                lineHeight = 20.sp,
-                fontWeight = FontWeight.Normal,
-            ),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(horizontal = sideInset),
-        )
+        Box(
+            modifier =
+                Modifier
+                    .align(Alignment.Center)
+                    .padding(horizontal = sideInset)
+                    .then(
+                        if (onTitleClick != null) {
+                            Modifier.clickable(
+                                interactionSource = titleInteraction,
+                                indication = null,
+                                onClick = onTitleClick,
+                            )
+                        } else {
+                            Modifier
+                        },
+                    ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = title,
+                color = PolliColors.White85,
+                style =
+                    TextStyle(
+                        fontSize = 15.sp,
+                        lineHeight = 20.sp,
+                        fontWeight = FontWeight.Normal,
+                    ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
+            )
+        }
     }
 }
 
@@ -177,10 +205,11 @@ internal fun ChatHeaderAvatarButton(
         }
     } else {
         Box(
-            modifier = Modifier
-                .size(buttonSize)
-                .clip(CircleShape)
-                .background(PolliColors.Gray66),
+            modifier =
+                Modifier
+                    .size(buttonSize)
+                    .clip(CircleShape)
+                    .background(PolliColors.Gray66),
             contentAlignment = Alignment.Center,
         ) {
             PolliAvatar(
@@ -198,6 +227,7 @@ private fun ChatHeaderTabRow(
     tabs: List<ChatDetailTab>,
     selectedTab: ChatDetailTab,
     onTabSelected: (ChatDetailTab) -> Unit,
+    hazeState: HazeState?,
 ) {
     val density = LocalDensity.current
     val scrollState = rememberScrollState()
@@ -224,10 +254,11 @@ private fun ChatHeaderTabRow(
         }
 
         Row(
-            modifier = Modifier
-                .horizontalScroll(scrollState)
-                .onGloballyPositioned { rowCoords = it }
-                .padding(bottom = PolliDimens.TabSectionGap),
+            modifier =
+                Modifier
+                    .horizontalScroll(scrollState)
+                    .onGloballyPositioned { rowCoords = it }
+                    .padding(bottom = PolliDimens.TabSectionGap),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Spacer(Modifier.width(edgePad.coerceAtLeast(48.dp)))
@@ -237,16 +268,18 @@ private fun ChatHeaderTabRow(
                     Spacer(Modifier.width(PolliDimens.ChatHeaderTabGap))
                 }
 
-                val tabModifier = Modifier.onGloballyPositioned { coords ->
-                    val row = rowCoords ?: return@onGloballyPositioned
-                    val left = coords.positionInWindow().x - row.positionInWindow().x
-                    tabLayouts[tab] = TabLayoutInRow(left, coords.size.width.toFloat())
-                }
+                val tabModifier =
+                    Modifier.onGloballyPositioned { coords ->
+                        val row = rowCoords ?: return@onGloballyPositioned
+                        val left = coords.positionInWindow().x - row.positionInWindow().x
+                        tabLayouts[tab] = TabLayoutInRow(left, coords.size.width.toFloat())
+                    }
 
                 if (tab == ChatDetailTab.Search) {
                     ChatHeaderSearchPill(
                         selected = tab == selectedTab,
                         onClick = { onTabSelected(tab) },
+                        hazeState = hazeState,
                         modifier = tabModifier,
                     )
                 } else {
@@ -254,6 +287,7 @@ private fun ChatHeaderTabRow(
                         label = tab.label,
                         selected = tab == selectedTab,
                         onClick = { onTabSelected(tab) },
+                        hazeState = hazeState,
                         modifier = tabModifier,
                     )
                 }
@@ -264,42 +298,65 @@ private fun ChatHeaderTabRow(
     }
 }
 
+@OptIn(ExperimentalHazeApi::class)
 @Composable
 private fun ChatHeaderSearchPill(
     selected: Boolean,
     onClick: () -> Unit,
+    hazeState: HazeState?,
     modifier: Modifier = Modifier,
 ) {
     val height = if (selected) TAB_SELECTED_HEIGHT else TAB_UNSELECTED_HEIGHT
-    val width = if (selected) TAB_SELECTED_HEIGHT + 4.dp else TAB_UNSELECTED_HEIGHT + 2.dp
-    val shape = RoundedCornerShape(if (selected) TAB_SELECTED_CORNER else TAB_UNSELECTED_CORNER)
+    val hPadding = if (selected) TAB_SELECTED_H_PADDING else TAB_UNSELECTED_H_PADDING
+    val corner = if (selected) TAB_SELECTED_CORNER else TAB_UNSELECTED_CORNER
+    val shape = RoundedCornerShape(corner)
+    val interaction = remember { MutableInteractionSource() }
 
-    Box(
-        modifier = modifier
-            .size(width = width, height = height)
-            .clip(shape)
-            .background(PolliColors.Gray33)
-            .border(PolliDimens.ShellBorderWidth, PolliColors.ShellBorder, shape)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick,
-            ),
-        contentAlignment = Alignment.Center,
+    FrostedChromeSurface(
+        modifier = modifier.height(height),
+        shape = shape,
+        tint = PolliColors.Gray33,
+        borderColor = PolliColors.ShellBorder,
+        hazeState = hazeState,
+        hazeStyle = polliHazeStyle(PolliColors.Gray33),
     ) {
-        PolliIcon(
-            PolliIconName.Search,
-            PolliDimens.HomeSearchGlyphSize,
-            PolliColors.White33,
-        )
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .clickable(
+                        interactionSource = interaction,
+                        indication = null,
+                        onClick = onClick,
+                    )
+                    .padding(horizontal = hPadding),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            PolliIcon(
+                PolliIconName.Search,
+                PolliDimens.HomeSearchGlyphSize,
+                PolliColors.White33,
+            )
+            Spacer(Modifier.width(6.dp))
+            Text(
+                text = "Search",
+                color = PolliColors.White33,
+                fontSize = TAB_SEARCH_FONT,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+            )
+        }
     }
 }
 
+@OptIn(ExperimentalHazeApi::class)
 @Composable
 private fun ChatHeaderTabPill(
     label: String,
     selected: Boolean,
     onClick: () -> Unit,
+    hazeState: HazeState?,
+    badgeCount: Int = 0,
     modifier: Modifier = Modifier,
 ) {
     val height = if (selected) TAB_SELECTED_HEIGHT else TAB_UNSELECTED_HEIGHT
@@ -307,34 +364,53 @@ private fun ChatHeaderTabPill(
     val corner = if (selected) TAB_SELECTED_CORNER else TAB_UNSELECTED_CORNER
     val fontSize = if (selected) TAB_SELECTED_FONT else TAB_UNSELECTED_FONT
     val shape = RoundedCornerShape(corner)
+    val interaction = remember { MutableInteractionSource() }
+    val borderColor = if (selected) Color.Transparent else PolliColors.ShellBorder
 
-    Box(
-        modifier = modifier
-            .height(height)
-            .clip(shape)
-            .then(
-                if (selected) {
-                    Modifier.background(accent().gradientBrush(0.66f))
-                } else {
-                    Modifier
-                        .background(PolliColors.Gray66)
-                        .border(PolliDimens.ShellBorderWidth, PolliColors.ShellBorder, shape)
-                },
-            )
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick,
-            )
-            .padding(horizontal = hPadding),
-        contentAlignment = Alignment.Center,
+    FrostedChromeSurface(
+        modifier = modifier.height(height),
+        shape = shape,
+        tint = PolliColors.Gray66,
+        borderColor = borderColor,
+        hazeState = hazeState,
+        hazeStyle = if (selected) polliHazeStyle(accent().solid) else null,
     ) {
-        Text(
-            text = label,
-            color = if (selected) PolliColors.White else PolliColors.White66,
-            fontSize = fontSize,
-            fontWeight = FontWeight.Medium,
-            maxLines = 1,
-        )
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (selected) {
+                Box(
+                    modifier =
+                        Modifier
+                            .matchParentSize()
+                            .background(accent().gradientBrush(0.66f)),
+                )
+            }
+            Box(
+                modifier =
+                    Modifier
+                        .matchParentSize()
+                        .clickable(
+                            interactionSource = interaction,
+                            indication = null,
+                            onClick = onClick,
+                        )
+                        .padding(horizontal = hPadding),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = label,
+                    color = if (selected) PolliColors.White else PolliColors.White66,
+                    fontSize = fontSize,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                )
+            }
+            if (badgeCount > 0) {
+                TabCountBadge(
+                    count = badgeCount,
+                    selected = selected,
+                    modifier = Modifier.align(Alignment.TopEnd),
+                )
+            }
+        }
     }
 }

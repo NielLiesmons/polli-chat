@@ -3,7 +3,7 @@ package com.polli.core.chat
 /** Tabs in opened group chat — carousel under the title bar. */
 enum class ChatDetailTab(val label: String) {
     Search("Search"),
-    Activity("Activity"),
+    Info("Info"),
     Chat("Chat"),
     Apps("Apps"),
     Tasks("Tasks"),
@@ -17,7 +17,7 @@ fun tabsForChat(isGroup: Boolean, isBroadcast: Boolean): List<ChatDetailTab> {
     }
     return listOf(
         ChatDetailTab.Search,
-        ChatDetailTab.Activity,
+        ChatDetailTab.Info,
         ChatDetailTab.Chat,
         ChatDetailTab.Apps,
         ChatDetailTab.Tasks,

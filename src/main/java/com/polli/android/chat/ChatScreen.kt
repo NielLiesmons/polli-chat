@@ -255,6 +255,7 @@ fun ChatScreen(
                 isBroadcast = isBroadcast,
                 selectedTab = selectedTab,
                 onTabSelected = { selectedTab = it },
+                onTitleClick = { selectedTab = ChatDetailTab.Info },
                 onBack = onBack,
                 hazeState = hazeState,
                 modifier = Modifier.align(Alignment.TopCenter),
@@ -361,7 +362,7 @@ private fun ChatTabContent(
     val context = LocalContext.current
     when (tab) {
         ChatDetailTab.Search -> ChatComingSoonTab("Search")
-        ChatDetailTab.Activity -> ChatComingSoonTab("Activity")
+        ChatDetailTab.Info -> ChatSpaceInfoTab(chatId = chatId, topPadding = headerClearance)
         ChatDetailTab.Chat -> ChatFeedPage(
             viewModel = viewModel,
             scrollController = scrollController,

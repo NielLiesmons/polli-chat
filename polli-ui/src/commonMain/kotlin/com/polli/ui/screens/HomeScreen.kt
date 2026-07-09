@@ -81,7 +81,8 @@ import com.polli.ui.components.SelfAvatar
 import com.polli.ui.home.HomeNote
 import com.polli.ui.home.HomeSearchPanelBody
 import com.polli.ui.home.StackedTabAvatars
-import com.polli.ui.home.formatHomeTabUnreadCount
+import com.polli.ui.components.TabCountBadge
+import com.polli.ui.components.tabPillTrailingInset
 import com.polli.ui.home.mailUnreadChats
 import com.polli.ui.home.totalUnreadMessages
 import com.polli.ui.home.HomeSearchPanelHeightMeasurer
@@ -721,29 +722,23 @@ private fun TabPill(
         } else {
             Brush.linearGradient(listOf(PolliColors.White8, PolliColors.White8))
         }
-    val countLabel = formatHomeTabUnreadCount(unreadCount)
-    val countColor =
-        if (selected) {
-            PolliColors.White.copy(alpha = 0.66f)
-        } else {
-            PolliColors.White66
-        }
     val hasStack = unreadAvatars.isNotEmpty() && chatAvatar != null
-    // The avatar stack / count pill sit at button-height minus 6dp (a 3dp inset top & bottom);
-    // tighten the trailing padding to that same 3dp so the stack hugs the pill edge symmetrically.
-    val innerSize = height - 6.dp
-    val endPadding = if (hasStack) 3.dp else hPadding
+    val stackInset = tabPillTrailingInset(selected)
+    val innerSize = height - stackInset * 2
+    val endPadding = if (hasStack) stackInset else hPadding
     Box(
         modifier =
             Modifier
                 .height(height)
                 .clip(RoundedCornerShape(corner))
                 .background(bg)
-                .polliClickable(onClick = onClick)
-                .padding(start = hPadding, end = endPadding),
+                .polliClickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.padding(start = hPadding, end = endPadding),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Text(
                 text = label,
                 color = if (selected) PolliColors.White else PolliColors.White66,
@@ -763,56 +758,13 @@ private fun TabPill(
                     chatAvatar = chatAvatar!!,
                 )
             }
-            if (countLabel != null) {
-                if (hasStack) {
-                    Spacer(modifier = Modifier.width(3.dp))
-                    TabCountPill(
-                        text = countLabel,
-                        height = innerSize,
-                        selected = selected,
-                    )
-                } else {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = countLabel,
-                        color = countColor,
-                        style =
-                            TextStyle(
-                                fontSize = fontSize,
-                                fontWeight = FontWeight.Medium,
-                                lineHeight = fontSize,
-                            ),
-                    )
-                }
-            }
         }
-    }
-}
-
-@Composable
-private fun TabCountPill(
-    text: String,
-    height: Dp,
-    selected: Boolean,
-) {
-    Box(
-        modifier =
-            Modifier
-                .height(height)
-                .clip(RoundedCornerShape(50))
-                .background(if (selected) PolliColors.White.copy(alpha = 0.16f) else PolliColors.White16)
-                .padding(horizontal = 8.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = text,
-            color = if (selected) PolliColors.White else PolliColors.White85,
-            style =
-                TextStyle(
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    lineHeight = 12.sp,
-                ),
-        )
+        if (unreadCount > 0) {
+            TabCountBadge(
+                count = unreadCount,
+                selected = selected,
+                modifier = Modifier.align(Alignment.TopEnd),
+            )
+        }
     }
 }

@@ -2,7 +2,7 @@
 
 ![Your Handle. Your Spaces. For Chat, Mail, Drive & More.](assets/branding/readme-hero.png)
 
-Polli is a chat-first app for everyday life online: your spaces, encrypted drive, mail, and the people and communities around them. Everything is encrypted by default. You choose how far each space reaches, from just you, to close friends, a team, or fully public publishing on the web.
+Polli is a chat-first app for everyday life online: your spaces, encrypted drive, mail, and the people and communities around them. Everything is encrypted by default. Access is per file and folder.
 
 ---
 
@@ -12,20 +12,19 @@ Polli is a chat-first app for everyday life online: your spaces, encrypted drive
 
 Polli puts care into typography, motion, and layout so the app stays out of your way until you need it. Chat is the home screen; everything else flows from there.
 
-### Encrypted by default, open when you want
+### Encrypted by default, share on your terms
 
-Polli is **private-first**, not private-only. New spaces start locked down: encrypted chat, files, and state. Nothing leaks outward unless you say so.
+Polli is **private-first**, not private-only. A **space** is the foundation — likely its own [MNS](https://github.com/mlkut/mns) domain — and the same model covers a personal profile drive *and* a group or community drive. Chat, files, and state live in that space; nothing is visible outside it unless you grant it.
 
-When you are ready, you raise the visibility on your terms:
+**ACLs on each file and folder** specify which profiles can read or write — per path, not once for the whole space.
 
-| Level | Examples |
-|-------|----------|
-| **Just you** | Personal notes, drafts, a private drive |
-| **Close circle** | Family, friends, a small trusted group |
-| **Team / space** | A household, project, club, or workspace |
-| **Public** | A community anyone can find, a newsletter, a channel, content published to the web |
+Each space type starts with **sensible defaults**:
 
-The same space can hold quiet coordination *and* public-facing posts, articles, or files. Publishing outward is always an explicit choice: share a link, open a channel, mail a space inbox, or publish to a wider audience. You are not locked into one mode.
+- **Personal / profile space** — encrypted and private to you by default.
+- **Private group space** — by default, members can read and write shared content (a practical default for cryptree performance); you can tighten to read-only or exclude specific members per path.
+- **Public community space** — by default, much of the drive is readable publicly; you can still keep private branches on the same tree.
+
+Publishing outward (a link, a channel, mail to a space inbox, content on the web) is always explicit. The same space can hold quiet coordination and public-facing material; you set ACLs where you need them.
 
 ### Chat-first, not chat-only
 

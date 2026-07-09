@@ -221,7 +221,7 @@ private fun ProfileInfoText(
 }
 
 @Composable
-private fun ProfileMemberRowView(
+internal fun ProfileMemberRowView(
     member: ProfileMemberRow,
     selected: Boolean,
     onClick: () -> Unit,
