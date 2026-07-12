@@ -14,13 +14,15 @@ if [[ "${1:-}" == "--install" ]]; then
 fi
 
 echo "Building Polli test APK (fossDebug, arm64-v8a)…"
-./gradlew --no-daemon -PABI_FILTER=arm64-v8a assembleFossDebug -x lint
+./gradlew --no-daemon clean assembleFossDebug -PABI_FILTER=arm64-v8a -x lint
 
 APK="$(ls -1 build/outputs/apk/foss/debug/polli-foss-debug-*.apk 2>/dev/null | head -1)"
 if [[ -z "$APK" || ! -f "$APK" ]]; then
   echo "error: APK not found under build/outputs/apk/foss/debug/" >&2
   exit 1
 fi
+
+"$(dirname "$0")/verify-apk-signature.sh" "$APK"
 
 echo ""
 echo "✓ Test APK ready:"

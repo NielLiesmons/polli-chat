@@ -54,7 +54,12 @@ android {
         buildConfigField "boolean", "POLLI_UI", "true"
 
         ndk {
-            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+            def abiFilter = project.findProperty("ABI_FILTER")
+            if (abiFilter) {
+                abiFilters abiFilter.toString()
+            } else {
+                abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+            }
         }
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -93,10 +98,13 @@ android {
 
     signingConfigs {
         debug {
-            // add `DC_DEBUG_STORE_FILE=/path/to/debug.keystore` to `~/.gradle/gradle.properties`
-            if(project.hasProperty("DC_DEBUG_STORE_FILE" )) {
-                storeFile file(DC_DEBUG_STORE_FILE )
-            }
+            // Pin the developer debug keystore so sideload builds match `adb install` from this machine.
+            // Override via `DC_DEBUG_STORE_FILE` in ~/.gradle/gradle.properties if needed.
+            def debugStore = project.findProperty("DC_DEBUG_STORE_FILE")
+            storeFile file(debugStore ?: "${System.getProperty('user.home')}/.android/debug.keystore")
+            storePassword project.findProperty("DC_DEBUG_STORE_PASSWORD") ?: "android"
+            keyAlias project.findProperty("DC_DEBUG_KEY_ALIAS") ?: "androiddebugkey"
+            keyPassword project.findProperty("DC_DEBUG_KEY_PASSWORD") ?: "android"
         }
         release {
             // can be defined at `~/.gradle/gradle.properties` or at "Build/Generate signed APK"

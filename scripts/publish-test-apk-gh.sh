@@ -36,6 +36,8 @@ gh release create "$TAG" "$OUT" \
 | **ABI** | \`arm64-v8a\` |
 | **Package** | \`com.polli.chat.beta\` |
 
+Signed with the same debug certificate as local \`./scripts/build-test-apk.sh\` builds on this machine.
+
 Built locally and uploaded — no CI wait.
 
 ### Install
