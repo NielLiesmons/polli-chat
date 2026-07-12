@@ -166,16 +166,17 @@ class ChatActivity : BaseComposeActivity() {
         }
 
         lifecycleScope.launch {
+            val sessionDeferred =
+                async(Dispatchers.IO) {
+                    PolliRepositories.chat(this@ChatActivity).getSession(chatId)
+                }
             viewModel.bind(
                 chatId = chatId,
                 initialDraft = draftText,
                 startingPosition = startingPosition,
                 fromArchived = fromArchived,
             )
-            val sessionInfo =
-                withContext(Dispatchers.IO) {
-                    PolliRepositories.chat(this@ChatActivity).getSession(chatId)
-                }
+            val sessionInfo = sessionDeferred.await()
             if (sessionInfo == null) {
                 finish()
                 return@launch

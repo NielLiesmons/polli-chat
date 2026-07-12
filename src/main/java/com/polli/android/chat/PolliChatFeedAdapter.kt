@@ -101,7 +101,8 @@ class PolliChatFeedAdapter(
         val composeView =
             ComposeView(parent.context).apply {
                 layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
-                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+                // DC recycles the same View and calls bind() — keep composition alive across detach.
+                setViewCompositionStrategy(ViewCompositionStrategy.Default)
                 (parent as? View)?.findViewTreeCompositionContext()?.let { setParentCompositionContext(it) }
             }
         return Holder(
@@ -137,7 +138,7 @@ class PolliChatFeedAdapter(
 
     class Holder(
         val composeView: ComposeView,
-        viewModel: ChatViewModel,
+        private val viewModel: ChatViewModel,
         playbackViewModel: PolliAudioPlaybackViewModel?,
         maxBubbleWidth: Dp,
         onOpenMessageOverlay: (ChatMessage, Offset) -> Unit,
@@ -145,6 +146,7 @@ class PolliChatFeedAdapter(
         private val markerMode: Boolean,
     ) : RecyclerView.ViewHolder(composeView) {
         private var boundItem by mutableStateOf<FeedItem?>(null)
+        private var boundMessage by mutableStateOf<ChatMessage?>(null)
         private var boundHighlighted by mutableStateOf(false)
         private var boundPulseEmoji by mutableStateOf<String?>(null)
         private val newMessagesLabel = composeView.context.getString(R.string.new_messages)
@@ -155,31 +157,32 @@ class PolliChatFeedAdapter(
                     is FeedItem.DayMarker -> ChatDayMarkerPill(label = item.label)
                     FeedItem.NewMessages -> ChatNewMessagesPill(label = newMessagesLabel)
                     is FeedItem.Message -> {
+                        val message = boundMessage ?: return@setContent
                         if (playbackViewModel != null) {
                             CompositionLocalProvider(LocalChatAudioPlayback provides playbackViewModel) {
                                 PolliChatFeedRow(
-                                    viewModel = viewModel,
-                                    msgId = item.msgId,
+                                    message = message,
                                     groupLayout = item.groupLayout,
                                     maxBubbleWidth = maxBubbleWidth,
                                     highlighted = boundHighlighted,
                                     reactionReloadKey = viewModel.reactionEpochFor(item.msgId),
                                     pulseEmoji = boundPulseEmoji,
-                                    onQuoteClick = onQuoteClick,
-                                    onOpenMessageOverlay = onOpenMessageOverlay,
+                                onSwipeReply = { viewModel.setReply(message) },
+                                onOpenMessageOverlay = onOpenMessageOverlay,
+                                onQuoteClick = onQuoteClick,
                                 )
                             }
                         } else {
                             PolliChatFeedRow(
-                                viewModel = viewModel,
-                                msgId = item.msgId,
+                                message = message,
                                 groupLayout = item.groupLayout,
                                 maxBubbleWidth = maxBubbleWidth,
                                 highlighted = boundHighlighted,
                                 reactionReloadKey = viewModel.reactionEpochFor(item.msgId),
                                 pulseEmoji = boundPulseEmoji,
-                                onQuoteClick = onQuoteClick,
+                                onSwipeReply = { viewModel.setReply(message) },
                                 onOpenMessageOverlay = onOpenMessageOverlay,
+                                onQuoteClick = onQuoteClick,
                             )
                         }
                     }
@@ -198,8 +201,13 @@ class PolliChatFeedAdapter(
             if (!markerMode && item !is FeedItem.Message) return
             boundHighlighted = highlighted
             boundPulseEmoji = pulseEmoji
-            if (!contentOnly || (boundItem as? FeedItem.Message)?.msgId != (item as? FeedItem.Message)?.msgId) {
+            if (!contentOnly || boundItem != item) {
                 boundItem = item
+            }
+            if (item is FeedItem.Message) {
+                val msg = viewModel.getChatMessage(item.msgId)
+                val stub = viewModel.getStub(item.msgId)
+                boundMessage = msg ?: stub?.toSkeletonChatMessage()
             }
         }
     }

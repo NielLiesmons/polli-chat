@@ -25,6 +25,7 @@ object PolliEngineHost {
 
     @JvmStatic
     fun onAccountSwitch(accountId: Int) {
+        com.polli.android.data.engine.PolliRepositories.resetMessageRepository()
         PolliEngine.rebindAccount(accountId)
     }
 }

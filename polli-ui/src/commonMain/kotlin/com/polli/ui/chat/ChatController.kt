@@ -110,7 +110,7 @@ class ChatController(
                 store.preloadStubsAroundDisplayIndex(initialScrollIndex, radius = 40)
             }
             feedItems = store.rebuildGroupLayouts()
-            reloadGeneration++
+            contentGeneration++
             launch(Dispatchers.Default) {
                 store.preloadStubs()
             }

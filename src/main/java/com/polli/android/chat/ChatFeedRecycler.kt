@@ -29,7 +29,7 @@ import dev.chrisbanes.haze.hazeSource
 
 /**
  * DC [ConversationFragment] list host — [RecyclerView] with reverse layout, stable ids,
- * lazy per-row bind. Haze can use live feed capture or idle snapshot during scroll.
+ * lazy per-row bind. Haze stays on during scroll (DC has no scroll gating).
  */
 @Composable
 fun ChatFeedRecycler(
@@ -65,7 +65,6 @@ fun ChatFeedRecycler(
     val topPadPx = remember(headerClearance, density) { with(density) { headerClearance.roundToPx() } }
     val bottomPadPx = remember(feedBottomPadding, density) { with(density) { feedBottomPadding.roundToPx() } }
     val hazeEnabled = BuildConfig.CHAT_HAZE_ENABLED
-    var feedScrolling by remember { mutableStateOf(false) }
 
     val adapter =
         remember(maxBubbleWidth) {
@@ -148,11 +147,7 @@ fun ChatFeedRecycler(
 
     val feedModifier =
         Modifier.fillMaxSize().let { base ->
-            if (hazeEnabled && !feedScrolling) {
-                base.hazeSource(state = hazeState)
-            } else {
-                base
-            }
+            if (hazeEnabled) base.hazeSource(state = hazeState) else base
         }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -182,10 +177,6 @@ fun ChatFeedRecycler(
                                     onScrolledToBottom()
                                 }
                             }
-
-                            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                                feedScrolling = newState != RecyclerView.SCROLL_STATE_IDLE
-                            }
                         },
                     )
                     scrollController.recyclerView = this
@@ -195,13 +186,19 @@ fun ChatFeedRecycler(
                 }
             },
             update = { recycler ->
+                val prevBottomPad = recycler.paddingBottom
                 recycler.setPadding(0, topPadPx, 0, bottomPadPx)
+                if (bottomPadPx != prevBottomPad && scrollController.isAtChatBottom()) {
+                    recycler.post {
+                        (recycler.layoutManager as? LinearLayoutManager)?.scrollToPosition(0)
+                    }
+                }
                 scrollController.recyclerView = recycler
                 adapter.updateChrome(viewModel.highlightId, viewModel.reactionPulse)
                 when {
                     appliedGeneration != reloadGeneration -> syncFeed(recycler)
                     appliedContentGeneration != contentGeneration -> {
-                        adapter.refreshContent()
+                        adapter.changeData(viewModel.feedItems, structuralReload = false)
                         appliedContentGeneration = contentGeneration
                     }
                 }

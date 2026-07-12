@@ -4,8 +4,6 @@
 
 **Super-app with encrypted Chat, Drive, Mail & more. On a domain that's simply yours.**
 
-Polli is for everyday life online — chat with people you know, keep files in your spaces, get mail at your handle, and stay in control of what's private and what's shared.
-
 ---
 
 ## Why Polli
