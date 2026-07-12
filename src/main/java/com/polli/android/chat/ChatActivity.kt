@@ -167,8 +167,8 @@ class ChatActivity : BaseComposeActivity() {
                             PlatformAttachments.selectLocation(this, chatId)
                         },
                         onVoiceSent = { uri, _ ->
-                            MediaSend.sendVoice(this, chatId, uri, 0)
-                            viewModel.notifyOutboundSent()
+                            val sentMsgId = MediaSend.sendVoice(this, chatId, uri, 0)
+                            viewModel.notifyOutboundSent(sentMsgId)
                         },
                         pendingAttachment = pendingAttachment,
                         onClearAttachment = { pendingAttachment = null },
@@ -255,9 +255,11 @@ class ChatActivity : BaseComposeActivity() {
     private fun sendComposedMessage() {
         val attachment = pendingAttachment
         if (attachment != null) {
-            MediaSend.sendUri(this, chatId, attachment.uri, attachment.mimeType, viewModel.draft)
+            val sentMsgId =
+                MediaSend.sendUri(this, chatId, attachment.uri, attachment.mimeType, viewModel.draft)
             pendingAttachment = null
-            viewModel.clearAfterSend()
+            viewModel.clearAfterSend(reload = false)
+            viewModel.notifyOutboundSent(sentMsgId)
             return
         }
         viewModel.send()
@@ -265,8 +267,8 @@ class ChatActivity : BaseComposeActivity() {
 
     private fun sendMedia(uri: Uri, mimeType: String? = null) {
         if (chatId <= 0) return
-        MediaSend.sendUri(this, chatId, uri, mimeType ?: PlatformMedia.mimeType(this, uri))
-        viewModel.notifyOutboundSent()
+        val sentMsgId = MediaSend.sendUri(this, chatId, uri, mimeType ?: PlatformMedia.mimeType(this, uri))
+        viewModel.notifyOutboundSent(sentMsgId)
     }
 
     override fun onResume() {

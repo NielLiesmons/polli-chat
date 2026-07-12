@@ -13,7 +13,7 @@ object MediaSend {
         uri: Uri,
         mimeType: String?,
         caption: String? = null,
-    ) {
+    ): Int? {
         val messages = PolliRepositories.messages(context)
         val resolved = mimeType ?: PlatformMedia.mimeType(context, uri) ?: "application/octet-stream"
         val path = EngineBlobStore.copyUriToBlobdir(context, uri, "file", null)
@@ -25,7 +25,7 @@ object MediaSend {
                 PlatformMedia.isAudioType(resolved) -> "Audio"
                 else -> "File"
             }
-        messages.sendMedia(
+        return messages.sendMedia(
             chatId = chatId,
             filePath = path,
             fileName = null,
@@ -35,9 +35,9 @@ object MediaSend {
         )
     }
 
-    fun sendVoice(context: Context, chatId: Int, uri: Uri, @Suppress("UNUSED_PARAMETER") size: Long) {
+    fun sendVoice(context: Context, chatId: Int, uri: Uri, @Suppress("UNUSED_PARAMETER") size: Long): Int? {
         val messages = PolliRepositories.messages(context)
-        try {
+        return try {
             val path = EngineBlobStore.copyUriToBlobdir(context, uri, "voice", ".m4a")
             messages.sendMedia(
                 chatId = chatId,

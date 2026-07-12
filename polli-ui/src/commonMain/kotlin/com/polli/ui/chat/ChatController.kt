@@ -189,23 +189,25 @@ class ChatController(
             return
         }
         messages.setDraft(chatId, text, replyTo?.id)
-        messages.sendDraft(chatId)
-        clearAfterSend()
+        val sentMsgId = messages.sendDraft(chatId)
+        clearAfterSend(reload = false)
+        reloadAfterOutbound(sentMsgId)
     }
 
-    fun notifyOutboundSent() {
-        scrollToBottomOnReload = true
-        scheduleReload(markRead = true)
+    fun notifyOutboundSent(sentMsgId: Int? = null) {
+        reloadAfterOutbound(sentMsgId)
     }
 
-    fun clearAfterSend() {
+    fun clearAfterSend(reload: Boolean = true) {
         editingMessageId = -1
         draft = ""
         replyTo = null
         messages.clearDraft(chatId)
         scrollToBottomOnReload = true
-        scheduleReload(markRead = true)
         bumpComposer()
+        if (reload) {
+            reloadAfterOutbound(sentMsgId = null)
+        }
     }
 
     fun deleteMessage(msgId: Int) {
@@ -245,21 +247,49 @@ class ChatController(
         reloadJob?.cancel()
         reloadJob =
             scope.launch {
-                if (chatId <= 0) return@launch
-                val fresh = freshMessageCount()
-                if (markRead) messages.marknoticedChat(chatId)
-                val synced = store.syncFeedIds(chatId, showNewMessagesMarker, fresh)
-                if (synced == null) {
-                    // Same message IDs — refresh row content without wiping stub layout cache.
-                    store.clearMessageCache()
-                    contentGeneration++
-                } else {
-                    store.invalidateAllCaches()
-                    feedItems = synced
-                    launch(Dispatchers.Default) { store.preloadStubs() }
-                    reloadGeneration++
-                }
+                applyFeedReload(markRead = markRead, sentMsgId = null, allowAsyncRetry = true)
             }
+    }
+
+    /** Synchronous feed refresh after send — DC reloadList runs on main when msgs change. */
+    private fun reloadAfterOutbound(sentMsgId: Int?) {
+        scrollToBottomOnReload = true
+        val applied =
+            applyFeedReload(markRead = true, sentMsgId = sentMsgId, allowAsyncRetry = sentMsgId == null)
+        if (!applied && sentMsgId == null) {
+            scheduleReload(markRead = true)
+        }
+    }
+
+    private fun applyFeedReload(
+        markRead: Boolean,
+        sentMsgId: Int?,
+        allowAsyncRetry: Boolean,
+    ): Boolean {
+        if (chatId <= 0) return false
+        val fresh = freshMessageCount()
+        if (markRead) messages.marknoticedChat(chatId)
+        val synced = store.syncFeedIds(chatId, showNewMessagesMarker, fresh)
+        when {
+            synced != null -> {
+                feedItems = synced
+                reloadGeneration++
+                sentMsgId?.let { store.preloadMessages(intArrayOf(it)) }
+                    ?: scope.launch(Dispatchers.Default) { store.preloadStubs() }
+                return true
+            }
+            sentMsgId != null -> {
+                feedItems = store.appendOutgoingMessage(sentMsgId, showNewMessagesMarker, fresh)
+                reloadGeneration++
+                store.preloadMessages(intArrayOf(sentMsgId))
+                return true
+            }
+            else -> {
+                store.clearMessageCache()
+                contentGeneration++
+                return !allowAsyncRetry
+            }
+        }
     }
 
     private fun persistDraft() {

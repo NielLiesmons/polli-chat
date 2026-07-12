@@ -11,7 +11,7 @@ cd "$(dirname "$0")/.."
 
 REPO="${POLLI_GH_REPO:-NielLiesmons/polli-chat}"
 VERSION="$(grep 'versionName' build.gradle | head -1 | sed 's/.*"\([^"]*\)".*/\1/')"
-TAG="${1:-test/${VERSION}-$(date -u +%Y%m%d)}"
+TAG="${1:-test/${VERSION}-$(git rev-parse --short HEAD)}"
 VARIANT="fossDebug"
 
 echo "Building test APK locally…"
@@ -46,5 +46,14 @@ Built locally and uploaded — no CI wait.
 3. Open and install."
 
 URL="$(gh release view "$TAG" --repo "$REPO" --json url -q .url)"
+echo ""
+echo "Pruning older test releases…"
+while IFS= read -r old_tag; do
+  if [[ -n "$old_tag" && "$old_tag" != "$TAG" ]]; then
+    echo "  deleting $old_tag"
+    gh release delete "$old_tag" --repo "$REPO" --yes --cleanup-tag 2>/dev/null || true
+  fi
+done < <(gh release list --repo "$REPO" --limit 100 --json tagName -q '.[].tagName')
+
 echo ""
 echo "✓ Release live: $URL"

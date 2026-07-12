@@ -1,6 +1,7 @@
 package com.polli.ui.chat
 
 import com.polli.domain.model.chat.ChatMessage
+import com.polli.domain.model.chat.FeedItem
 import com.polli.domain.model.chat.MessageReaction
 import com.polli.domain.model.chat.MessageStub
 import com.polli.domain.repository.MessageRepository
@@ -16,10 +17,12 @@ class ChatControllerTest {
         val controller = ChatController(repo, this, formatDayLabel = { "Today" })
         controller.bind(chatId = 1)
         controller.updateDraft("hello")
+        val genBefore = controller.reloadGeneration
         controller.send()
         assertEquals("", controller.draft)
         assertTrue(repo.sentDrafts.isNotEmpty())
-        assertEquals(1, controller.reloadGeneration)
+        assertEquals(genBefore + 1, controller.reloadGeneration)
+        assertTrue(controller.feedItems.any { it is FeedItem.Message && it.msgId == 99 })
     }
 
     @Test

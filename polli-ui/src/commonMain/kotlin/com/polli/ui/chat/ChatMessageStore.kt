@@ -112,6 +112,18 @@ class ChatMessageStore(
         return feedItemsCache
     }
 
+    /** Optimistic append when send returns before the engine list catches up (DC reloadList timing). */
+    fun appendOutgoingMessage(
+        msgId: Int,
+        showNewMessages: Boolean,
+        freshCount: Int,
+    ): List<FeedItem> {
+        if (msgId in msgIds) return feedItemsCache
+        msgIds = msgIds + msgId
+        feedItemsCache = ChatFeedBuilder.build(formatDayLabel, messages, msgIds, showNewMessages, freshCount)
+        return feedItemsCache
+    }
+
     fun messageIds(): IntArray = msgIds
 
     fun preloadMessages(msgIdsToLoad: IntArray) {

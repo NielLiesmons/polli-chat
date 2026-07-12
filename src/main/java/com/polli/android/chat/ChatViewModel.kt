@@ -182,7 +182,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     fun cancelEdit() = ensureController().cancelEdit()
 
-    fun notifyOutboundSent() = ensureController().notifyOutboundSent()
+    fun notifyOutboundSent(sentMsgId: Int? = null) = ensureController().notifyOutboundSent(sentMsgId)
 
     fun highlightMessage(msgId: Int) = ensureController().highlightMessage(msgId)
 
@@ -196,7 +196,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     fun send() = ensureController().send()
 
-    fun clearAfterSend() = ensureController().clearAfterSend()
+    fun clearAfterSend(reload: Boolean = true) = ensureController().clearAfterSend(reload)
 
     fun deleteMessage(msgId: Int) {
         ensureController().deleteMessage(msgId)
