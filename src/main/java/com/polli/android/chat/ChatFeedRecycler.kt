@@ -68,11 +68,9 @@ fun ChatFeedRecycler(
     var feedScrolling by remember { mutableStateOf(false) }
 
     val adapter =
-        remember(prefs, uiScaleRevision, maxBubbleWidth) {
+        remember(maxBubbleWidth) {
             PolliChatFeedAdapter(
                 viewModel = viewModel,
-                prefs = prefs,
-                uiScaleRevision = uiScaleRevision,
                 playbackViewModel = playbackViewModel,
                 maxBubbleWidth = maxBubbleWidth,
                 onOpenMessageOverlay = onOpenMessageOverlay,

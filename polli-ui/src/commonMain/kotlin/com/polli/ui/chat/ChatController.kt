@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class ReactionPulse(
     val msgId: Int,
@@ -98,14 +99,21 @@ class ChatController(
                 freshMsgs = freshMsgs,
             )
         pendingFirstLoadScroll = true
-        store.preloadStubsAroundDisplayIndex(initialScrollIndex, radius = 40)
-        feedItems = store.rebuildGroupLayouts()
         reloadGeneration++
         if (!fromArchived) {
-            messages.marknoticedChat(chatId)
+            scope.launch(Dispatchers.Default) {
+                messages.marknoticedChat(chatId)
+            }
         }
-        scope.launch(Dispatchers.Default) {
-            store.preloadStubs()
+        scope.launch {
+            withContext(Dispatchers.Default) {
+                store.preloadStubsAroundDisplayIndex(initialScrollIndex, radius = 40)
+            }
+            feedItems = store.rebuildGroupLayouts()
+            reloadGeneration++
+            launch(Dispatchers.Default) {
+                store.preloadStubs()
+            }
         }
     }
 

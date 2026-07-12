@@ -23,7 +23,14 @@ import com.polli.android.media.MediaEditLauncher
 import com.polli.android.settings.AppPrefs
 import com.polli.android.theme.PolliTheme
 import com.polli.android.data.engine.PolliRepositories
+import androidx.lifecycle.lifecycleScope
 import com.polli.domain.navigation.ChatIntentExtras
+import com.polli.domain.model.chat.ChatActionContext
+import com.polli.domain.model.chat.ChatSessionInfo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import com.polli.android.platform.EngineBridge
 import com.polli.android.newchat.ContactPickerActivity
 import com.polli.android.platform.PlatformAttachments
@@ -46,6 +53,7 @@ class ChatActivity : BaseComposeActivity() {
     private var pendingAttachment by mutableStateOf<PendingAttachment?>(null)
     private var cameraUri: Uri? = null
     private var chatId: Int = -1
+    private var chatSessionInfo by mutableStateOf<ChatSessionInfo?>(null)
     private var mediaControllerFuture: ListenableFuture<MediaController>? = null
 
     private val imageEditor = MediaEditLauncher(
@@ -90,53 +98,31 @@ class ChatActivity : BaseComposeActivity() {
             finish()
             return
         }
-        val sessionInfo = PolliRepositories.chat(this).getSession(chatId)
-        if (sessionInfo == null) {
-            finish()
-            return
-        }
         val draftText = intent.getStringExtra(ChatIntentExtras.DRAFT_TEXT)
         val startingPosition = intent.getIntExtra(ChatIntentExtras.STARTING_POSITION, -1)
         val fromArchived = intent.getBooleanExtra(ChatIntentExtras.FROM_ARCHIVED, false)
         val prefs = AppPrefs(this)
 
-        playbackViewModel.setQueueProvider(
-            PolliChatAudioQueueProvider(
-                this,
-                chatId,
-                PolliRepositories.accounts(this).selectedAccountId,
-            ),
-        )
-        initializeMediaController()
-
-        viewModel.bind(
-            chatId = chatId,
-            initialDraft = draftText,
-            startingPosition = startingPosition,
-            fromArchived = fromArchived,
-        )
-
-        ShareInbound.apply(
-            activity = this,
-            chatId = chatId,
-            viewModel = viewModel,
-            stageAttachment = { uri, mime -> stageAttachment(uri, mime) },
-        )
-
-        val session = sessionInfo.toActionContext()
-
         setContent {
+            val sessionInfo = chatSessionInfo
             val revision = themeRevision
             PolliTheme(prefs = prefs, uiScaleRevision = revision) {
                 CompositionLocalProvider(LocalChatAudioPlayback provides playbackViewModel) {
                     ChatScreen(
                         viewModel = viewModel,
-                        chatTitle = sessionInfo.name,
-                        chatSeed = sessionInfo.name.ifBlank { chatId.toString() },
+                        chatTitle = sessionInfo?.name.orEmpty(),
+                        chatSeed = sessionInfo?.name?.ifBlank { chatId.toString() } ?: chatId.toString(),
                         chatId = chatId,
-                        chatSession = session,
-                        isGroup = sessionInfo.isMultiUser,
-                        isBroadcast = sessionInfo.isBroadcast,
+                        chatSession =
+                            sessionInfo?.toActionContext()
+                                ?: ChatActionContext(
+                                    canSend = true,
+                                    isEncrypted = true,
+                                    isMultiUser = false,
+                                    isSelfTalk = false,
+                                ),
+                        isGroup = sessionInfo?.isMultiUser == true,
+                        isBroadcast = sessionInfo?.isBroadcast == true,
                         uiScaleRevision = revision,
                         playbackViewModel = playbackViewModel,
                         showAttachModal = showAttachModal,
@@ -177,6 +163,38 @@ class ChatActivity : BaseComposeActivity() {
                     )
                 }
             }
+        }
+
+        lifecycleScope.launch {
+            viewModel.bind(
+                chatId = chatId,
+                initialDraft = draftText,
+                startingPosition = startingPosition,
+                fromArchived = fromArchived,
+            )
+            val sessionInfo =
+                withContext(Dispatchers.IO) {
+                    PolliRepositories.chat(this@ChatActivity).getSession(chatId)
+                }
+            if (sessionInfo == null) {
+                finish()
+                return@launch
+            }
+            chatSessionInfo = sessionInfo
+            playbackViewModel.setQueueProvider(
+                PolliChatAudioQueueProvider(
+                    this@ChatActivity,
+                    chatId,
+                    PolliRepositories.accounts(this@ChatActivity).selectedAccountId,
+                ),
+            )
+            initializeMediaController()
+            ShareInbound.apply(
+                activity = this@ChatActivity,
+                chatId = chatId,
+                viewModel = viewModel,
+                stageAttachment = { uri, mime -> stageAttachment(uri, mime) },
+            )
         }
     }
 
