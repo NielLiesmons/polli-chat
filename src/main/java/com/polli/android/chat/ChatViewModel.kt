@@ -10,8 +10,6 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.polli.android.data.engine.PolliRepositories
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import com.polli.domain.model.chat.ChatMessage
 import com.polli.domain.model.chat.FeedItem
 import com.polli.domain.model.chat.displayIndexForMessage
@@ -107,6 +105,8 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getChatMessage(msgId: Int): ChatMessage? = ensureController().getChatMessage(msgId)
 
+    fun getStub(msgId: Int) = ensureController().getStub(msgId)
+
     fun displayIndexForMsgId(msgId: Int): Int = feedItems.displayIndexForMessage(msgId)
 
     fun layoutForMessage(
@@ -128,20 +128,19 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         fromArchived: Boolean = false,
     ) {
         this.chatId = chatId
-        // Initialize on the main thread to avoid a lazy-init race with state getters read during
-        // composition, then run the RPC-heavy load off the main thread so the activity can finish
-        // onCreate and its enter transition immediately. Compose state writes are thread-safe.
         val c = ensureController()
-        viewModelScope.launch(Dispatchers.Default) {
-            c.bind(chatId, initialDraft, startingPosition, fromArchived)
-            if (startingPosition >= 0) {
-                val rows = c.feedItems.filterIsInstance<FeedItem.Message>()
-                if (rows.isNotEmpty()) {
-                    val chronIdx = (rows.size - 1 - startingPosition).coerceIn(0, rows.lastIndex)
-                    highlightScrollIndex = c.displayIndexForMsgId(rows[chronIdx].msgId)
-                }
+        c.bind(chatId, initialDraft, startingPosition, fromArchived)
+        if (startingPosition >= 0) {
+            val rows = c.feedItems.filterIsInstance<FeedItem.Message>()
+            if (rows.isNotEmpty()) {
+                val chronIdx = (rows.size - 1 - startingPosition).coerceIn(0, rows.lastIndex)
+                highlightScrollIndex = c.displayIndexForMsgId(rows[chronIdx].msgId)
             }
         }
+    }
+
+    fun bumpMessageEpoch(msgId: Int) {
+        messageEpoch[msgId] = (messageEpoch[msgId] ?: 0) + 1
     }
 
     fun reactionEpochFor(msgId: Int): Int = reactionEpoch[msgId] ?: 0

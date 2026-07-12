@@ -248,12 +248,16 @@ class ChatController(
                 if (chatId <= 0) return@launch
                 val fresh = freshMessageCount()
                 if (markRead) messages.marknoticedChat(chatId)
-                store.invalidateAllCaches()
-                feedItems =
-                    store.syncFeedIds(chatId, showNewMessagesMarker, fresh)
-                        ?: store.buildFeed(showNewMessagesMarker, fresh)
+                val synced = store.syncFeedIds(chatId, showNewMessagesMarker, fresh)
+                if (synced == null) {
+                    // Same message IDs — refresh row content without wiping stub layout cache.
+                    store.clearMessageCache()
+                } else {
+                    store.invalidateAllCaches()
+                    feedItems = synced
+                    launch(Dispatchers.Default) { store.preloadStubs() }
+                }
                 reloadGeneration++
-                launch(Dispatchers.Default) { store.preloadStubs() }
             }
     }
 

@@ -18,8 +18,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.polli.android.settings.LocalAppPrefs
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeSource
 import com.polli.android.platform.PolliAudioPlaybackViewModel
 
 /**
@@ -32,7 +30,6 @@ fun ChatFeedRecycler(
     reloadGeneration: Int,
     headerClearance: Dp,
     feedBottomPadding: Dp,
-    hazeState: HazeState,
     scrollController: ChatRecyclerController,
     playbackViewModel: PolliAudioPlaybackViewModel?,
     uiScaleRevision: Int,
@@ -127,10 +124,7 @@ fun ChatFeedRecycler(
 
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .hazeSource(state = hazeState),
+            modifier = Modifier.fillMaxSize(),
             factory = { context ->
                 val items = viewModel.feedItems
                 val layoutManager =
@@ -143,7 +137,6 @@ fun ChatFeedRecycler(
                     itemAnimator = null
                     overScrollMode = RecyclerView.OVER_SCROLL_NEVER
                     clipToPadding = false
-                    setHasFixedSize(true)
                     setItemViewCacheSize(24)
                     setPadding(0, topPadPx, 0, bottomPadPx)
                     this.adapter = adapter

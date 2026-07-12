@@ -49,7 +49,6 @@ import com.polli.android.ui.AppInsets
 import com.polli.android.ui.ChatFeedEdgeGradients
 import com.polli.android.ui.rememberComposerChromeLayout
 import com.polli.android.ui.rememberPolliHazeState
-import dev.chrisbanes.haze.hazeSource
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 import com.polli.android.R
@@ -325,7 +324,6 @@ private fun ChatFeedPage(
         reloadGeneration = viewModel.reloadGeneration,
         headerClearance = headerClearance,
         feedBottomPadding = feedBottomPadding,
-        hazeState = hazeState,
         scrollController = scrollController,
         playbackViewModel = playbackViewModel,
         uiScaleRevision = uiScaleRevision,
