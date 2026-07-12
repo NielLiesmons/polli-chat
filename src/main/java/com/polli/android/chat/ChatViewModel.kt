@@ -70,6 +70,10 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         get() = ensureController().reloadGeneration
         private set(_) {}
 
+    var contentGeneration: Int
+        get() = ensureController().contentGeneration
+        private set(_) {}
+
     var reactionPulse: com.polli.ui.chat.ReactionPulse?
         get() = ensureController().reactionPulse
         private set(_) {}

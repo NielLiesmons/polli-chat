@@ -50,6 +50,11 @@ class PolliChatFeedAdapter(
         setHasStableIds(true)
     }
 
+    /** DC-style content refresh when message ids are unchanged. */
+    fun refreshContent() {
+        notifyItemRangeChanged(0, itemCount)
+    }
+
     /** @return true when the feed changed */
     fun changeData(items: List<FeedItem>): Boolean {
         if (items == displayItems) return false
@@ -90,7 +95,6 @@ class PolliChatFeedAdapter(
 
     private fun rowKey(items: List<FeedItem>, displayPosition: Int): FeedRowKey {
         val item = items[chronIndex(displayPosition)]
-        val (older, newer) = messageNeighborIds(items, displayPosition)
         return when (item) {
             is FeedItem.DayMarker ->
                 FeedRowKey(
@@ -104,9 +108,9 @@ class PolliChatFeedAdapter(
                 FeedRowKey(
                     stableId = item.stableRowId(),
                     label = null,
-                    olderMsgId = older ?: 0,
+                    olderMsgId = item.olderMsgId ?: 0,
                     selfMsgId = item.msgId,
-                    newerMsgId = newer ?: 0,
+                    newerMsgId = item.newerMsgId ?: 0,
                 )
             else ->
                 FeedRowKey(
@@ -119,32 +123,11 @@ class PolliChatFeedAdapter(
         }
     }
 
-    private fun messageNeighborIds(items: List<FeedItem>, displayPosition: Int): Pair<Int?, Int?> {
-        val chron = items.size - 1 - displayPosition
-        var older: Int? = null
-        var newer: Int? = null
-        for (i in chron - 1 downTo 0) {
-            val row = items[i]
-            if (row is FeedItem.Message) {
-                older = row.msgId
-                break
-            }
-        }
-        for (i in chron + 1 until items.size) {
-            val row = items[i]
-            if (row is FeedItem.Message) {
-                newer = row.msgId
-                break
-            }
-        }
-        return older to newer
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         val composeView =
             ComposeView(parent.context).apply {
                 layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
-                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                setViewCompositionStrategy(ViewCompositionStrategy.Default)
             }
         return Holder(
             composeView = composeView,
@@ -159,7 +142,11 @@ class PolliChatFeedAdapter(
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
         val item = chronItem(position)
-        val (olderMsgId, newerMsgId) = messageNeighborIds(displayItems, position)
+        val (olderMsgId, newerMsgId) =
+            when (item) {
+                is FeedItem.Message -> item.olderMsgId to item.newerMsgId
+                else -> null to null
+            }
         holder.bind(item, olderMsgId, newerMsgId)
     }
 

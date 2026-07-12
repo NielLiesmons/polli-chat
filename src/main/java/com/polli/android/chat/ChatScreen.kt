@@ -322,8 +322,10 @@ private fun ChatFeedPage(
     ChatFeedRecycler(
         viewModel = viewModel,
         reloadGeneration = viewModel.reloadGeneration,
+        contentGeneration = viewModel.contentGeneration,
         headerClearance = headerClearance,
         feedBottomPadding = feedBottomPadding,
+        hazeState = hazeState,
         scrollController = scrollController,
         playbackViewModel = playbackViewModel,
         uiScaleRevision = uiScaleRevision,

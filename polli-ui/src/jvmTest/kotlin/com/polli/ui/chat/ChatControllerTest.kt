@@ -40,10 +40,10 @@ class ChatControllerTest {
         val repo = FakeMessageRepository()
         val controller = ChatController(repo, this, formatDayLabel = { "Today" })
         controller.bind(chatId = 1)
-        val before = controller.reloadGeneration
+        val before = controller.contentGeneration
         repo.fireEvent()
         testScheduler.advanceUntilIdle()
-        assertTrue(controller.reloadGeneration > before)
+        assertTrue(controller.contentGeneration > before)
     }
 
     @Test

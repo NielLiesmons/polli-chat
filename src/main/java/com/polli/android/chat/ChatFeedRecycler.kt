@@ -19,17 +19,22 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.polli.android.settings.LocalAppPrefs
 import com.polli.android.platform.PolliAudioPlaybackViewModel
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeSource
 
 /**
- * DC [org.thoughtcrime.securesms.ConversationFragment] list host — [RecyclerView] with reverse
- * [LinearLayoutManager], stable ids, and per-row bind. Polli bubbles stay Compose inside recycled views.
+ * DC [ConversationFragment] list host — [RecyclerView] with reverse layout, stable ids,
+ * lazy per-row bind. Feed is the haze source for composer/modals (not removed — batch
+ * message cache keeps scroll off the RPC hot path).
  */
 @Composable
 fun ChatFeedRecycler(
     viewModel: ChatViewModel,
     reloadGeneration: Int,
+    contentGeneration: Int,
     headerClearance: Dp,
     feedBottomPadding: Dp,
+    hazeState: HazeState,
     scrollController: ChatRecyclerController,
     playbackViewModel: PolliAudioPlaybackViewModel?,
     uiScaleRevision: Int,
@@ -59,6 +64,7 @@ fun ChatFeedRecycler(
 
     var prevMsgCount by remember { mutableIntStateOf(0) }
     var appliedGeneration by remember { mutableIntStateOf(-1) }
+    var appliedContentGeneration by remember { mutableIntStateOf(-1) }
 
     fun applyStartingPosition(layoutManager: PolliChatLayoutManager, msgCount: Int) {
         if (!viewModel.pendingFirstLoadScroll || msgCount <= 0) return
@@ -119,12 +125,16 @@ fun ChatFeedRecycler(
             ChatFeedScrollAnchor.restore(layoutManager, anchor, adapter.itemCount)
         }
         appliedGeneration = reloadGeneration
+        appliedContentGeneration = contentGeneration
         afterFeedSync(recycler, items.messageCount())
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
-            modifier = Modifier.fillMaxSize(),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .hazeSource(state = hazeState),
             factory = { context ->
                 val items = viewModel.feedItems
                 val layoutManager =
@@ -152,14 +162,19 @@ fun ChatFeedRecycler(
                     )
                     scrollController.recyclerView = this
                     appliedGeneration = reloadGeneration
+                    appliedContentGeneration = contentGeneration
                     afterFeedSync(this, items.messageCount())
                 }
             },
             update = { recycler ->
                 recycler.setPadding(0, topPadPx, 0, bottomPadPx)
                 scrollController.recyclerView = recycler
-                if (appliedGeneration != reloadGeneration) {
-                    syncFeed(recycler)
+                when {
+                    appliedGeneration != reloadGeneration -> syncFeed(recycler)
+                    appliedContentGeneration != contentGeneration -> {
+                        adapter.refreshContent()
+                        appliedContentGeneration = contentGeneration
+                    }
                 }
             },
         )

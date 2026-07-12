@@ -43,6 +43,8 @@ class ChatController(
         private set
     var reloadGeneration by mutableIntStateOf(0)
         private set
+    var contentGeneration by mutableIntStateOf(0)
+        private set
     var reactionPulse by mutableStateOf<ReactionPulse?>(null)
         private set
     var initialScrollIndex by mutableIntStateOf(0)
@@ -101,8 +103,6 @@ class ChatController(
         if (!fromArchived) {
             messages.marknoticedChat(chatId)
         }
-        // Warm the rest of the stub cache off the main thread so the chat can
-        // open (and its enter transition run) without blocking on per-message RPC.
         scope.launch(Dispatchers.Default) {
             store.preloadStubs()
         }
@@ -252,12 +252,13 @@ class ChatController(
                 if (synced == null) {
                     // Same message IDs — refresh row content without wiping stub layout cache.
                     store.clearMessageCache()
+                    contentGeneration++
                 } else {
                     store.invalidateAllCaches()
                     feedItems = synced
                     launch(Dispatchers.Default) { store.preloadStubs() }
+                    reloadGeneration++
                 }
-                reloadGeneration++
             }
     }
 

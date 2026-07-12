@@ -2,10 +2,12 @@ package com.polli.engine.rpc
 
 import chat.delta.rpc.Rpc
 import chat.delta.rpc.RpcException
+import chat.delta.rpc.types.Message
 import chat.delta.rpc.types.MessageData
+import chat.delta.rpc.types.MessageListItem
+import chat.delta.rpc.types.MessageLoadResult
 import chat.delta.rpc.types.Viewtype
-import com.polli.core.chat.ChatMediaFilter
-import com.polli.core.chat.MsgTypes
+import com.polli.domain.model.chat.ChatListItem
 import com.polli.domain.model.chat.ChatMessage
 import com.polli.domain.model.chat.MessageStub
 import com.polli.domain.repository.MessageRepository
@@ -15,6 +17,18 @@ class RpcMessageRepository(
     private val accountId: Int,
     private val eventLoop: RpcEventLoop,
 ) : MessageRepository {
+    private val messageCache =
+        object : LinkedHashMap<Int, ChatMessage>(MAX_CACHE_SIZE, 0.75f, true) {
+            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, ChatMessage>?): Boolean =
+                size > MAX_CACHE_SIZE
+        }
+
+    private val stubCache =
+        object : LinkedHashMap<Int, MessageStub>(MAX_CACHE_SIZE, 0.75f, true) {
+            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, MessageStub>?): Boolean =
+                size > MAX_CACHE_SIZE
+        }
+
     override fun getMessageIds(chatId: Int, addDaymarker: Boolean): IntArray {
         return try {
             (rpc.getMessageIds(accountId, chatId, false, addDaymarker) ?: emptyList())
@@ -25,19 +39,56 @@ class RpcMessageRepository(
         }
     }
 
+    override fun getMessageListItems(chatId: Int, addDaymarker: Boolean): List<ChatListItem>? {
+        return try {
+            rpc.getMessageListItems(accountId, chatId, false, addDaymarker)
+                ?.mapNotNull { item ->
+                    when (item) {
+                        is MessageListItem.Message ->
+                            item.msg_id?.let { ChatListItem.Message(it) }
+                        is MessageListItem.DayMarker ->
+                            item.timestamp?.toLong()?.let { ChatListItem.DayMarker(it) }
+                        else -> null
+                    }
+                }
+        } catch (_: RpcException) {
+            null
+        }
+    }
+
+    override fun preloadMessages(msgIds: IntArray) {
+        if (msgIds.isEmpty()) return
+        val chunks = msgIds.toList().chunked(BATCH_SIZE)
+        for (chunk in chunks) {
+            try {
+                val batch = rpc.getMessages(accountId, chunk) ?: continue
+                for ((key, result) in batch) {
+                    val msgId = key.toIntOrNull() ?: continue
+                    if (result is MessageLoadResult.Message) {
+                        cacheFromLoadResult(msgId, result)
+                    }
+                }
+            } catch (_: RpcException) {
+                // skip failed chunk
+            }
+        }
+    }
+
     override fun getMessage(msgId: Int): ChatMessage? {
+        messageCache[msgId]?.let { return it }
         return try {
             val msg = rpc.getMessage(accountId, msgId) ?: return null
-            RpcMessageMapper.toChatMessage(msg)
+            RpcMessageMapper.toChatMessage(msg)?.also { messageCache[msgId] = it }
         } catch (_: RpcException) {
             null
         }
     }
 
     override fun getStub(msgId: Int): MessageStub? {
+        stubCache[msgId]?.let { return it }
         return try {
             val msg = rpc.getMessage(accountId, msgId) ?: return null
-            RpcMessageMapper.toStub(msg)
+            RpcMessageMapper.toStub(msg)?.also { stubCache[msgId] = it }
         } catch (_: RpcException) {
             null
         }
@@ -91,6 +142,10 @@ class RpcMessageRepository(
         if (msgIds.isEmpty()) return
         try {
             rpc.deleteMessages(accountId, msgIds.toList())
+            for (id in msgIds) {
+                messageCache.remove(id)
+                stubCache.remove(id)
+            }
         } catch (_: RpcException) {
             // ignore
         }
@@ -183,6 +238,8 @@ class RpcMessageRepository(
         if (trimmed.isEmpty()) return
         try {
             rpc.sendEditRequest(accountId, msgId, trimmed)
+            messageCache.remove(msgId)
+            stubCache.remove(msgId)
         } catch (_: RpcException) {
             // ignore
         }
@@ -230,6 +287,43 @@ class RpcMessageRepository(
         }
     }
 
+    override fun observeEngineEvents(onUpdate: () -> Unit): AutoCloseable =
+        eventLoop.addListener(onUpdate)
+
+    override fun clearMessageCaches() {
+        messageCache.clear()
+        stubCache.clear()
+    }
+
+    private fun cacheFromLoadResult(msgId: Int, loaded: MessageLoadResult.Message) {
+        val rpcMsg = loaded.toRpcMessage(msgId)
+        RpcMessageMapper.toStub(rpcMsg)?.let { stubCache[msgId] = it }
+        RpcMessageMapper.toChatMessage(rpcMsg)?.let { messageCache[msgId] = it }
+    }
+
+    private fun MessageLoadResult.Message.toRpcMessage(msgId: Int): Message {
+        val msg = Message()
+        msg.id = id ?: msgId
+        msg.chatId = chatId
+        msg.text = text
+        msg.timestamp = timestamp
+        msg.fromId = fromId
+        msg.isEdited = isEdited
+        msg.isInfo = isInfo
+        msg.file = file
+        msg.fileName = fileName
+        msg.viewType = viewType
+        msg.state = state
+        msg.dimensionsWidth = dimensionsWidth
+        msg.dimensionsHeight = dimensionsHeight
+        msg.duration = duration
+        msg.savedMessageId = savedMessageId
+        msg.overrideSenderName = overrideSenderName
+        msg.sender = sender
+        msg.quote = quote
+        return msg
+    }
+
     private fun reactorFor(contactId: Int): com.polli.domain.model.chat.ReactionReactor {
         val name =
             try {
@@ -245,6 +339,8 @@ class RpcMessageRepository(
         return com.polli.domain.model.chat.ReactionReactor(contactId = contactId, name = name)
     }
 
-    override fun observeEngineEvents(onUpdate: () -> Unit): AutoCloseable =
-        eventLoop.addListener(onUpdate)
+    private companion object {
+        const val MAX_CACHE_SIZE = 40
+        const val BATCH_SIZE = 32
+    }
 }

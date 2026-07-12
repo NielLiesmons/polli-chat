@@ -1,11 +1,21 @@
 package com.polli.domain.repository
 
+import com.polli.domain.model.chat.ChatListItem
 import com.polli.domain.model.chat.ChatMessage
 import com.polli.domain.model.chat.MessageReaction
 import com.polli.domain.model.chat.MessageStub
 
 interface MessageRepository {
     fun getMessageIds(chatId: Int, addDaymarker: Boolean = true): IntArray
+
+    /** Preferred feed source (day markers include timestamps). Null → fall back to [getMessageIds]. */
+    fun getMessageListItems(chatId: Int, addDaymarker: Boolean = true): List<ChatListItem>? = null
+
+    /** Batch-hydrate the message cache (DC `getMessages` / LRU warm-up). */
+    fun preloadMessages(msgIds: IntArray) {}
+
+    /** Clear repository-level LRU after structural feed changes. */
+    fun clearMessageCaches() {}
 
     fun getMessage(msgId: Int): ChatMessage?
 

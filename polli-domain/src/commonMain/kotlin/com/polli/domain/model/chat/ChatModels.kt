@@ -74,7 +74,11 @@ sealed class FeedItem {
 
     data object NewMessages : FeedItem()
 
-    data class Message(val msgId: Int) : FeedItem()
+    data class Message(
+        val msgId: Int,
+        val olderMsgId: Int? = null,
+        val newerMsgId: Int? = null,
+    ) : FeedItem()
 }
 
 fun FeedItem.stableRowId(): Long =
