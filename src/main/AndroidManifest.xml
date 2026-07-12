@@ -179,6 +179,11 @@
         </activity>
 
         <activity
+            android:name="com.polli.android.benchmark.ChatFeedBenchmarkActivity"
+            android:theme="@style/Polli.NoActionBar"
+            android:exported="false" />
+
+        <activity
             android:name="com.polli.android.notes.NoteEditorActivity"
             android:theme="@style/Polli.NoActionBar"
             android:windowSoftInputMode="adjustResize"

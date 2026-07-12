@@ -29,6 +29,12 @@ class RpcMessageRepository(
                 size > MAX_CACHE_SIZE
         }
 
+    private val reactionCache =
+        object : LinkedHashMap<Int, List<com.polli.domain.model.chat.MessageReaction>>(MAX_CACHE_SIZE, 0.75f, true) {
+            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, List<com.polli.domain.model.chat.MessageReaction>>?): Boolean =
+                size > MAX_CACHE_SIZE
+        }
+
     override fun getMessageIds(chatId: Int, addDaymarker: Boolean): IntArray {
         return try {
             (rpc.getMessageIds(accountId, chatId, false, addDaymarker) ?: emptyList())
@@ -56,9 +62,21 @@ class RpcMessageRepository(
         }
     }
 
+    /** Never RPC on cache miss — callers must preload stubs first (DC LRU warm-up). */
+    override fun getStub(msgId: Int): MessageStub? {
+        stubCache[msgId]?.let { return it }
+        messageCache[msgId]?.let { return stubFromMessage(it) }
+        return null
+    }
+
     override fun preloadMessages(msgIds: IntArray) {
         if (msgIds.isEmpty()) return
-        val chunks = msgIds.toList().chunked(BATCH_SIZE)
+        val missing =
+            msgIds.filter { id ->
+                id > 0 && !stubCache.containsKey(id) && !messageCache.containsKey(id)
+            }
+        if (missing.isEmpty()) return
+        val chunks = missing.chunked(BATCH_SIZE)
         for (chunk in chunks) {
             try {
                 val batch = rpc.getMessages(accountId, chunk) ?: continue
@@ -76,23 +94,34 @@ class RpcMessageRepository(
 
     override fun getMessage(msgId: Int): ChatMessage? {
         messageCache[msgId]?.let { return it }
+        return loadMessage(msgId)
+    }
+
+    private fun loadMessage(msgId: Int): ChatMessage? {
         return try {
             val msg = rpc.getMessage(accountId, msgId) ?: return null
-            RpcMessageMapper.toChatMessage(msg)?.also { messageCache[msgId] = it }
+            RpcMessageMapper.toChatMessage(msg)?.also { chatMsg ->
+                messageCache[msgId] = chatMsg
+                RpcMessageMapper.toStub(msg)?.let { stubCache[msgId] = it }
+            }
         } catch (_: RpcException) {
             null
         }
     }
 
-    override fun getStub(msgId: Int): MessageStub? {
-        stubCache[msgId]?.let { return it }
-        return try {
-            val msg = rpc.getMessage(accountId, msgId) ?: return null
-            RpcMessageMapper.toStub(msg)?.also { stubCache[msgId] = it }
-        } catch (_: RpcException) {
-            null
-        }
-    }
+    private fun stubFromMessage(message: ChatMessage): MessageStub =
+        MessageStub(
+            id = message.id,
+            timestamp = message.timestamp,
+            isOutgoing = message.isOutgoing,
+            authorId = message.authorId,
+            authorName = message.authorName,
+            authorColorSeed = message.authorColorSeed,
+            isEdited = message.isEdited,
+            isInfo = message.isInfo,
+            hasText = message.text.isNotEmpty(),
+            hasAttachment = message.hasAttachment,
+        )
 
     override fun getDraft(chatId: Int): String {
         return try {
@@ -176,6 +205,11 @@ class RpcMessageRepository(
     }
 
     override fun getMessageReactions(msgId: Int): List<com.polli.domain.model.chat.MessageReaction> {
+        reactionCache[msgId]?.let { return it }
+        return loadMessageReactions(msgId).also { reactionCache[msgId] = it }
+    }
+
+    private fun loadMessageReactions(msgId: Int): List<com.polli.domain.model.chat.MessageReaction> {
         return try {
             val summary = rpc.getMessageReactions(accountId, msgId) ?: return emptyList()
             val byEmoji = linkedMapOf<String, MutableList<Int>>()
@@ -293,6 +327,7 @@ class RpcMessageRepository(
     override fun clearMessageCaches() {
         messageCache.clear()
         stubCache.clear()
+        reactionCache.clear()
     }
 
     private fun cacheFromLoadResult(msgId: Int, loaded: MessageLoadResult.Message) {

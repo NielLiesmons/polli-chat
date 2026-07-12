@@ -1,31 +1,35 @@
 package com.polli.android.chat
 
 import com.polli.domain.model.chat.ChatMessage
-import com.polli.domain.model.chat.messageCount
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.polli.android.BuildConfig
 import com.polli.android.settings.LocalAppPrefs
 import com.polli.android.platform.PolliAudioPlaybackViewModel
+import com.polli.android.theme.PolliDimens
+import com.polli.domain.model.chat.messageCount
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 
 /**
  * DC [ConversationFragment] list host — [RecyclerView] with reverse layout, stable ids,
- * lazy per-row bind. Feed is the haze source for composer/modals (not removed — batch
- * message cache keeps scroll off the RPC hot path).
+ * lazy per-row bind. Haze can use live feed capture or idle snapshot during scroll.
  */
 @Composable
 fun ChatFeedRecycler(
@@ -47,19 +51,33 @@ fun ChatFeedRecycler(
 ) {
     val prefs = LocalAppPrefs.current
     val density = LocalDensity.current
+    val configuration = LocalConfiguration.current
+    val uiScale = prefs.uiScalePreset.factor
+    val maxBubbleWidth =
+        remember(configuration.screenWidthDp, uiScaleRevision) {
+            val screenWidth = (configuration.screenWidthDp / uiScale).dp
+            chatBubbleLaneMaxWidth(
+                screenWidth = screenWidth,
+                startGutter = PolliDimens.ChatRowPaddingH,
+                endGutter = PolliDimens.ChatRowPaddingH,
+            )
+        }
     val topPadPx = remember(headerClearance, density) { with(density) { headerClearance.roundToPx() } }
     val bottomPadPx = remember(feedBottomPadding, density) { with(density) { feedBottomPadding.roundToPx() } }
+    val hazeEnabled = BuildConfig.CHAT_HAZE_ENABLED
+    var feedScrolling by remember { mutableStateOf(false) }
 
     val adapter =
-        remember(prefs, uiScaleRevision) {
+        remember(prefs, uiScaleRevision, maxBubbleWidth) {
             PolliChatFeedAdapter(
                 viewModel = viewModel,
                 prefs = prefs,
                 uiScaleRevision = uiScaleRevision,
                 playbackViewModel = playbackViewModel,
+                maxBubbleWidth = maxBubbleWidth,
                 onOpenMessageOverlay = onOpenMessageOverlay,
                 onQuoteClick = onScrollToMessage,
-            ).also { it.changeData(viewModel.feedItems) }
+            ).also { it.changeData(viewModel.feedItems, structuralReload = true) }
         }
 
     var prevMsgCount by remember { mutableIntStateOf(0) }
@@ -120,7 +138,8 @@ fun ChatFeedRecycler(
             } else {
                 null
             }
-        val changed = adapter.changeData(items)
+        val changed = adapter.changeData(items, structuralReload = true)
+        adapter.updateChrome(viewModel.highlightId, viewModel.reactionPulse)
         if (changed && anchor != null) {
             ChatFeedScrollAnchor.restore(layoutManager, anchor, adapter.itemCount)
         }
@@ -129,19 +148,26 @@ fun ChatFeedRecycler(
         afterFeedSync(recycler, items.messageCount())
     }
 
+    val feedModifier =
+        Modifier.fillMaxSize().let { base ->
+            if (hazeEnabled && !feedScrolling) {
+                base.hazeSource(state = hazeState)
+            } else {
+                base
+            }
+        }
+
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .hazeSource(state = hazeState),
+            modifier = feedModifier,
             factory = { context ->
                 val items = viewModel.feedItems
                 val layoutManager =
                     PolliChatLayoutManager(context).also {
                         applyStartingPosition(it, items.size)
                     }
-                adapter.changeData(items)
+                adapter.changeData(items, structuralReload = true)
+                adapter.updateChrome(viewModel.highlightId, viewModel.reactionPulse)
                 RecyclerView(context).apply {
                     this.layoutManager = layoutManager
                     itemAnimator = null
@@ -158,6 +184,10 @@ fun ChatFeedRecycler(
                                     onScrolledToBottom()
                                 }
                             }
+
+                            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                                feedScrolling = newState != RecyclerView.SCROLL_STATE_IDLE
+                            }
                         },
                     )
                     scrollController.recyclerView = this
@@ -169,6 +199,7 @@ fun ChatFeedRecycler(
             update = { recycler ->
                 recycler.setPadding(0, topPadPx, 0, bottomPadPx)
                 scrollController.recyclerView = recycler
+                adapter.updateChrome(viewModel.highlightId, viewModel.reactionPulse)
                 when {
                     appliedGeneration != reloadGeneration -> syncFeed(recycler)
                     appliedContentGeneration != contentGeneration -> {

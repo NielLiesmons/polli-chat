@@ -98,7 +98,8 @@ class ChatController(
                 freshMsgs = freshMsgs,
             )
         pendingFirstLoadScroll = true
-        store.preloadStubsAroundDisplayIndex(initialScrollIndex)
+        store.preloadStubsAroundDisplayIndex(initialScrollIndex, radius = 40)
+        feedItems = store.rebuildGroupLayouts()
         reloadGeneration++
         if (!fromArchived) {
             messages.marknoticedChat(chatId)

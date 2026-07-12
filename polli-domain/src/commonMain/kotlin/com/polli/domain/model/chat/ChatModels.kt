@@ -1,5 +1,7 @@
 package com.polli.domain.model.chat
 
+import com.polli.core.chat.MessageGroupLayout
+
 /** Mirrors [com.b44t.messenger.DcMsg.DC_MSG_ID_DAYMARKER] — feed day separators from the engine. */
 const val MSG_ID_DAYMARKER = 9
 
@@ -78,6 +80,7 @@ sealed class FeedItem {
         val msgId: Int,
         val olderMsgId: Int? = null,
         val newerMsgId: Int? = null,
+        val groupLayout: MessageGroupLayout = MessageGroupLayout(),
     ) : FeedItem()
 }
 

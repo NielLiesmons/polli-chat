@@ -52,6 +52,8 @@ android {
 
         buildConfigField "boolean", "DEV_BUILD", "false"
         buildConfigField "boolean", "POLLI_UI", "true"
+        buildConfigField "boolean", "BENCHMARK_MODE", "false"
+        buildConfigField "boolean", "CHAT_HAZE_ENABLED", "true"
 
         ndk {
             def abiFilter = project.findProperty("ABI_FILTER")
@@ -122,6 +124,17 @@ android {
             // Off for fast emulator iteration — release keeps R8/minify.
             minifyEnabled false
             applicationIdSuffix ".beta"
+            def hazeEnabled = findProperty('CHAT_HAZE_ENABLED') ?: 'true'
+            buildConfigField "boolean", "CHAT_HAZE_ENABLED", hazeEnabled.toString()
+        }
+        benchmark {
+            initWith debug
+            matchingFallbacks = ['debug']
+            minifyEnabled false
+            applicationIdSuffix ".beta"
+            buildConfigField "boolean", "BENCHMARK_MODE", "true"
+            def hazeEnabled = findProperty('CHAT_HAZE_ENABLED') ?: 'true'
+            buildConfigField "boolean", "CHAT_HAZE_ENABLED", hazeEnabled.toString()
         }
         release {
             minifyEnabled true

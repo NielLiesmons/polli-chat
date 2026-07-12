@@ -10,6 +10,9 @@ import com.polli.android.platform.PolliApplication
 
 /** Android wiring for shared [PolliEngine] repositories (JSON-RPC over FFI). */
 object PolliRepositories {
+    @Volatile
+    var messagesOverride: MessageRepository? = null
+
     private fun session(context: Context) =
         PolliEngine.getOrNull()
             ?: run {
@@ -22,7 +25,8 @@ object PolliRepositories {
 
     fun media(context: Context): MediaRepository = session(context).media
 
-    fun messages(context: Context): MessageRepository = session(context).messages
+    fun messages(context: Context): MessageRepository =
+        messagesOverride ?: session(context).messages
 
     fun accounts(context: Context): AccountRepository = session(context).accounts
 }

@@ -1,15 +1,11 @@
 package com.polli.android.chat
 
+import com.polli.core.chat.MessageGroupLayout
 import com.polli.domain.model.chat.FeedItem
 import com.polli.domain.model.chat.MessageStub
 
 /** Same author, same direction, ≤21 min gap → stack (polli parity). */
 const val GROUP_MAX_GAP_SECS: Long = 21 * 60
-
-data class MessageGroupLayout(
-    val isFirstInStack: Boolean = true,
-    val isLastInStack: Boolean = true,
-)
 
 /** Whether [newer] continues the same stack immediately after [older] (older is above newer). */
 fun continuesGroup(older: MessageStub, newer: MessageStub): Boolean {

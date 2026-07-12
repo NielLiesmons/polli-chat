@@ -1,6 +1,7 @@
 package com.polli.android.chat
 
 import com.polli.domain.model.chat.ChatMessage
+import com.polli.core.chat.MessageGroupLayout
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,7 +16,13 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,8 +69,13 @@ fun MessageBubble(
     } else {
         Brush.linearGradient(listOf(PolliColors.Gray66, PolliColors.Gray66))
     }
-    val reactions = remember(message.id, reactionReloadKey) {
-        MessageReactions.loadReactionSummary(context, message.id)
+    val reactionsState = remember(message.id, reactionReloadKey) { mutableStateOf(emptyList<BubbleReaction>()) }
+    val reactions by reactionsState
+    LaunchedEffect(message.id, reactionReloadKey) {
+        reactionsState.value =
+            withContext(Dispatchers.IO) {
+                MessageReactions.loadReactionSummary(context, message.id)
+            }
     }
     val authorColor = ProfileColors.authorNameColor(message.authorColorSeed).copy(alpha = 0.85f)
     val timestamp = formatBubbleTime(message.timestamp)
@@ -190,6 +202,7 @@ fun MessageBubble(
 fun OutgoingMessageRow(
     message: ChatMessage,
     layout: MessageGroupLayout,
+    maxBubbleWidth: Dp,
     highlighted: Boolean,
     reactionReloadKey: Int,
     pulseEmoji: String?,
@@ -197,14 +210,8 @@ fun OutgoingMessageRow(
     onClick: (Offset) -> Unit,
     onQuoteClick: (Int) -> Unit,
 ) {
-    val screenWidth = com.polli.ui.theme.layoutScreenWidthDp()
     val rowStart = PolliDimens.ChatRowPaddingH + PolliDimens.ChatRowOutgoingExtraStart
     val rowEnd = PolliDimens.ChatRowPaddingH
-    val maxBubbleWidth = chatBubbleLaneMaxWidth(
-        screenWidth = screenWidth,
-        startGutter = rowStart,
-        endGutter = rowEnd,
-    )
     val rowTop = if (layout.isFirstInStack) PolliDimens.ChatRowTop else PolliDimens.ChatRowTopCollapsed
     Box(
         modifier = Modifier
@@ -242,6 +249,7 @@ fun OutgoingMessageRow(
 fun SingleIncomingMessageRow(
     message: ChatMessage,
     layout: MessageGroupLayout,
+    maxBubbleWidth: Dp,
     highlighted: Boolean,
     reactionReloadKey: Int,
     pulseEmoji: String?,
@@ -249,16 +257,10 @@ fun SingleIncomingMessageRow(
     onClick: (Offset) -> Unit,
     onQuoteClick: (Int) -> Unit,
 ) {
-    val screenWidth = com.polli.ui.theme.layoutScreenWidthDp()
     val rowPad = PolliDimens.ChatRowPaddingH
     val incomingRight = PolliDimens.ChatRowIncomingRight
     val rowTop = if (layout.isFirstInStack) PolliDimens.ChatRowTop else PolliDimens.ChatRowTopCollapsed
     val showAvatar = layout.isLastInStack
-    val maxBubbleWidth = chatBubbleLaneMaxWidth(
-        screenWidth = screenWidth,
-        startGutter = rowPad,
-        endGutter = incomingRight,
-    )
 
     Box(
         modifier = Modifier

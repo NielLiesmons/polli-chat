@@ -2,15 +2,13 @@
 
 ![Your Handle. Your Spaces. For Chat, Mail, Drive & More.](assets/branding/readme-hero.png)
 
-Polli is a chat-first app for everyday life online: your spaces, encrypted drive, mail, and the people and communities around them. Everything is encrypted by default. Access is per file and folder.
+**Super-app with encrypted Chat, Drive, Mail & more. On a domain that's simply yours.**
+
+Polli is for everyday life online — chat with people you know, keep files in your spaces, get mail at your handle, and stay in control of what's private and what's shared.
 
 ---
 
 ## Why Polli
-
-### Beautiful by default
-
-Polli puts care into typography, motion, and layout so the app stays out of your way until you need it. Chat is the home screen; everything else flows from there.
 
 ### Encrypted by default, share on your terms
 
@@ -51,22 +49,6 @@ No megascale cloud bill required. A space can be served from a small VPS, a home
 
 ---
 
-## What you get today
+## Current status
 
-| Area | Experience |
-|------|------------|
-| **Home** | Spaces (groups), Mail (1:1), Channels (broadcasts / stories) |
-| **Chat** | Composer, voice, attachments, reactions, quotes |
-| **Identity** | MNS sigils for avatars and the Sigils explorer |
-| **Platforms** | Android (primary), desktop in progress |
-
-Shared drive, MNS-resolved spaces, and full inbox admission are on the roadmap. The protocol behind Spaces (cryptree state, mail transport, MNS discovery) is documented in [docs/spaces](./docs/spaces/).
-
-## Development
-
-| Doc | Topic |
-|-----|--------|
-| [docs/BUILDING.md](./docs/BUILDING.md) | Build Android + desktop |
-| [docs/ENGINE_RUST.md](./docs/ENGINE_RUST.md) | Rust engine layout (`polli-home`, JSON-RPC) |
-| [docs/DEAD_CODE_PRUNE.md](./docs/DEAD_CODE_PRUNE.md) | Java → Kotlin/KMP migration tracker |
-| [docs/UI_MIGRATION.md](./docs/UI_MIGRATION.md) | Screen-by-screen Compose status |
+Android app with encrypted chat (groups, mail, channels), voice and attachments, and MNS sigils — actively building toward shared drive and full space inboxes. See [docs/spaces](./docs/spaces/) for the protocol roadmap.

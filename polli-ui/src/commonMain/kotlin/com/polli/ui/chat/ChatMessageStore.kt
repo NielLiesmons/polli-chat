@@ -5,6 +5,7 @@ import com.polli.domain.model.chat.FeedItem
 import com.polli.domain.model.chat.MSG_ID_DAYMARKER
 import com.polli.domain.model.chat.MessageStub
 import com.polli.domain.model.chat.messageIdAtDisplayIndex
+import com.polli.domain.model.chat.withGroupLayouts
 import com.polli.domain.repository.MessageRepository
 
 /**
@@ -82,7 +83,7 @@ class ChatMessageStore(
         showNewMessages: Boolean,
         freshCount: Int,
     ): List<FeedItem> {
-        feedItemsCache = ChatFeedBuilder.build(formatDayLabel, messages, msgIds, showNewMessages, freshCount)
+        feedItemsCache = finalizeFeed(ChatFeedBuilder.build(formatDayLabel, messages, msgIds, showNewMessages, freshCount))
         return feedItemsCache
     }
 
@@ -108,7 +109,7 @@ class ChatMessageStore(
         val valid = msgIds.toSet()
         synchronized(stubLock) { stubById.keys.retainAll(valid) }
         pruneCache(valid)
-        feedItemsCache = nextFeed
+        feedItemsCache = finalizeFeed(nextFeed)
         return feedItemsCache
     }
 
@@ -120,7 +121,7 @@ class ChatMessageStore(
     ): List<FeedItem> {
         if (msgId in msgIds) return feedItemsCache
         msgIds = msgIds + msgId
-        feedItemsCache = ChatFeedBuilder.build(formatDayLabel, messages, msgIds, showNewMessages, freshCount)
+        feedItemsCache = finalizeFeed(ChatFeedBuilder.build(formatDayLabel, messages, msgIds, showNewMessages, freshCount))
         return feedItemsCache
     }
 
@@ -140,11 +141,7 @@ class ChatMessageStore(
         }
     }
 
-    fun preloadStubs() {
-        preloadMessages(msgIds.filter { it > MSG_ID_DAYMARKER }.toIntArray())
-    }
-
-    fun preloadStubsAroundDisplayIndex(displayIndex: Int, radius: Int = 20) {
+    fun preloadStubsAroundDisplayIndex(displayIndex: Int, radius: Int = 40) {
         val items = feedItemsCache
         if (items.isEmpty()) return
         val center = displayIndex.coerceIn(0, items.lastIndex)
@@ -159,6 +156,17 @@ class ChatMessageStore(
         if (n == 0) return
         preloadMessages(if (n == ids.size) ids else ids.copyOf(n))
     }
+
+    fun preloadStubs() {
+        preloadMessages(msgIds.filter { it > MSG_ID_DAYMARKER }.toIntArray())
+    }
+
+    fun rebuildGroupLayouts(): List<FeedItem> {
+        feedItemsCache = finalizeFeed(feedItemsCache)
+        return feedItemsCache
+    }
+
+    private fun finalizeFeed(items: List<FeedItem>): List<FeedItem> = items.withGroupLayouts { getStub(it) }
 
     private fun pruneCache(validIds: Set<Int>) {
         synchronized(messageCache) {

@@ -1,10 +1,12 @@
 package com.polli.android.chat
 
+import com.polli.core.chat.MessageGroupLayout
 import com.polli.domain.model.chat.ChatMessage
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.Dp
 import com.polli.android.permissions.BackgroundSetup
 
 /** One feed row — used from [PolliChatFeedAdapter] bind (DC [ConversationItem.bind] equivalent). */
@@ -12,8 +14,11 @@ import com.polli.android.permissions.BackgroundSetup
 fun PolliChatFeedRow(
     viewModel: ChatViewModel,
     msgId: Int,
-    olderMsgId: Int?,
-    newerMsgId: Int?,
+    groupLayout: MessageGroupLayout,
+    maxBubbleWidth: Dp,
+    highlighted: Boolean,
+    reactionReloadKey: Int,
+    pulseEmoji: String?,
     onQuoteClick: (Int) -> Unit,
     onOpenMessageOverlay: (ChatMessage, Offset) -> Unit,
 ) {
@@ -28,12 +33,6 @@ fun PolliChatFeedRow(
         }
     val display = msg ?: stub?.toSkeletonChatMessage() ?: return
 
-    val layout =
-        remember(msgId, olderMsgId, newerMsgId, contentEpoch) {
-            viewModel.layoutForMessage(msgId, olderMsgId, newerMsgId)
-        }
-    val reactionReloadKey = viewModel.reactionEpochFor(msgId)
-    val pulseEmoji = viewModel.reactionPulse?.takeIf { it.msgId == display.id }?.emoji
     val context = LocalContext.current
 
     val openOverlay: (Offset) -> Unit = { tap ->
@@ -45,8 +44,9 @@ fun PolliChatFeedRow(
     if (display.isOutgoing) {
         OutgoingMessageRow(
             message = display,
-            layout = layout,
-            highlighted = viewModel.highlightId == display.id,
+            layout = groupLayout,
+            maxBubbleWidth = maxBubbleWidth,
+            highlighted = highlighted,
             reactionReloadKey = reactionReloadKey,
             pulseEmoji = pulseEmoji,
             onSwipeReply = { viewModel.setReply(display) },
@@ -56,8 +56,9 @@ fun PolliChatFeedRow(
     } else {
         SingleIncomingMessageRow(
             message = display,
-            layout = layout,
-            highlighted = viewModel.highlightId == display.id,
+            layout = groupLayout,
+            maxBubbleWidth = maxBubbleWidth,
+            highlighted = highlighted,
             reactionReloadKey = reactionReloadKey,
             pulseEmoji = pulseEmoji,
             onSwipeReply = { viewModel.setReply(display) },

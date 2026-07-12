@@ -113,18 +113,6 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     fun displayIndexForMsgId(msgId: Int): Int = feedItems.displayIndexForMessage(msgId)
 
-    fun layoutForMessage(
-        msgId: Int,
-        olderMsgId: Int?,
-        newerMsgId: Int?,
-    ): MessageGroupLayout {
-        val c = ensureController()
-        val self = c.getStub(msgId) ?: return MessageGroupLayout()
-        val olderStub = olderMsgId?.let { c.getStub(it) }
-        val newerStub = newerMsgId?.let { c.getStub(it) }
-        return layoutBetweenNeighbors(olderStub, self, newerStub)
-    }
-
     fun bind(
         chatId: Int,
         initialDraft: String? = null,
