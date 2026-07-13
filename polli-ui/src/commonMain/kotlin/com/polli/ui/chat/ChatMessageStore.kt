@@ -133,6 +133,9 @@ class ChatMessageStore(
 
     fun messageIds(): IntArray = msgIds
 
+    /** Message ids only — day markers are [StickyHeaderDecoration] headers (DC parity). */
+    fun adapterMessageIds(): IntArray = msgIds.filter { it > MSG_ID_DAYMARKER }.toIntArray()
+
     fun preloadMessages(msgIdsToLoad: IntArray) {
         if (msgIdsToLoad.isEmpty()) return
         messages.preloadMessages(msgIdsToLoad)

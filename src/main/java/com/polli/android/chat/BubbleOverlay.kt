@@ -39,13 +39,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,6 +65,7 @@ import kotlinx.coroutines.withContext
 
 data class BubbleOverlayAnchor(
     val message: ChatMessage,
+    /** Tap position in [ChatScreen] root coordinates (see [BubbleSwiper]). */
     val tapX: Float,
     val tapY: Float,
 )
@@ -82,15 +80,8 @@ private val EdgePad = 16.dp
 private val OverlayShellBg = PolliColors.Gray66
 private val OverlayShellBorder = PolliColors.ShellBorder
 private val ActionRowVPad = 10.dp
+private val SeenByRowHeight = 44.dp
 private const val ActionRowCount = 7
-
-private fun estimateActionsPanelHeightPx(includeSeenBy: Boolean, density: Density): Float =
-    with(density) {
-        val row = ActionRowVPad * 2 + 24.dp
-        val divider = 1.dp
-        val seenByBlock = if (includeSeenBy) row + divider else 0.dp
-        (seenByBlock + row * ActionRowCount + divider * (ActionRowCount - 1)).toPx()
-    }
 
 @Composable
 fun BubbleOverlayHost(
@@ -126,11 +117,25 @@ fun BubbleOverlayHost(
     val reactionsWidthPx = with(density) { ActionsPanelWidth.toPx() + with(density) { ReactionsFadeWidth.toPx() } }
     val reactionsHeightPx = with(density) { ReactionsPanelHeight.toPx() }
     val gapPx = with(density) { PanelGap.toPx() }
+    val seenByHeightPx = with(density) { SeenByRowHeight.toPx() }
+    val actionRowPx = with(density) { (ActionRowVPad * 2 + 24.dp).toPx() }
+    val dividerPx = with(density) { 1.dp.toPx() }
+    // Fixed panel height — reserve Seen-by slot for outgoing so async load cannot resize panels.
     val actionsHeightPx =
         remember(anchor.message.id, anchor.message.isOutgoing) {
-            estimateActionsPanelHeightPx(anchor.message.isOutgoing, density)
+            val seenByBlock = if (anchor.message.isOutgoing) seenByHeightPx + dividerPx else 0f
+            seenByBlock + actionRowPx * ActionRowCount + dividerPx * (ActionRowCount - 1)
         }
-    var hostWindowOrigin by remember { mutableStateOf(Offset.Zero) }
+
+    var readers by remember(anchor.message.id) { mutableStateOf<List<ReadReceiptUser>>(emptyList()) }
+    LaunchedEffect(anchor.message.id) {
+        readers =
+            if (anchor.message.isOutgoing) {
+                withContext(Dispatchers.IO) { ReadReceipts.load(context, anchor.message.id) }
+            } else {
+                emptyList()
+            }
+    }
 
     Box(
         modifier =
@@ -150,23 +155,14 @@ fun BubbleOverlayHost(
                     ),
         )
 
-        BoxWithConstraints(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .onGloballyPositioned { coords ->
-                        val next = coords.positionInWindow()
-                        // Avoid recomposition/layout loops from tiny coordinate jitter.
-                        if (hostWindowOrigin != next) hostWindowOrigin = next
-                    },
-        ) {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val screenW = constraints.maxWidth.toFloat()
             val screenH = constraints.maxHeight.toFloat()
             val safeTop = statusTopPx + edgePadPx
             val safeBottom = screenH - navBottomPx - edgePadPx
 
-            val tapX = anchor.tapX - hostWindowOrigin.x
-            val tapY = anchor.tapY - hostWindowOrigin.y
+            val tapX = anchor.tapX
+            val tapY = anchor.tapY
 
             val reactionsCenterY =
                 tapY.coerceIn(
@@ -196,9 +192,7 @@ fun BubbleOverlayHost(
             FrostedChromeSurface(
                 modifier =
                     Modifier
-                        .offset {
-                            IntOffset(reactionsLeft.roundToInt(), reactionsTop.roundToInt())
-                        }
+                        .offset { IntOffset(reactionsLeft.roundToInt(), reactionsTop.roundToInt()) }
                         .width(ActionsPanelWidth + ReactionsFadeWidth)
                         .height(ReactionsPanelHeight)
                         .clickable(
@@ -209,7 +203,7 @@ fun BubbleOverlayHost(
                 shape = PanelShape,
                 tint = OverlayShellBg,
                 borderColor = OverlayShellBorder,
-                hazeState = hazeState,
+                hazeState = null,
                 hazeStyle = overlayHazeStyle,
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
@@ -272,17 +266,16 @@ fun BubbleOverlayHost(
             ActionsPanel(
                 modifier =
                     Modifier
-                        .offset {
-                            IntOffset(actionsLeft.roundToInt(), actionsTop.roundToInt())
-                        }
+                        .offset { IntOffset(actionsLeft.roundToInt(), actionsTop.roundToInt()) }
                         .width(ActionsPanelWidth)
+                        .height(with(density) { actionsHeightPx.toDp() })
                         .clickable(
                             interactionSource = panelTapBlock,
                             indication = null,
                             onClick = {},
                         ),
                 message = anchor.message,
-                hazeState = hazeState,
+                readers = readers,
                 overlayHazeStyle = overlayHazeStyle,
                 onReply = onReply,
                 onForward = onForward,
@@ -308,7 +301,7 @@ fun BubbleOverlayHost(
 private fun ActionsPanel(
     modifier: Modifier,
     message: ChatMessage,
-    hazeState: HazeState?,
+    readers: List<ReadReceiptUser>,
     overlayHazeStyle: HazeStyle,
     onReply: () -> Unit,
     onForward: () -> Unit,
@@ -316,28 +309,21 @@ private fun ActionsPanel(
     onDetails: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    val context = LocalContext.current
-    var readers by remember(message.id) { mutableStateOf<List<ReadReceiptUser>>(emptyList()) }
-    LaunchedEffect(message.id) {
-        if (message.isOutgoing) {
-            readers =
-                withContext(Dispatchers.IO) {
-                    ReadReceipts.load(context, message.id)
-                }
-        }
-    }
-
     FrostedChromeSurface(
-        modifier = modifier.wrapContentHeight(),
+        modifier = modifier,
         shape = PanelShape,
         tint = OverlayShellBg,
         borderColor = OverlayShellBorder,
-        hazeState = hazeState,
+        hazeState = null,
         hazeStyle = overlayHazeStyle,
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            if (message.isOutgoing && readers.isNotEmpty()) {
-                SeenByRow(readers = readers)
+            if (message.isOutgoing) {
+                if (readers.isNotEmpty()) {
+                    SeenByRow(readers = readers)
+                } else {
+                    Box(modifier = Modifier.height(SeenByRowHeight))
+                }
                 HorizontalDivider(color = PolliColors.White8)
             }
             OverlayActionRow(
@@ -396,7 +382,8 @@ private fun SeenByRow(readers: List<ReadReceiptUser>) {
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = PolliDimens.ChatBubbleInsetH, vertical = ActionRowVPad),
+                .height(SeenByRowHeight)
+                .padding(horizontal = PolliDimens.ChatBubbleInsetH),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(modifier = Modifier.width(stackWidth)) {

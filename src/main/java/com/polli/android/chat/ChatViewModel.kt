@@ -119,6 +119,8 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getStub(msgId: Int) = ensureController().getStub(msgId)
 
+    fun messageIds(): IntArray = ensureController().messageIds()
+
     /** Single store read per bind — full message or skeleton stub (DC: one getMsg). */
     fun getMessageForRow(msgId: Int): ChatMessage? {
         getChatMessage(msgId)?.let { return it }
@@ -133,7 +135,17 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         return layoutBetweenNeighbors(older = older, self = self, newer = newer)
     }
 
-    fun displayIndexForMsgId(msgId: Int): Int = feedItems.displayIndexForMessage(msgId)
+    /** Same logic as [groupLayoutFor] but for an adapter driven by `int[] msgIds` (DC-style). */
+    fun groupLayoutForMsgId(msgId: Int): com.polli.core.chat.MessageGroupLayout {
+        val items = feedItems
+        val chronIndex = items.indexOfFirst { it is FeedItem.Message && it.msgId == msgId }
+        val row = (items.getOrNull(chronIndex) as? FeedItem.Message) ?: return com.polli.core.chat.MessageGroupLayout()
+        return groupLayoutFor(row)
+    }
+
+    fun adapterMessageIds(): IntArray = ensureController().adapterMessageIds()
+
+    fun displayIndexForMsgId(msgId: Int): Int = ensureController().displayIndexForMsgId(msgId)
 
     fun preloadAroundDisplayIndex(displayIndex: Int, radius: Int = 40) {
         ensureController().preloadAroundDisplayIndex(displayIndex, radius)
@@ -157,16 +169,30 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         c.bind(chatId, initialDraft, startingPosition, fromArchived)
         registerChatEvents()
         if (startingPosition >= 0) {
-            val rows = c.feedItems.filterIsInstance<FeedItem.Message>()
-            if (rows.isNotEmpty()) {
-                val chronIdx = (rows.size - 1 - startingPosition).coerceIn(0, rows.lastIndex)
-                highlightScrollIndex = c.displayIndexForMsgId(rows[chronIdx].msgId)
+            val ids = c.adapterMessageIds()
+            if (ids.isNotEmpty()) {
+                val chronIdx = (ids.size - 1 - startingPosition).coerceIn(0, ids.lastIndex)
+                highlightScrollIndex = c.displayIndexForMsgId(ids[chronIdx])
             }
         }
     }
 
+    var rowRefreshToken by mutableIntStateOf(0)
+        private set
+    var rowRefreshMsgId by mutableIntStateOf(-1)
+        private set
+
     fun bumpMessageEpoch(msgId: Int) {
         messageEpoch[msgId] = (messageEpoch[msgId] ?: 0) + 1
+    }
+
+    /** Invalidate one row in the store and notify the adapter — not the whole feed. */
+    fun refreshMessageRow(msgId: Int) {
+        if (msgId <= 0) return
+        ensureController().refreshMessageRow(msgId)
+        bumpMessageEpoch(msgId)
+        rowRefreshMsgId = msgId
+        rowRefreshToken++
     }
 
     fun reactionEpochFor(msgId: Int): Int = reactionEpoch[msgId] ?: 0
@@ -195,8 +221,13 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         RecentEmojiStore.record(app, emoji)
         ensureController().sendReaction(msgId, emoji)
         MessageReactions.invalidateSummary(msgId)
-        ensureController().refreshMessageRow(msgId)
-        reactionEpoch[msgId] = (reactionEpoch[msgId] ?: 0) + 1
+        viewModelScope.launch(Dispatchers.IO) {
+            MessageReactions.loadReactionSummary(app, msgId)
+            withContext(Dispatchers.Main) {
+                reactionEpoch[msgId] = (reactionEpoch[msgId] ?: 0) + 1
+                refreshMessageRow(msgId)
+            }
+        }
     }
 
     fun beginEdit(msg: ChatMessage) {
@@ -216,7 +247,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun messageIdAtDisplayIndex(displayIndex: Int): Int? =
-        feedItems.messageIdAtDisplayIndex(displayIndex)
+        ensureController().messageIdAtDisplayIndex(displayIndex)
 
     fun send() = ensureController().send()
 
@@ -255,17 +286,21 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
             -> {
                 val msgId = event.data1Int
                 if (msgId > 0 && feedContains(msgId)) {
-                    ensureController().refreshMessageRow(msgId)
-                    bumpMessageEpoch(msgId)
+                    refreshMessageRow(msgId)
                 }
             }
             DcContext.DC_EVENT_REACTIONS_CHANGED -> {
-                val msgId = event.data1Int
-                val eventChatId = event.data2Int
+                val eventChatId = event.data1Int
+                val msgId = event.data2Int
                 if (eventChatId == chatId && msgId > 0) {
                     MessageReactions.invalidateSummary(msgId)
-                    ensureController().refreshMessageRow(msgId)
-                    reactionEpoch[msgId] = (reactionEpoch[msgId] ?: 0) + 1
+                    viewModelScope.launch(Dispatchers.IO) {
+                        MessageReactions.loadReactionSummary(app, msgId)
+                        withContext(Dispatchers.Main) {
+                            reactionEpoch[msgId] = (reactionEpoch[msgId] ?: 0) + 1
+                            refreshMessageRow(msgId)
+                        }
+                    }
                 }
             }
             DcContext.DC_EVENT_MSGS_CHANGED -> {
@@ -273,8 +308,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                 if (eventChatId == chatId) {
                     val msgId = event.data2Int
                     if (msgId > 0 && feedContains(msgId)) {
-                        ensureController().refreshMessageRow(msgId)
-                        bumpMessageEpoch(msgId)
+                        refreshMessageRow(msgId)
                     }
                 }
             }
@@ -282,7 +316,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun feedContains(msgId: Int): Boolean =
-        feedItems.any { it is FeedItem.Message && it.msgId == msgId }
+        ensureController().adapterMessageIds().contains(msgId)
 
     override fun onCleared() {
         unregisterChatEvents()

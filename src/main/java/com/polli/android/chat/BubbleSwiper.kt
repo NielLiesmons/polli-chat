@@ -72,10 +72,10 @@ fun BubbleSwiper(
     var contentCoords by remember { mutableStateOf<LayoutCoordinates?>(null) }
     val scope = rememberCoroutineScope()
 
-    fun currentTapInWindow(local: Offset): Offset {
+    fun currentTapInRoot(local: Offset): Offset {
         val coords = contentCoords
         if (coords == null || !coords.isAttached) return Offset.Zero
-        return coords.localToWindow(local)
+        return coords.localToRoot(local)
     }
 
     val settleTarget = if (dragging || popping) dragX else 0f
@@ -165,7 +165,7 @@ fun BubbleSwiper(
                                         abs(dx) < TAP_SLOP_PX &&
                                         abs(dy) < TAP_SLOP_PX
                                     ) {
-                                        scope.launch { onTap(currentTapInWindow(change.position)) }
+                                        scope.launch { onTap(currentTapInRoot(change.position)) }
                                     }
                                     scope.launch { settle() }
                                 }

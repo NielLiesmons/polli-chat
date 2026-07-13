@@ -73,7 +73,17 @@ class ChatController(
 
     fun getStub(msgId: Int) = store.getStub(msgId)
 
-    fun displayIndexForMsgId(msgId: Int): Int = feedItems.displayIndexForMessage(msgId)
+    fun messageIds(): IntArray = store.messageIds()
+
+    fun adapterMessageIds(): IntArray = store.adapterMessageIds()
+
+    fun displayIndexForMsgId(msgId: Int): Int {
+        val ids = adapterMessageIds()
+        for (i in ids.indices) {
+            if (ids[i] == msgId) return ids.size - 1 - i
+        }
+        return -1
+    }
 
     fun bind(
         chatId: Int,
@@ -94,7 +104,6 @@ class ChatController(
                 ?: store.buildFeed(showNewMessagesMarker, freshMsgs)
         initialScrollIndex =
             resolveInitialScrollIndex(
-                items = feedItems,
                 startingPosition = startingPosition,
                 freshMsgs = freshMsgs,
             )
@@ -105,15 +114,7 @@ class ChatController(
                 messages.marknoticedChat(chatId)
             }
         }
-        scope.launch {
-            withContext(Dispatchers.Default) {
-                store.preloadStubsAroundDisplayIndex(initialScrollIndex, radius = 40)
-            }
-            // No second-pass full-feed regroup; grouping is resolved at bind-time on Android.
-            launch(Dispatchers.Default) {
-                store.preloadStubs()
-            }
-        }
+        // DC opens with getChatMsgs + bind visible rows only — no background full-chat preload.
     }
 
     fun clearFirstLoadScroll() {
@@ -179,7 +180,6 @@ class ChatController(
     fun refreshMessageRow(msgId: Int) {
         if (msgId <= 0) return
         store.refreshMessageRow(msgId)
-        contentGeneration++
     }
 
     fun preloadAroundDisplayIndex(displayIndex: Int, radius: Int = 40) {
@@ -188,8 +188,12 @@ class ChatController(
         }
     }
 
-    fun messageIdAtDisplayIndex(displayIndex: Int): Int? =
-        feedItems.messageIdAtDisplayIndex(displayIndex)
+    fun messageIdAtDisplayIndex(displayIndex: Int): Int? {
+        val ids = adapterMessageIds()
+        val chron = ids.size - 1 - displayIndex
+        if (chron !in ids.indices) return null
+        return ids[chron]
+    }
 
     fun send() {
         if (chatId <= 0) return
@@ -295,7 +299,6 @@ class ChatController(
                 feedItems = synced
                 reloadGeneration++
                 sentMsgId?.let { store.preloadMessages(intArrayOf(it)) }
-                    ?: scope.launch(Dispatchers.Default) { store.preloadStubs() }
                 return true
             }
             sentMsgId != null -> {
@@ -324,24 +327,23 @@ class ChatController(
     }
 
     private fun resolveInitialScrollIndex(
-        items: List<FeedItem>,
         startingPosition: Int,
         freshMsgs: Int,
     ): Int {
-        val messageRows = items.filterIsInstance<FeedItem.Message>()
-        if (messageRows.isEmpty()) return 0
+        val ids = adapterMessageIds()
+        if (ids.isEmpty()) return 0
         val targetMsgId =
             when {
                 startingPosition >= 0 -> {
-                    val msgIndex = (messageRows.size - 1 - startingPosition).coerceIn(0, messageRows.lastIndex)
-                    messageRows[msgIndex].msgId
+                    val chron = (ids.size - 1 - startingPosition).coerceIn(0, ids.lastIndex)
+                    ids[chron]
                 }
                 freshMsgs > 0 -> {
-                    val msgIndex = (messageRows.size - freshMsgs).coerceIn(0, messageRows.lastIndex)
-                    messageRows[msgIndex].msgId
+                    val chron = (ids.size - freshMsgs).coerceIn(0, ids.lastIndex)
+                    ids[chron]
                 }
-                else -> messageRows.last().msgId
+                else -> ids.last()
             }
-        return items.displayIndexForMessage(targetMsgId).coerceAtLeast(0)
+        return displayIndexForMsgId(targetMsgId).coerceAtLeast(0)
     }
 }

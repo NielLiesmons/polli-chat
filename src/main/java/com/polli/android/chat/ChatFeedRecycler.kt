@@ -7,7 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -23,13 +22,12 @@ import com.polli.android.BuildConfig
 import com.polli.android.settings.LocalAppPrefs
 import com.polli.android.platform.PolliAudioPlaybackViewModel
 import com.polli.android.theme.PolliDimens
-import com.polli.domain.model.chat.messageCount
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 
 /**
- * DC [ConversationFragment] list host — [RecyclerView] with reverse layout, stable ids,
- * lazy per-row bind. Haze stays on during scroll (DC has no scroll gating).
+ * DC [ConversationFragment] — reverse [RecyclerView], [PolliConversationAdapter] on `int[]`,
+ * [StickyHeaderDecoration] for day pills, no scroll-idle work.
  */
 @Composable
 fun ChatFeedRecycler(
@@ -68,18 +66,20 @@ fun ChatFeedRecycler(
 
     val adapter =
         remember(maxBubbleWidth) {
-            PolliChatFeedAdapter(
+            PolliConversationAdapter(
                 viewModel = viewModel,
-                playbackViewModel = playbackViewModel,
                 maxBubbleWidth = maxBubbleWidth,
+                playbackViewModel = playbackViewModel,
                 onOpenMessageOverlay = onOpenMessageOverlay,
                 onQuoteClick = onScrollToMessage,
-            ).also { it.changeData(viewModel.feedItems, structuralReload = true) }
+            ).also { it.changeData(viewModel.adapterMessageIds()) }
         }
+
+    val headerDecoration = remember { StickyHeaderDecoration(adapter) }
 
     var prevMsgCount by remember { mutableIntStateOf(0) }
     var appliedGeneration by remember { mutableIntStateOf(-1) }
-    var appliedContentGeneration by remember { mutableIntStateOf(-1) }
+    var appliedRowRefresh by remember { mutableIntStateOf(0) }
     var appliedUiScaleRevision by remember { mutableIntStateOf(uiScaleRevision) }
 
     fun applyStartingPosition(layoutManager: PolliChatLayoutManager, msgCount: Int) {
@@ -124,10 +124,10 @@ fun ChatFeedRecycler(
     }
 
     fun syncFeed(recycler: RecyclerView) {
-        val items = viewModel.feedItems
+        val msgIds = viewModel.adapterMessageIds()
         val layoutManager = recycler.layoutManager as? PolliChatLayoutManager ?: return
         if (viewModel.pendingFirstLoadScroll) {
-            applyStartingPosition(layoutManager, items.size)
+            applyStartingPosition(layoutManager, msgIds.size)
         }
         val preserveScroll = !viewModel.pendingFirstLoadScroll
         val anchor =
@@ -136,19 +136,14 @@ fun ChatFeedRecycler(
             } else {
                 null
             }
-        val changed =
-            adapter.changeData(
-                items,
-                structuralReload = viewModel.pendingFirstLoadScroll ||
-                    kotlin.math.abs(items.size - adapter.feedItemCount()) > 8,
-            )
+        headerDecoration.clearHeaderCache()
+        adapter.changeData(msgIds)
         adapter.updateChrome(viewModel.highlightId, viewModel.reactionPulse)
-        if (changed && anchor != null) {
+        if (anchor != null) {
             ChatFeedScrollAnchor.restore(layoutManager, anchor, adapter.itemCount)
         }
         appliedGeneration = reloadGeneration
-        appliedContentGeneration = contentGeneration
-        afterFeedSync(recycler, items.messageCount())
+        afterFeedSync(recycler, msgIds.size)
     }
 
     val feedModifier =
@@ -160,12 +155,12 @@ fun ChatFeedRecycler(
         AndroidView(
             modifier = feedModifier,
             factory = { context ->
-                val items = viewModel.feedItems
+                val msgIds = viewModel.adapterMessageIds()
                 val layoutManager =
                     PolliChatLayoutManager(context).also {
-                        applyStartingPosition(it, items.size)
+                        applyStartingPosition(it, msgIds.size)
                     }
-                adapter.changeData(items, structuralReload = true)
+                adapter.changeData(msgIds)
                 adapter.updateChrome(viewModel.highlightId, viewModel.reactionPulse)
                 RecyclerView(context).apply {
                     this.layoutManager = layoutManager
@@ -175,6 +170,7 @@ fun ChatFeedRecycler(
                     setItemViewCacheSize(24)
                     setPadding(0, topPadPx, 0, bottomPadPx)
                     this.adapter = adapter
+                    addItemDecoration(headerDecoration)
                     addOnScrollListener(
                         object : RecyclerView.OnScrollListener() {
                             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -183,27 +179,11 @@ fun ChatFeedRecycler(
                                     onScrolledToBottom()
                                 }
                             }
-
-                            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                                if (newState != RecyclerView.SCROLL_STATE_IDLE) return
-                                val lm = recyclerView.layoutManager as? LinearLayoutManager ?: return
-                                val first = lm.findFirstVisibleItemPosition()
-                                val last = lm.findLastVisibleItemPosition()
-                                if (first == RecyclerView.NO_POSITION) return
-                                val center = (first + last) / 2
-                                viewModel.preloadAroundDisplayIndex(center, radius = 40)
-                                val msgIds =
-                                    (first..last).mapNotNull { pos ->
-                                        viewModel.messageIdAtDisplayIndex(pos)
-                                    }.toIntArray()
-                                viewModel.warmReactionCache(msgIds)
-                            }
                         },
                     )
                     scrollController.recyclerView = this
                     appliedGeneration = reloadGeneration
-                    appliedContentGeneration = contentGeneration
-                    afterFeedSync(this, items.messageCount())
+                    afterFeedSync(this, msgIds.size)
                 }
             },
             update = { recycler ->
@@ -216,17 +196,16 @@ fun ChatFeedRecycler(
                 }
                 scrollController.recyclerView = recycler
                 adapter.updateChrome(viewModel.highlightId, viewModel.reactionPulse)
+                if (appliedRowRefresh != viewModel.rowRefreshToken) {
+                    appliedRowRefresh = viewModel.rowRefreshToken
+                    adapter.refreshMessage(viewModel.rowRefreshMsgId)
+                }
                 if (appliedUiScaleRevision != uiScaleRevision) {
                     appliedUiScaleRevision = uiScaleRevision
-                    adapter.refreshContent()
+                    adapter.changeData(viewModel.adapterMessageIds())
                 }
-                when {
-                    appliedGeneration != reloadGeneration -> syncFeed(recycler)
-                    appliedContentGeneration != contentGeneration -> {
-                        adapter.changeData(viewModel.feedItems, structuralReload = false)
-                        adapter.refreshContent()
-                        appliedContentGeneration = contentGeneration
-                    }
+                if (appliedGeneration != reloadGeneration) {
+                    syncFeed(recycler)
                 }
             },
         )

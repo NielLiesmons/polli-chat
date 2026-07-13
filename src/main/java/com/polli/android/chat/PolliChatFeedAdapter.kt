@@ -35,8 +35,7 @@ class PolliChatFeedAdapter(
 
     companion object {
         private const val VIEW_TYPE_MARKER = 0
-        private const val VIEW_TYPE_TEXT_VIEW = 1
-        private const val VIEW_TYPE_MESSAGE_COMPOSE = 2
+        const val VIEW_TYPE_MESSAGE_COMPOSE = 1
         const val PAYLOAD_CONTENT = "content"
         const val PAYLOAD_HIGHLIGHT = "highlight"
     }
@@ -66,6 +65,12 @@ class PolliChatFeedAdapter(
         notifyItemRangeChanged(0, itemCount, PAYLOAD_CONTENT)
     }
 
+    fun refreshMessage(msgId: Int) {
+        val displayIndex = displayIndexForMsgId(msgId)
+        if (displayIndex < 0) return
+        notifyItemChanged(displayIndex, PAYLOAD_CONTENT)
+    }
+
     fun feedItemCount(): Int = displayItems.size
 
     fun changeData(items: List<FeedItem>, structuralReload: Boolean = false): Boolean {
@@ -82,13 +87,9 @@ class PolliChatFeedAdapter(
     override fun getItemCount(): Int = displayItems.size
 
     override fun getItemViewType(position: Int): Int {
-        return when (val item = chronItem(position)) {
+        return when (chronItem(position)) {
             is FeedItem.DayMarker, FeedItem.NewMessages -> VIEW_TYPE_MARKER
-            is FeedItem.Message -> {
-                // Perf baseline: render *all* message rows as fast Views so scroll/open speed
-                // can be compared fairly (no Compose rows mixed in).
-                VIEW_TYPE_TEXT_VIEW
-            }
+            is FeedItem.Message -> VIEW_TYPE_MESSAGE_COMPOSE
         }
     }
 
@@ -105,22 +106,11 @@ class PolliChatFeedAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         return when (viewType) {
-            VIEW_TYPE_TEXT_VIEW -> {
-                val view =
-                    PolliTextMessageRowView(parent.context).apply {
-                        layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
-                    }
-                Holder.TextViewHolder(
-                    rowView = view,
-                    viewModel = viewModel,
-                    maxBubbleWidth = maxBubbleWidth,
-                )
-            }
             VIEW_TYPE_MARKER, VIEW_TYPE_MESSAGE_COMPOSE -> {
                 val composeView =
                     ComposeView(parent.context).apply {
                         layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
-                        setViewCompositionStrategy(ViewCompositionStrategy.Default)
+                        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
                     }
                 Holder.ComposeHolder(
                     composeView = composeView,
@@ -157,11 +147,6 @@ class PolliChatFeedAdapter(
                     pulseEmoji = rowPulse,
                     highlightOnly = highlightOnly,
                 )
-            is Holder.TextViewHolder -> {
-                if (item is FeedItem.Message) {
-                    holder.bind(item, highlighted)
-                }
-            }
         }
     }
 
@@ -177,6 +162,7 @@ class PolliChatFeedAdapter(
         ) : Holder(composeView) {
             private var boundItem by mutableStateOf<FeedItem?>(null)
             private var boundMessage by mutableStateOf<ChatMessage?>(null)
+            private var boundGroupLayout by mutableStateOf(com.polli.core.chat.MessageGroupLayout())
             private var boundHighlighted by mutableStateOf(false)
             private var boundPulseEmoji by mutableStateOf<String?>(null)
             private var boundReactions by mutableStateOf<List<BubbleReaction>>(emptyList())
@@ -189,11 +175,12 @@ class PolliChatFeedAdapter(
                         FeedItem.NewMessages -> ChatNewMessagesPill(label = newMessagesLabel)
                         is FeedItem.Message -> {
                             val message = boundMessage ?: return@setContent
+                            val layout = boundGroupLayout
                             if (playbackViewModel != null) {
                                 CompositionLocalProvider(LocalChatAudioPlayback provides playbackViewModel) {
                                     PolliChatFeedRow(
                                         message = message,
-                                        groupLayout = item.groupLayout,
+                                        groupLayout = layout,
                                         maxBubbleWidth = maxBubbleWidth,
                                         highlighted = boundHighlighted,
                                         reactions = boundReactions,
@@ -206,7 +193,7 @@ class PolliChatFeedAdapter(
                             } else {
                                 PolliChatFeedRow(
                                     message = message,
-                                    groupLayout = item.groupLayout,
+                                    groupLayout = layout,
                                     maxBubbleWidth = maxBubbleWidth,
                                     highlighted = boundHighlighted,
                                     reactions = boundReactions,
@@ -237,34 +224,10 @@ class PolliChatFeedAdapter(
                 boundItem = item
                 if (item is FeedItem.Message) {
                     boundMessage = viewModel.getMessageForRow(item.msgId)
+                    boundGroupLayout = viewModel.groupLayoutFor(item)
                     boundReactions = MessageReactions.loadReactionSummary(composeView.context, item.msgId)
                 }
             }
         }
-
-        class TextViewHolder(
-            private val rowView: PolliTextMessageRowView,
-            private val viewModel: ChatViewModel,
-            private val maxBubbleWidth: Dp,
-        ) : Holder(rowView) {
-            fun bind(item: FeedItem.Message, highlighted: Boolean) {
-                val msg = viewModel.getMessageForRow(item.msgId) ?: return
-                val layout = viewModel.groupLayoutFor(item)
-                val maxPx =
-                    with(rowView.resources.displayMetrics) {
-                        (maxBubbleWidth.value * density).toInt()
-                    }
-                rowView.bind(
-                    message = msg,
-                    layout = layout,
-                    maxBubbleWidthPx = maxPx,
-                    highlighted = highlighted,
-                )
-            }
-        }
     }
-
-    // NOTE: We intentionally do not gate the fast View row by content type right now.
-    // We want a consistent renderer for perf evaluation. We'll re-introduce richer
-    // per-type View rows next.
 }
