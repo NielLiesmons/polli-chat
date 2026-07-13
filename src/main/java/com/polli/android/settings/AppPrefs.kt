@@ -42,10 +42,13 @@ class AppPrefs(context: Context) : UiPreferences {
 
     override var uiScalePreset: UiScalePreset
         get() = readUiScalePreset()
-        set(value) = sp.edit()
-            .putInt(KEY_SCALE, value.ordinal)
-            .putBoolean(KEY_SCALE_V2, true)
-            .apply()
+        set(value) {
+            sp.edit()
+                .putInt(KEY_SCALE, value.ordinal)
+                .putBoolean(KEY_SCALE_V2, true)
+                .apply()
+            AppSettingsNotifier.notifyChanged()
+        }
 
     private fun readUiScalePreset(): UiScalePreset {
         if (!sp.contains(KEY_SCALE)) return UiScalePreset.default

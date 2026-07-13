@@ -125,32 +125,18 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         return getStub(msgId)?.toSkeletonChatMessage()
     }
 
-    var feedScrolling: Boolean = false
-        private set
-
-    fun setFeedScrolling(scrolling: Boolean) {
-        feedScrolling = scrolling
-    }
+    fun displayIndexForMsgId(msgId: Int): Int = feedItems.displayIndexForMessage(msgId)
 
     fun preloadAroundDisplayIndex(displayIndex: Int, radius: Int = 40) {
         ensureController().preloadAroundDisplayIndex(displayIndex, radius)
     }
 
-    fun loadReactionsAsync(msgId: Int, onLoaded: (List<BubbleReaction>) -> Unit) {
-        MessageReactions.cachedSummary(msgId)?.let {
-            onLoaded(it)
-            return
-        }
-        viewModelScope.launch {
-            val loaded =
-                withContext(Dispatchers.IO) {
-                    MessageReactions.loadReactionSummary(app, msgId)
-                }
-            onLoaded(loaded)
+    fun warmReactionCache(msgIds: IntArray) {
+        if (msgIds.isEmpty()) return
+        viewModelScope.launch(Dispatchers.IO) {
+            MessageReactions.preloadSummaries(app, msgIds)
         }
     }
-
-    fun displayIndexForMsgId(msgId: Int): Int = feedItems.displayIndexForMessage(msgId)
 
     fun bind(
         chatId: Int,

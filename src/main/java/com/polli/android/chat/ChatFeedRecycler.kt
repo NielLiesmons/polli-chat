@@ -80,6 +80,7 @@ fun ChatFeedRecycler(
     var prevMsgCount by remember { mutableIntStateOf(0) }
     var appliedGeneration by remember { mutableIntStateOf(-1) }
     var appliedContentGeneration by remember { mutableIntStateOf(-1) }
+    var appliedUiScaleRevision by remember { mutableIntStateOf(uiScaleRevision) }
 
     fun applyStartingPosition(layoutManager: PolliChatLayoutManager, msgCount: Int) {
         if (!viewModel.pendingFirstLoadScroll || msgCount <= 0) return
@@ -184,8 +185,6 @@ fun ChatFeedRecycler(
                             }
 
                             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                                val scrolling = newState != RecyclerView.SCROLL_STATE_IDLE
-                                viewModel.setFeedScrolling(scrolling)
                                 if (newState != RecyclerView.SCROLL_STATE_IDLE) return
                                 val lm = recyclerView.layoutManager as? LinearLayoutManager ?: return
                                 val first = lm.findFirstVisibleItemPosition()
@@ -193,11 +192,11 @@ fun ChatFeedRecycler(
                                 if (first == RecyclerView.NO_POSITION) return
                                 val center = (first + last) / 2
                                 viewModel.preloadAroundDisplayIndex(center, radius = 40)
-                                adapter.notifyItemRangeChanged(
-                                    first,
-                                    last - first + 1,
-                                    PolliChatFeedAdapter.PAYLOAD_REACTIONS,
-                                )
+                                val msgIds =
+                                    (first..last).mapNotNull { pos ->
+                                        viewModel.messageIdAtDisplayIndex(pos)
+                                    }.toIntArray()
+                                viewModel.warmReactionCache(msgIds)
                             }
                         },
                     )
@@ -217,10 +216,15 @@ fun ChatFeedRecycler(
                 }
                 scrollController.recyclerView = recycler
                 adapter.updateChrome(viewModel.highlightId, viewModel.reactionPulse)
+                if (appliedUiScaleRevision != uiScaleRevision) {
+                    appliedUiScaleRevision = uiScaleRevision
+                    adapter.refreshContent()
+                }
                 when {
                     appliedGeneration != reloadGeneration -> syncFeed(recycler)
                     appliedContentGeneration != contentGeneration -> {
                         adapter.changeData(viewModel.feedItems, structuralReload = false)
+                        adapter.refreshContent()
                         appliedContentGeneration = contentGeneration
                     }
                 }

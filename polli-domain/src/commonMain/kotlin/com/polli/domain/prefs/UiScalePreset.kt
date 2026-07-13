@@ -31,7 +31,7 @@ enum class UiScalePreset(val factor: Float, val label: String) {
         }
 
     companion object {
-        val default: UiScalePreset = Normal
+        val default: UiScalePreset = Step8
     }
 }
 

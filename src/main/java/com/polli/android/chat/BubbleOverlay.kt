@@ -111,17 +111,9 @@ fun BubbleOverlayHost(
     var showEmojiPicker by remember { mutableStateOf(false) }
     val quickEmojis = remember(anchor.message.id) { RecentEmojiStore.orderedQuickPick(context) }
 
-    BackHandler(onBack = onDismiss)
-
-    EmojiPickerModal(
-        visible = showEmojiPicker,
-        hazeState = hazeState,
-        onPick = { emoji ->
-            RecentEmojiStore.record(context, emoji)
-            onReaction(emoji)
-        },
-        onDismiss = { showEmojiPicker = false },
-    )
+    BackHandler {
+        if (showEmojiPicker) showEmojiPicker = false else onDismiss()
+    }
 
     val emojiScroll = rememberScrollState()
     val overlayHazeStyle = remember { polliOverlayHazeStyle(OverlayShellBg) }
@@ -298,6 +290,16 @@ fun BubbleOverlayHost(
             )
         }
     }
+
+    EmojiPickerModal(
+        visible = showEmojiPicker,
+        hazeState = hazeState,
+        onPick = { emoji ->
+            RecentEmojiStore.record(context, emoji)
+            onReaction(emoji)
+        },
+        onDismiss = { showEmojiPicker = false },
+    )
 }
 
 @Composable

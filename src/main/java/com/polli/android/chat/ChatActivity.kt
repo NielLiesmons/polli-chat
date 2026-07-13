@@ -105,7 +105,8 @@ class ChatActivity : BaseComposeActivity() {
 
         setContent {
             val sessionInfo = chatSessionInfo
-            val revision = themeRevision
+            val settingsTick = com.polli.android.settings.AppSettingsNotifier.generation
+            val revision = themeRevision + settingsTick
             PolliTheme(prefs = prefs, uiScaleRevision = revision) {
                 CompositionLocalProvider(LocalChatAudioPlayback provides playbackViewModel) {
                     ChatScreen(

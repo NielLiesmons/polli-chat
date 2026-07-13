@@ -2,7 +2,6 @@ package com.polli.android.chat
 
 import android.content.Context
 import com.polli.android.data.engine.PolliRepositories
-
 data class ReactionReactor(
     val contactId: Int,
     val name: String,
@@ -42,6 +41,19 @@ object MessageReactions {
         synchronized(summaryCache) {
             summaryCache[msgId]
         }
+
+    /** Warm LRU off the UI thread so bind-time load is cache-only (DC bind is sync but fast). */
+    fun preloadSummaries(context: android.content.Context, msgIds: IntArray) {
+        for (msgId in msgIds) {
+            if (msgId <= 0) continue
+            val alreadyCached =
+                synchronized(summaryCache) {
+                    summaryCache.containsKey(msgId)
+                }
+            if (alreadyCached) continue
+            loadReactionSummary(context, msgId)
+        }
+    }
 
     fun loadReactionSummary(context: Context, msgId: Int): List<BubbleReaction> {
         synchronized(summaryCache) {
