@@ -310,8 +310,12 @@ private fun bubbleShape(isOutgoing: Boolean, isLastInStack: Boolean): RoundedCor
     }
 }
 
+private val bubbleTimeFormat = ThreadLocal.withInitial {
+    SimpleDateFormat("HH:mm", Locale.getDefault())
+}
+
 private fun formatBubbleTime(ts: Long): String {
     if (ts <= 0) return ""
     val millis = if (ts < 1_000_000_000_000L) ts * 1000 else ts
-    return SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(millis))
+    return bubbleTimeFormat.get().format(Date(millis))
 }

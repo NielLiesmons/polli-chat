@@ -38,6 +38,11 @@ object MessageReactions {
         }
     }
 
+    fun cachedSummary(msgId: Int): List<BubbleReaction>? =
+        synchronized(summaryCache) {
+            summaryCache[msgId]
+        }
+
     fun loadReactionSummary(context: Context, msgId: Int): List<BubbleReaction> {
         synchronized(summaryCache) {
             summaryCache[msgId]?.let { return it }

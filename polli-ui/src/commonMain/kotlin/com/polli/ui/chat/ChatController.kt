@@ -183,6 +183,12 @@ class ChatController(
         contentGeneration++
     }
 
+    fun preloadAroundDisplayIndex(displayIndex: Int, radius: Int = 40) {
+        scope.launch(Dispatchers.Default) {
+            store.preloadStubsAroundDisplayIndex(displayIndex, radius)
+        }
+    }
+
     fun messageIdAtDisplayIndex(displayIndex: Int): Int? =
         feedItems.messageIdAtDisplayIndex(displayIndex)
 

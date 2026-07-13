@@ -1,6 +1,5 @@
 package com.polli.android.chat
 
-import com.polli.domain.model.chat.ChatActionContext
 import com.polli.domain.model.chat.ChatMessage
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -13,6 +12,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,7 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -46,6 +45,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -57,13 +57,14 @@ import com.polli.android.theme.PolliColors
 import com.polli.android.theme.PolliDimens
 import com.polli.android.ui.AppInsets
 import com.polli.android.ui.FrostedChromeSurface
-import com.polli.android.ui.FrostedCircleButton
 import com.polli.android.ui.PolliAvatar
 import com.polli.android.ui.PolliModalBarrier
 import com.polli.android.ui.polliOverlayHazeStyle
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import kotlin.math.roundToInt
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 data class BubbleOverlayAnchor(
     val message: ChatMessage,
@@ -81,6 +82,15 @@ private val EdgePad = 16.dp
 private val OverlayShellBg = PolliColors.Gray66
 private val OverlayShellBorder = PolliColors.ShellBorder
 private val ActionRowVPad = 10.dp
+private const val ActionRowCount = 7
+
+private fun estimateActionsPanelHeightPx(includeSeenBy: Boolean, density: Density): Float =
+    with(density) {
+        val row = ActionRowVPad * 2 + 24.dp
+        val divider = 1.dp
+        val seenByBlock = if (includeSeenBy) row + divider else 0.dp
+        (seenByBlock + row * ActionRowCount + divider * (ActionRowCount - 1)).toPx()
+    }
 
 @Composable
 fun BubbleOverlayHost(
@@ -124,7 +134,10 @@ fun BubbleOverlayHost(
     val reactionsWidthPx = with(density) { ActionsPanelWidth.toPx() + with(density) { ReactionsFadeWidth.toPx() } }
     val reactionsHeightPx = with(density) { ReactionsPanelHeight.toPx() }
     val gapPx = with(density) { PanelGap.toPx() }
-    var actionsHeightPx by remember { mutableFloatStateOf(with(density) { 220.dp.toPx() }) }
+    val actionsHeightPx =
+        remember(anchor.message.id, anchor.message.isOutgoing) {
+            estimateActionsPanelHeightPx(anchor.message.isOutgoing, density)
+        }
     var hostWindowOrigin by remember { mutableStateOf(Offset.Zero) }
 
     Box(
@@ -245,14 +258,17 @@ fun BubbleOverlayHost(
                                     ),
                                 ),
                     )
-                    FrostedCircleButton(
-                        onClick = { showEmojiPicker = true },
-                        hazeState = hazeState,
+                    Box(
                         modifier =
                             Modifier
                                 .align(Alignment.CenterEnd)
                                 .padding(end = 8.dp)
-                                .size(PlusButtonSize),
+                                .size(PlusButtonSize)
+                                .clip(CircleShape)
+                                .background(OverlayShellBg)
+                                .border(PolliDimens.ShellBorderWidth, OverlayShellBorder, CircleShape)
+                                .clickable { showEmojiPicker = true },
+                        contentAlignment = Alignment.Center,
                     ) {
                         PolliIcon(PolliIconName.Plus, 18.dp, PolliColors.White66)
                     }
@@ -272,7 +288,6 @@ fun BubbleOverlayHost(
                             onClick = {},
                         ),
                 message = anchor.message,
-                chatSession = chatSession,
                 hazeState = hazeState,
                 overlayHazeStyle = overlayHazeStyle,
                 onReply = onReply,
@@ -280,7 +295,6 @@ fun BubbleOverlayHost(
                 onReport = onReport,
                 onDetails = onDetails,
                 onDelete = onDelete,
-                onHeightMeasured = { actionsHeightPx = it },
             )
         }
     }
@@ -290,7 +304,6 @@ fun BubbleOverlayHost(
 private fun ActionsPanel(
     modifier: Modifier,
     message: ChatMessage,
-    chatSession: ChatActionContext,
     hazeState: HazeState?,
     overlayHazeStyle: HazeStyle,
     onReply: () -> Unit,
@@ -298,23 +311,20 @@ private fun ActionsPanel(
     onReport: () -> Unit,
     onDetails: () -> Unit,
     onDelete: () -> Unit,
-    onHeightMeasured: (Float) -> Unit,
 ) {
     val context = LocalContext.current
     var readers by remember(message.id) { mutableStateOf<List<ReadReceiptUser>>(emptyList()) }
     LaunchedEffect(message.id) {
         if (message.isOutgoing) {
-            readers = ReadReceipts.load(context, message.id)
+            readers =
+                withContext(Dispatchers.IO) {
+                    ReadReceipts.load(context, message.id)
+                }
         }
     }
 
     FrostedChromeSurface(
-        modifier =
-            modifier
-                .wrapContentHeight()
-                .onGloballyPositioned { coords ->
-                    if (coords.size.height > 0) onHeightMeasured(coords.size.height.toFloat())
-                },
+        modifier = modifier.wrapContentHeight(),
         shape = PanelShape,
         tint = OverlayShellBg,
         borderColor = OverlayShellBorder,

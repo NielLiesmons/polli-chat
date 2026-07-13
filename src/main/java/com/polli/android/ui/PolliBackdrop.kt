@@ -126,7 +126,7 @@ fun FrostedChromeSurface(
         .then(
             if (hazeState != null) {
                 Modifier.hazeEffect(state = hazeState, style = style) {
-                    inputScale = HazeInputScale.Auto
+                    inputScale = HazeInputScale.Fixed(0.66f)
                     backgroundColor = frostTint
                 }
             } else {

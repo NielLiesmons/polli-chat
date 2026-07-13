@@ -135,7 +135,12 @@ fun ChatFeedRecycler(
             } else {
                 null
             }
-        val changed = adapter.changeData(items, structuralReload = true)
+        val changed =
+            adapter.changeData(
+                items,
+                structuralReload = viewModel.pendingFirstLoadScroll ||
+                    kotlin.math.abs(items.size - adapter.feedItemCount()) > 8,
+            )
         adapter.updateChrome(viewModel.highlightId, viewModel.reactionPulse)
         if (changed && anchor != null) {
             ChatFeedScrollAnchor.restore(layoutManager, anchor, adapter.itemCount)
@@ -176,6 +181,23 @@ fun ChatFeedRecycler(
                                 if (scrollController.isAtChatBottom()) {
                                     onScrolledToBottom()
                                 }
+                            }
+
+                            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                                val scrolling = newState != RecyclerView.SCROLL_STATE_IDLE
+                                viewModel.setFeedScrolling(scrolling)
+                                if (newState != RecyclerView.SCROLL_STATE_IDLE) return
+                                val lm = recyclerView.layoutManager as? LinearLayoutManager ?: return
+                                val first = lm.findFirstVisibleItemPosition()
+                                val last = lm.findLastVisibleItemPosition()
+                                if (first == RecyclerView.NO_POSITION) return
+                                val center = (first + last) / 2
+                                viewModel.preloadAroundDisplayIndex(center, radius = 40)
+                                adapter.notifyItemRangeChanged(
+                                    first,
+                                    last - first + 1,
+                                    PolliChatFeedAdapter.PAYLOAD_REACTIONS,
+                                )
                             }
                         },
                     )

@@ -40,6 +40,7 @@ class PolliChatFeedAdapter(
         private const val VIEW_TYPE_MESSAGE = 1
         const val PAYLOAD_CONTENT = "content"
         const val PAYLOAD_HIGHLIGHT = "highlight"
+        const val PAYLOAD_REACTIONS = "reactions"
     }
 
     private var displayItems: List<FeedItem> = emptyList()
@@ -66,6 +67,8 @@ class PolliChatFeedAdapter(
         if (itemCount == 0) return
         notifyItemRangeChanged(0, itemCount, PAYLOAD_CONTENT)
     }
+
+    fun feedItemCount(): Int = displayItems.size
 
     fun changeData(items: List<FeedItem>, structuralReload: Boolean = false): Boolean {
         if (items == displayItems) return false
@@ -128,11 +131,15 @@ class PolliChatFeedAdapter(
         val item = chronItem(position)
         val highlighted = item is FeedItem.Message && item.msgId == highlightMsgId
         val rowPulse = if (item is FeedItem.Message && item.msgId == pulseMsgId) pulseEmoji else null
+        val highlightOnly = payloads.isNotEmpty() && payloads.all { it == PAYLOAD_HIGHLIGHT }
+        val reactionsOnly = payloads.isNotEmpty() && payloads.all { it == PAYLOAD_REACTIONS }
         holder.bind(
             item = item,
             highlighted = highlighted,
             pulseEmoji = rowPulse,
             contentOnly = payloads.contains(PAYLOAD_CONTENT) && !payloads.contains(PAYLOAD_HIGHLIGHT),
+            highlightOnly = highlightOnly,
+            reactionsOnly = reactionsOnly,
         )
     }
 
@@ -197,21 +204,52 @@ class PolliChatFeedAdapter(
             highlighted: Boolean,
             pulseEmoji: String?,
             contentOnly: Boolean,
+            highlightOnly: Boolean,
+            reactionsOnly: Boolean,
         ) {
             if (markerMode && item !is FeedItem.DayMarker && item != FeedItem.NewMessages) return
             if (!markerMode && item !is FeedItem.Message) return
             boundHighlighted = highlighted
             boundPulseEmoji = pulseEmoji
+            if (highlightOnly) return
+
+            if (reactionsOnly && item is FeedItem.Message) {
+                bindReactions(item.msgId)
+                return
+            }
+
+            val prev = boundItem as? FeedItem.Message
+            val sameMessage =
+                item is FeedItem.Message &&
+                    prev?.msgId == item.msgId &&
+                    prev.groupLayout == item.groupLayout &&
+                    boundMessage != null
+
             if (!contentOnly || boundItem != item) {
                 boundItem = item
             }
+
             if (item is FeedItem.Message) {
-                val msg = viewModel.getChatMessage(item.msgId)
-                val stub = viewModel.getStub(item.msgId)
-                boundMessage = msg ?: stub?.toSkeletonChatMessage()
-                if (!contentOnly) {
-                    boundReactions =
-                        MessageReactions.loadReactionSummary(composeView.context, item.msgId)
+                if (!sameMessage || !contentOnly) {
+                    boundMessage = viewModel.getMessageForRow(item.msgId)
+                }
+                if (!contentOnly && !viewModel.feedScrolling) {
+                    bindReactions(item.msgId)
+                }
+            }
+        }
+
+        private fun bindReactions(msgId: Int) {
+            val cached = MessageReactions.cachedSummary(msgId)
+            if (cached != null) {
+                boundReactions = cached
+                return
+            }
+            boundReactions = emptyList()
+            viewModel.loadReactionsAsync(msgId) { reactions ->
+                val current = boundItem as? FeedItem.Message ?: return@loadReactionsAsync
+                if (current.msgId == msgId) {
+                    boundReactions = reactions
                 }
             }
         }

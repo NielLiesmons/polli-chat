@@ -20,6 +20,9 @@ import com.polli.domain.model.chat.displayIndexForMessage
 import com.polli.domain.model.chat.messageIdAtDisplayIndex
 import com.polli.android.platform.PlatformDates
 import com.polli.ui.chat.ChatController
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Android lifecycle wrapper around shared [ChatController] (polli-ui).
@@ -115,6 +118,37 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     fun getChatMessage(msgId: Int): ChatMessage? = ensureController().getChatMessage(msgId)
 
     fun getStub(msgId: Int) = ensureController().getStub(msgId)
+
+    /** Single store read per bind — full message or skeleton stub (DC: one getMsg). */
+    fun getMessageForRow(msgId: Int): ChatMessage? {
+        getChatMessage(msgId)?.let { return it }
+        return getStub(msgId)?.toSkeletonChatMessage()
+    }
+
+    var feedScrolling: Boolean = false
+        private set
+
+    fun setFeedScrolling(scrolling: Boolean) {
+        feedScrolling = scrolling
+    }
+
+    fun preloadAroundDisplayIndex(displayIndex: Int, radius: Int = 40) {
+        ensureController().preloadAroundDisplayIndex(displayIndex, radius)
+    }
+
+    fun loadReactionsAsync(msgId: Int, onLoaded: (List<BubbleReaction>) -> Unit) {
+        MessageReactions.cachedSummary(msgId)?.let {
+            onLoaded(it)
+            return
+        }
+        viewModelScope.launch {
+            val loaded =
+                withContext(Dispatchers.IO) {
+                    MessageReactions.loadReactionSummary(app, msgId)
+                }
+            onLoaded(loaded)
+        }
+    }
 
     fun displayIndexForMsgId(msgId: Int): Int = feedItems.displayIndexForMessage(msgId)
 
