@@ -59,7 +59,14 @@ class PolliTextMessageRowView(context: Context) : FrameLayout(context) {
             if (layout.isFirstInStack) dp(PolliDimens.ChatRowTop.value) else dp(PolliDimens.ChatRowTopCollapsed.value)
         setPadding(rowPadHPx, topPad, rowPadHPx, paddingBottom)
 
-        bubble.text = message.text
+        bubble.text =
+            when {
+                message.isInfo -> "[Info]"
+                message.hasAttachment && message.text.isNotBlank() -> message.text
+                message.hasAttachment -> "[${message.viewType}]"
+                message.text.isNotBlank() -> message.text
+                else -> "[${message.viewType}]"
+            }
         bubble.maxWidth = maxBubbleWidthPx
         bubble.background =
             if (message.isOutgoing) {

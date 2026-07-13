@@ -85,8 +85,9 @@ class PolliChatFeedAdapter(
         return when (val item = chronItem(position)) {
             is FeedItem.DayMarker, FeedItem.NewMessages -> VIEW_TYPE_MARKER
             is FeedItem.Message -> {
-                val msg = viewModel.getMessageForRow(item.msgId) ?: return VIEW_TYPE_MESSAGE_COMPOSE
-                if (shouldUseFastTextView(msg)) VIEW_TYPE_TEXT_VIEW else VIEW_TYPE_MESSAGE_COMPOSE
+                // Perf baseline: render *all* message rows as fast Views so scroll/open speed
+                // can be compared fairly (no Compose rows mixed in).
+                VIEW_TYPE_TEXT_VIEW
             }
         }
     }
@@ -263,12 +264,7 @@ class PolliChatFeedAdapter(
         }
     }
 
-    private fun shouldUseFastTextView(msg: ChatMessage): Boolean {
-        if (msg.isInfo) return false
-        if (msg.hasAttachment) return false
-        if (msg.quote != null) return false
-        if (msg.viewType != "Text") return false
-        if (msg.text.isBlank()) return false
-        return true
-    }
+    // NOTE: We intentionally do not gate the fast View row by content type right now.
+    // We want a consistent renderer for perf evaluation. We'll re-introduce richer
+    // per-type View rows next.
 }
