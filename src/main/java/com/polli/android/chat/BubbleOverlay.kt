@@ -155,7 +155,9 @@ fun BubbleOverlayHost(
                 Modifier
                     .fillMaxSize()
                     .onGloballyPositioned { coords ->
-                        hostWindowOrigin = coords.positionInWindow()
+                        val next = coords.positionInWindow()
+                        // Avoid recomposition/layout loops from tiny coordinate jitter.
+                        if (hostWindowOrigin != next) hostWindowOrigin = next
                     },
         ) {
             val screenW = constraints.maxWidth.toFloat()
