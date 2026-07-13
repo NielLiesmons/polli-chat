@@ -109,8 +109,7 @@ class ChatController(
             withContext(Dispatchers.Default) {
                 store.preloadStubsAroundDisplayIndex(initialScrollIndex, radius = 40)
             }
-            feedItems = store.rebuildGroupLayouts()
-            contentGeneration++
+            // No second-pass full-feed regroup; grouping is resolved at bind-time on Android.
             launch(Dispatchers.Default) {
                 store.preloadStubs()
             }

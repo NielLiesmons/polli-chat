@@ -1,6 +1,5 @@
 package com.polli.android.chat
 
-import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
@@ -12,7 +11,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.platform.findViewTreeCompositionContext
 import androidx.compose.ui.unit.Dp
 import androidx.recyclerview.widget.RecyclerView
 import com.polli.domain.model.chat.ChatMessage
@@ -37,7 +35,8 @@ class PolliChatFeedAdapter(
 
     companion object {
         private const val VIEW_TYPE_MARKER = 0
-        private const val VIEW_TYPE_MESSAGE = 1
+        private const val VIEW_TYPE_TEXT_VIEW = 1
+        private const val VIEW_TYPE_MESSAGE_COMPOSE = 2
         const val PAYLOAD_CONTENT = "content"
         const val PAYLOAD_HIGHLIGHT = "highlight"
     }
@@ -82,11 +81,15 @@ class PolliChatFeedAdapter(
 
     override fun getItemCount(): Int = displayItems.size
 
-    override fun getItemViewType(position: Int): Int =
-        when (chronItem(position)) {
+    override fun getItemViewType(position: Int): Int {
+        return when (val item = chronItem(position)) {
             is FeedItem.DayMarker, FeedItem.NewMessages -> VIEW_TYPE_MARKER
-            else -> VIEW_TYPE_MESSAGE
+            is FeedItem.Message -> {
+                val msg = viewModel.getMessageForRow(item.msgId) ?: return VIEW_TYPE_MESSAGE_COMPOSE
+                if (shouldUseFastTextView(msg)) VIEW_TYPE_TEXT_VIEW else VIEW_TYPE_MESSAGE_COMPOSE
+            }
         }
+    }
 
     override fun getItemId(position: Int): Long {
         if (position < 0 || position >= displayItems.size) return RecyclerView.NO_ID
@@ -100,21 +103,36 @@ class PolliChatFeedAdapter(
     private fun chronItem(displayPosition: Int): FeedItem = displayItems[chronIndex(displayPosition)]
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
-        val composeView =
-            ComposeView(parent.context).apply {
-                layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
-                setViewCompositionStrategy(ViewCompositionStrategy.Default)
-                (parent as? View)?.findViewTreeCompositionContext()?.let { setParentCompositionContext(it) }
+        return when (viewType) {
+            VIEW_TYPE_TEXT_VIEW -> {
+                val view =
+                    PolliTextMessageRowView(parent.context).apply {
+                        layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+                    }
+                Holder.TextViewHolder(
+                    rowView = view,
+                    viewModel = viewModel,
+                    maxBubbleWidth = maxBubbleWidth,
+                )
             }
-        return Holder(
-            composeView = composeView,
-            viewModel = viewModel,
-            playbackViewModel = playbackViewModel,
-            maxBubbleWidth = maxBubbleWidth,
-            onOpenMessageOverlay = onOpenMessageOverlay,
-            onQuoteClick = onQuoteClick,
-            markerMode = viewType == VIEW_TYPE_MARKER,
-        )
+            VIEW_TYPE_MARKER, VIEW_TYPE_MESSAGE_COMPOSE -> {
+                val composeView =
+                    ComposeView(parent.context).apply {
+                        layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+                        setViewCompositionStrategy(ViewCompositionStrategy.Default)
+                    }
+                Holder.ComposeHolder(
+                    composeView = composeView,
+                    viewModel = viewModel,
+                    playbackViewModel = playbackViewModel,
+                    maxBubbleWidth = maxBubbleWidth,
+                    onOpenMessageOverlay = onOpenMessageOverlay,
+                    onQuoteClick = onQuoteClick,
+                    markerMode = viewType == VIEW_TYPE_MARKER,
+                )
+            }
+            else -> error("Unknown viewType=$viewType")
+        }
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
@@ -130,39 +148,61 @@ class PolliChatFeedAdapter(
         val highlighted = item is FeedItem.Message && item.msgId == highlightMsgId
         val rowPulse = if (item is FeedItem.Message && item.msgId == pulseMsgId) pulseEmoji else null
         val highlightOnly = payloads.isNotEmpty() && payloads.all { it == PAYLOAD_HIGHLIGHT }
-        holder.bind(
-            item = item,
-            highlighted = highlighted,
-            pulseEmoji = rowPulse,
-            highlightOnly = highlightOnly,
-        )
+        when (holder) {
+            is Holder.ComposeHolder ->
+                holder.bind(
+                    item = item,
+                    highlighted = highlighted,
+                    pulseEmoji = rowPulse,
+                    highlightOnly = highlightOnly,
+                )
+            is Holder.TextViewHolder -> {
+                if (item is FeedItem.Message) {
+                    holder.bind(item, highlighted)
+                }
+            }
+        }
     }
 
-    class Holder(
-        val composeView: ComposeView,
-        private val viewModel: ChatViewModel,
-        playbackViewModel: PolliAudioPlaybackViewModel?,
-        maxBubbleWidth: Dp,
-        onOpenMessageOverlay: (ChatMessage, Offset) -> Unit,
-        onQuoteClick: (Int) -> Unit,
-        private val markerMode: Boolean,
-    ) : RecyclerView.ViewHolder(composeView) {
-        private var boundItem by mutableStateOf<FeedItem?>(null)
-        private var boundMessage by mutableStateOf<ChatMessage?>(null)
-        private var boundHighlighted by mutableStateOf(false)
-        private var boundPulseEmoji by mutableStateOf<String?>(null)
-        private var boundReactions by mutableStateOf<List<BubbleReaction>>(emptyList())
-        private val newMessagesLabel = composeView.context.getString(R.string.new_messages)
+    sealed class Holder(itemView: android.view.View) : RecyclerView.ViewHolder(itemView) {
+        class ComposeHolder(
+            val composeView: ComposeView,
+            private val viewModel: ChatViewModel,
+            playbackViewModel: PolliAudioPlaybackViewModel?,
+            private val maxBubbleWidth: Dp,
+            private val onOpenMessageOverlay: (ChatMessage, Offset) -> Unit,
+            private val onQuoteClick: (Int) -> Unit,
+            private val markerMode: Boolean,
+        ) : Holder(composeView) {
+            private var boundItem by mutableStateOf<FeedItem?>(null)
+            private var boundMessage by mutableStateOf<ChatMessage?>(null)
+            private var boundHighlighted by mutableStateOf(false)
+            private var boundPulseEmoji by mutableStateOf<String?>(null)
+            private var boundReactions by mutableStateOf<List<BubbleReaction>>(emptyList())
+            private val newMessagesLabel = composeView.context.getString(R.string.new_messages)
 
-        init {
-            composeView.setContent {
-                when (val item = boundItem) {
-                    is FeedItem.DayMarker -> ChatDayMarkerPill(label = item.label)
-                    FeedItem.NewMessages -> ChatNewMessagesPill(label = newMessagesLabel)
-                    is FeedItem.Message -> {
-                        val message = boundMessage ?: return@setContent
-                        if (playbackViewModel != null) {
-                            CompositionLocalProvider(LocalChatAudioPlayback provides playbackViewModel) {
+            init {
+                composeView.setContent {
+                    when (val item = boundItem) {
+                        is FeedItem.DayMarker -> ChatDayMarkerPill(label = item.label)
+                        FeedItem.NewMessages -> ChatNewMessagesPill(label = newMessagesLabel)
+                        is FeedItem.Message -> {
+                            val message = boundMessage ?: return@setContent
+                            if (playbackViewModel != null) {
+                                CompositionLocalProvider(LocalChatAudioPlayback provides playbackViewModel) {
+                                    PolliChatFeedRow(
+                                        message = message,
+                                        groupLayout = item.groupLayout,
+                                        maxBubbleWidth = maxBubbleWidth,
+                                        highlighted = boundHighlighted,
+                                        reactions = boundReactions,
+                                        pulseEmoji = boundPulseEmoji,
+                                        onSwipeReply = { viewModel.setReply(message) },
+                                        onOpenMessageOverlay = onOpenMessageOverlay,
+                                        onQuoteClick = onQuoteClick,
+                                    )
+                                }
+                            } else {
                                 PolliChatFeedRow(
                                     message = message,
                                     groupLayout = item.groupLayout,
@@ -175,44 +215,60 @@ class PolliChatFeedAdapter(
                                     onQuoteClick = onQuoteClick,
                                 )
                             }
-                        } else {
-                            PolliChatFeedRow(
-                                message = message,
-                                groupLayout = item.groupLayout,
-                                maxBubbleWidth = maxBubbleWidth,
-                                highlighted = boundHighlighted,
-                                reactions = boundReactions,
-                                pulseEmoji = boundPulseEmoji,
-                                onSwipeReply = { viewModel.setReply(message) },
-                                onOpenMessageOverlay = onOpenMessageOverlay,
-                                onQuoteClick = onQuoteClick,
-                            )
                         }
+                        null -> Unit
                     }
-                    null -> Unit
+                }
+            }
+
+            fun bind(
+                item: FeedItem,
+                highlighted: Boolean,
+                pulseEmoji: String?,
+                highlightOnly: Boolean,
+            ) {
+                if (markerMode && item !is FeedItem.DayMarker && item != FeedItem.NewMessages) return
+                if (!markerMode && item !is FeedItem.Message) return
+                boundHighlighted = highlighted
+                boundPulseEmoji = pulseEmoji
+                if (highlightOnly) return
+
+                boundItem = item
+                if (item is FeedItem.Message) {
+                    boundMessage = viewModel.getMessageForRow(item.msgId)
+                    boundReactions = MessageReactions.loadReactionSummary(composeView.context, item.msgId)
                 }
             }
         }
 
-        fun bind(
-            item: FeedItem,
-            highlighted: Boolean,
-            pulseEmoji: String?,
-            highlightOnly: Boolean,
-        ) {
-            if (markerMode && item !is FeedItem.DayMarker && item != FeedItem.NewMessages) return
-            if (!markerMode && item !is FeedItem.Message) return
-            boundHighlighted = highlighted
-            boundPulseEmoji = pulseEmoji
-            if (highlightOnly) return
-
-            boundItem = item
-            if (item is FeedItem.Message) {
-                // DC ConversationItem.bind: one getMsg + setReactions — sync, same pass.
-                boundMessage = viewModel.getMessageForRow(item.msgId)
-                boundReactions =
-                    MessageReactions.loadReactionSummary(composeView.context, item.msgId)
+        class TextViewHolder(
+            private val rowView: PolliTextMessageRowView,
+            private val viewModel: ChatViewModel,
+            private val maxBubbleWidth: Dp,
+        ) : Holder(rowView) {
+            fun bind(item: FeedItem.Message, highlighted: Boolean) {
+                val msg = viewModel.getMessageForRow(item.msgId) ?: return
+                val layout = viewModel.groupLayoutFor(item)
+                val maxPx =
+                    with(rowView.resources.displayMetrics) {
+                        (maxBubbleWidth.value * density).toInt()
+                    }
+                rowView.bind(
+                    message = msg,
+                    layout = layout,
+                    maxBubbleWidthPx = maxPx,
+                    highlighted = highlighted,
+                )
             }
         }
+    }
+
+    private fun shouldUseFastTextView(msg: ChatMessage): Boolean {
+        if (msg.isInfo) return false
+        if (msg.hasAttachment) return false
+        if (msg.quote != null) return false
+        if (msg.viewType != "Text") return false
+        if (msg.text.isBlank()) return false
+        return true
     }
 }

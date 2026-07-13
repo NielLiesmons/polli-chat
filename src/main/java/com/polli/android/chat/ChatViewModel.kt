@@ -125,6 +125,14 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         return getStub(msgId)?.toSkeletonChatMessage()
     }
 
+    /** DC-style bind-time stack layout from neighbor stubs (no full-feed precompute). */
+    fun groupLayoutFor(item: FeedItem.Message): com.polli.core.chat.MessageGroupLayout {
+        val self = getStub(item.msgId) ?: return item.groupLayout
+        val older = item.olderMsgId?.let { getStub(it) }
+        val newer = item.newerMsgId?.let { getStub(it) }
+        return layoutBetweenNeighbors(older = older, self = self, newer = newer)
+    }
+
     fun displayIndexForMsgId(msgId: Int): Int = feedItems.displayIndexForMessage(msgId)
 
     fun preloadAroundDisplayIndex(displayIndex: Int, radius: Int = 40) {

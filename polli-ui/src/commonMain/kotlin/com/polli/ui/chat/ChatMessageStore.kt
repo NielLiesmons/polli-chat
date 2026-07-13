@@ -168,11 +168,12 @@ class ChatMessageStore(
     }
 
     fun rebuildGroupLayouts(): List<FeedItem> {
-        feedItemsCache = finalizeFeed(feedItemsCache)
+        // Grouping is resolved at bind-time on Android (DC-style neighbor checks).
+        // Keeping this as a no-op preserves the API for desktop while avoiding O(N) stub loads.
         return feedItemsCache
     }
 
-    private fun finalizeFeed(items: List<FeedItem>): List<FeedItem> = items.withGroupLayouts { getStub(it) }
+    private fun finalizeFeed(items: List<FeedItem>): List<FeedItem> = items
 
     private fun pruneCache(validIds: Set<Int>) {
         synchronized(messageCache) {
