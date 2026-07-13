@@ -330,6 +330,12 @@ class RpcMessageRepository(
         reactionCache.clear()
     }
 
+    override fun invalidateMessage(msgId: Int) {
+        messageCache.remove(msgId)
+        stubCache.remove(msgId)
+        reactionCache.remove(msgId)
+    }
+
     private fun cacheFromLoadResult(msgId: Int, loaded: MessageLoadResult.Message) {
         val rpcMsg = loaded.toRpcMessage(msgId)
         RpcMessageMapper.toStub(rpcMsg)?.let { stubCache[msgId] = it }

@@ -57,6 +57,12 @@ class ChatMessageStore(
         synchronized(stubLock) { stubById.remove(msgId) }
     }
 
+    fun refreshMessageRow(msgId: Int) {
+        invalidateMessage(msgId)
+        invalidateStub(msgId)
+        messages.invalidateMessage(msgId)
+    }
+
     /** Drop cached rows after engine events (edit, reaction, delivery state). */
     fun invalidateAllCaches() {
         clearMessageCache()

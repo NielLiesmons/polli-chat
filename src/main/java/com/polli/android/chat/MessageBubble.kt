@@ -16,19 +16,11 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.polli.android.theme.PolliColors
@@ -58,24 +50,15 @@ fun MessageBubble(
     layout: MessageGroupLayout,
     maxBubbleWidth: Dp,
     incomingInGroup: Boolean = false,
-    reactionReloadKey: Int = 0,
+    reactions: List<BubbleReaction> = emptyList(),
     pulseEmoji: String? = null,
     onQuoteClick: ((Int) -> Unit)? = null,
 ) {
-    val context = LocalContext.current
     val shape = bubbleShape(message.isOutgoing, layout.isLastInStack)
     val bg = if (message.isOutgoing) {
         accent().gradientBrush()
     } else {
         Brush.linearGradient(listOf(PolliColors.Gray66, PolliColors.Gray66))
-    }
-    val reactionsState = remember(message.id, reactionReloadKey) { mutableStateOf(emptyList<BubbleReaction>()) }
-    val reactions by reactionsState
-    LaunchedEffect(message.id, reactionReloadKey) {
-        reactionsState.value =
-            withContext(Dispatchers.IO) {
-                MessageReactions.loadReactionSummary(context, message.id)
-            }
     }
     val authorColor = ProfileColors.authorNameColor(message.authorColorSeed).copy(alpha = 0.85f)
     val timestamp = formatBubbleTime(message.timestamp)
@@ -204,7 +187,7 @@ fun OutgoingMessageRow(
     layout: MessageGroupLayout,
     maxBubbleWidth: Dp,
     highlighted: Boolean,
-    reactionReloadKey: Int,
+    reactions: List<BubbleReaction>,
     pulseEmoji: String?,
     onSwipeReply: () -> Unit,
     onClick: (Offset) -> Unit,
@@ -237,7 +220,7 @@ fun OutgoingMessageRow(
                 message = message,
                 layout = layout,
                 maxBubbleWidth = maxBubbleWidth,
-                reactionReloadKey = reactionReloadKey,
+                reactions = reactions,
                 pulseEmoji = pulseEmoji,
                 onQuoteClick = onQuoteClick,
             )
@@ -251,7 +234,7 @@ fun SingleIncomingMessageRow(
     layout: MessageGroupLayout,
     maxBubbleWidth: Dp,
     highlighted: Boolean,
-    reactionReloadKey: Int,
+    reactions: List<BubbleReaction>,
     pulseEmoji: String?,
     onSwipeReply: () -> Unit,
     onClick: (Offset) -> Unit,
@@ -301,7 +284,7 @@ fun SingleIncomingMessageRow(
                     layout = layout,
                     maxBubbleWidth = maxBubbleWidth,
                     incomingInGroup = !layout.isFirstInStack,
-                    reactionReloadKey = reactionReloadKey,
+                    reactions = reactions,
                     pulseEmoji = pulseEmoji,
                     onQuoteClick = onQuoteClick,
                 )

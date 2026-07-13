@@ -177,6 +177,12 @@ class ChatController(
         return idx
     }
 
+    fun refreshMessageRow(msgId: Int) {
+        if (msgId <= 0) return
+        store.refreshMessageRow(msgId)
+        contentGeneration++
+    }
+
     fun messageIdAtDisplayIndex(displayIndex: Int): Int? =
         feedItems.messageIdAtDisplayIndex(displayIndex)
 
@@ -295,6 +301,7 @@ class ChatController(
             }
             else -> {
                 store.clearMessageCache()
+                messages.clearMessageCaches()
                 contentGeneration++
                 return !allowAsyncRetry
             }

@@ -149,6 +149,7 @@ class PolliChatFeedAdapter(
         private var boundMessage by mutableStateOf<ChatMessage?>(null)
         private var boundHighlighted by mutableStateOf(false)
         private var boundPulseEmoji by mutableStateOf<String?>(null)
+        private var boundReactions by mutableStateOf<List<BubbleReaction>>(emptyList())
         private val newMessagesLabel = composeView.context.getString(R.string.new_messages)
 
         init {
@@ -165,11 +166,11 @@ class PolliChatFeedAdapter(
                                     groupLayout = item.groupLayout,
                                     maxBubbleWidth = maxBubbleWidth,
                                     highlighted = boundHighlighted,
-                                    reactionReloadKey = viewModel.reactionEpochFor(item.msgId),
+                                    reactions = boundReactions,
                                     pulseEmoji = boundPulseEmoji,
-                                onSwipeReply = { viewModel.setReply(message) },
-                                onOpenMessageOverlay = onOpenMessageOverlay,
-                                onQuoteClick = onQuoteClick,
+                                    onSwipeReply = { viewModel.setReply(message) },
+                                    onOpenMessageOverlay = onOpenMessageOverlay,
+                                    onQuoteClick = onQuoteClick,
                                 )
                             }
                         } else {
@@ -178,7 +179,7 @@ class PolliChatFeedAdapter(
                                 groupLayout = item.groupLayout,
                                 maxBubbleWidth = maxBubbleWidth,
                                 highlighted = boundHighlighted,
-                                reactionReloadKey = viewModel.reactionEpochFor(item.msgId),
+                                reactions = boundReactions,
                                 pulseEmoji = boundPulseEmoji,
                                 onSwipeReply = { viewModel.setReply(message) },
                                 onOpenMessageOverlay = onOpenMessageOverlay,
@@ -208,6 +209,10 @@ class PolliChatFeedAdapter(
                 val msg = viewModel.getChatMessage(item.msgId)
                 val stub = viewModel.getStub(item.msgId)
                 boundMessage = msg ?: stub?.toSkeletonChatMessage()
+                if (!contentOnly) {
+                    boundReactions =
+                        MessageReactions.loadReactionSummary(composeView.context, item.msgId)
+                }
             }
         }
     }

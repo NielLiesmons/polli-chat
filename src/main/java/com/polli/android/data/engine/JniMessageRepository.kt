@@ -51,6 +51,12 @@ class JniMessageRepository(
         writes.clearMessageCaches()
     }
 
+    override fun invalidateMessage(msgId: Int) {
+        messageCache.remove(msgId)
+        stubCache.remove(msgId)
+        writes.invalidateMessage(msgId)
+    }
+
     override fun getMessage(msgId: Int): ChatMessage? {
         messageCache[msgId]?.let { return it }
         return loadFromDc(msgId)?.first

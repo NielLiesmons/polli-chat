@@ -53,6 +53,7 @@ import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
 import com.polli.android.R
 import com.polli.android.platform.PolliAudioPlaybackViewModel
+import com.polli.android.platform.EngineBridge
 
 @Composable
 fun ChatScreen(
@@ -287,6 +288,7 @@ fun ChatScreen(
             anchor = viewModel.overlayAnchor,
             hazeState = hazeState,
             keyboardVisible = keyboardVisible,
+            chatSession = chatSession,
             onDismiss = viewModel::dismissOverlay,
             onReaction = { emoji ->
                 val msgId = viewModel.overlayAnchor?.message?.id ?: return@BubbleOverlayHost
@@ -297,6 +299,24 @@ fun ChatScreen(
                 val msg = viewModel.overlayAnchor?.message ?: return@BubbleOverlayHost
                 viewModel.dismissOverlay()
                 viewModel.setReply(msg)
+            },
+            onForward = {
+                val msgId = viewModel.overlayAnchor?.message?.id ?: return@BubbleOverlayHost
+                viewModel.dismissOverlay()
+                actionExecutor.run(MessageActionId.Forward, msgId)
+            },
+            onReport = {
+                val msg = viewModel.overlayAnchor?.message ?: return@BubbleOverlayHost
+                viewModel.dismissOverlay()
+                val authorId = msg.authorId
+                if (authorId > 0) {
+                    EngineBridge.getContext(context).blockContact(authorId, 1)
+                }
+            },
+            onDetails = {
+                val msgId = viewModel.overlayAnchor?.message?.id ?: return@BubbleOverlayHost
+                viewModel.dismissOverlay()
+                actionExecutor.run(MessageActionId.Info, msgId)
             },
             onDelete = {
                 val msgId = viewModel.overlayAnchor?.message?.id ?: return@BubbleOverlayHost

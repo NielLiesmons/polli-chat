@@ -270,7 +270,8 @@ private fun ChatHeaderTabRow(
                     }
 
                 if (tab == ChatDetailTab.Search) {
-                    ChatHeaderSearchPill(
+                    ChatHeaderIconTabPill(
+                        icon = PolliIconName.Search,
                         selected = tab == selectedTab,
                         onClick = { onTabSelected(tab) },
                         modifier = tabModifier,
@@ -291,13 +292,15 @@ private fun ChatHeaderTabRow(
 }
 
 @Composable
-private fun ChatHeaderSearchPill(
+private fun ChatHeaderIconTabPill(
+    icon: PolliIconName,
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val height = if (selected) TAB_SELECTED_HEIGHT else TAB_UNSELECTED_HEIGHT
-    val hPadding = if (selected) TAB_SELECTED_H_PADDING else TAB_UNSELECTED_H_PADDING
+    val startPad = if (selected) TAB_SELECTED_H_PADDING else TAB_UNSELECTED_H_PADDING
+    val endPad = 16.dp
     val corner = if (selected) TAB_SELECTED_CORNER else TAB_UNSELECTED_CORNER
     val shape = RoundedCornerShape(corner)
     val interaction = remember { MutableInteractionSource() }
@@ -307,31 +310,28 @@ private fun ChatHeaderSearchPill(
             modifier
                 .height(height)
                 .clip(shape)
-                .background(PolliColors.Gray33)
-                .border(PolliDimens.ShellBorderWidth, PolliColors.ShellBorder, shape)
+                .then(
+                    if (selected) {
+                        Modifier.background(accent().gradientBrush(0.66f))
+                    } else {
+                        Modifier
+                            .background(PolliColors.Gray66)
+                            .border(PolliDimens.ShellBorderWidth, PolliColors.ShellBorder, shape)
+                    },
+                )
                 .clickable(
                     interactionSource = interaction,
                     indication = null,
                     onClick = onClick,
                 )
-                .padding(horizontal = hPadding),
+                .padding(start = startPad, end = endPad),
         contentAlignment = Alignment.Center,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            PolliIcon(
-                PolliIconName.Search,
-                PolliDimens.HomeSearchGlyphSize,
-                PolliColors.White33,
-            )
-            Spacer(Modifier.width(6.dp))
-            Text(
-                text = "Search",
-                color = PolliColors.White33,
-                fontSize = TAB_SEARCH_FONT,
-                fontWeight = FontWeight.Medium,
-                maxLines = 1,
-            )
-        }
+        PolliIcon(
+            icon = icon,
+            size = PolliDimens.HomeSearchGlyphSize,
+            color = if (selected) PolliColors.White else PolliColors.White66,
+        )
     }
 }
 

@@ -17,6 +17,9 @@ interface MessageRepository {
     /** Clear repository-level LRU after structural feed changes. */
     fun clearMessageCaches() {}
 
+    /** Drop one message from repository LRU (delivery state, reactions, edits). */
+    fun invalidateMessage(msgId: Int) {}
+
     fun getMessage(msgId: Int): ChatMessage?
 
     fun getStub(msgId: Int): MessageStub?

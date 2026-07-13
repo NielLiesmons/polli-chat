@@ -9,7 +9,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.b44t.messenger.DcContext
+import com.b44t.messenger.DcEvent
+import com.polli.android.connect.DcEventCenter
 import com.polli.android.data.engine.PolliRepositories
+import com.polli.android.platform.EngineBridge
 import com.polli.domain.model.chat.ChatMessage
 import com.polli.domain.model.chat.FeedItem
 import com.polli.domain.model.chat.displayIndexForMessage
@@ -25,6 +29,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     private val app = application
     private lateinit var controller: ChatController
+    private var eventDelegate: DcEventCenter.DcEventDelegate? = null
 
     var chatId by mutableIntStateOf(-1)
         private set
@@ -122,6 +127,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         this.chatId = chatId
         val c = ensureController()
         c.bind(chatId, initialDraft, startingPosition, fromArchived)
+        registerChatEvents()
         if (startingPosition >= 0) {
             val rows = c.feedItems.filterIsInstance<FeedItem.Message>()
             if (rows.isNotEmpty()) {
@@ -158,8 +164,10 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun sendReaction(msgId: Int, emoji: String) {
+        RecentEmojiStore.record(app, emoji)
         ensureController().sendReaction(msgId, emoji)
         MessageReactions.invalidateSummary(msgId)
+        ensureController().refreshMessageRow(msgId)
         reactionEpoch[msgId] = (reactionEpoch[msgId] ?: 0) + 1
     }
 
@@ -193,7 +201,63 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     fun reload(markRead: Boolean = true) = ensureController().reload(markRead)
 
+    private fun registerChatEvents() {
+        unregisterChatEvents()
+        if (chatId <= 0) return
+        val center = EngineBridge.getEventCenter(app)
+        val delegate = DcEventCenter.DcEventDelegate { event -> handleDcEvent(event) }
+        eventDelegate = delegate
+        center.addMultiAccountObserver(DcContext.DC_EVENT_MSG_DELIVERED, delegate)
+        center.addMultiAccountObserver(DcContext.DC_EVENT_MSG_READ, delegate)
+        center.addMultiAccountObserver(DcContext.DC_EVENT_REACTIONS_CHANGED, delegate)
+        center.addMultiAccountObserver(DcContext.DC_EVENT_MSGS_CHANGED, delegate)
+    }
+
+    private fun unregisterChatEvents() {
+        val delegate = eventDelegate ?: return
+        EngineBridge.getEventCenter(app).removeObservers(delegate)
+        eventDelegate = null
+    }
+
+    private fun handleDcEvent(event: DcEvent) {
+        if (chatId <= 0) return
+        when (event.id) {
+            DcContext.DC_EVENT_MSG_DELIVERED,
+            DcContext.DC_EVENT_MSG_READ,
+            -> {
+                val msgId = event.data1Int
+                if (msgId > 0 && feedContains(msgId)) {
+                    ensureController().refreshMessageRow(msgId)
+                    bumpMessageEpoch(msgId)
+                }
+            }
+            DcContext.DC_EVENT_REACTIONS_CHANGED -> {
+                val msgId = event.data1Int
+                val eventChatId = event.data2Int
+                if (eventChatId == chatId && msgId > 0) {
+                    MessageReactions.invalidateSummary(msgId)
+                    ensureController().refreshMessageRow(msgId)
+                    reactionEpoch[msgId] = (reactionEpoch[msgId] ?: 0) + 1
+                }
+            }
+            DcContext.DC_EVENT_MSGS_CHANGED -> {
+                val eventChatId = event.data1Int
+                if (eventChatId == chatId) {
+                    val msgId = event.data2Int
+                    if (msgId > 0 && feedContains(msgId)) {
+                        ensureController().refreshMessageRow(msgId)
+                        bumpMessageEpoch(msgId)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun feedContains(msgId: Int): Boolean =
+        feedItems.any { it is FeedItem.Message && it.msgId == msgId }
+
     override fun onCleared() {
+        unregisterChatEvents()
         if (::controller.isInitialized) controller.dispose()
         super.onCleared()
     }
