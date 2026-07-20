@@ -29,14 +29,14 @@ import dev.chrisbanes.haze.hazeEffect
 /** Dimmed scrim behind modals / expanded search — ~37% black (half the old 75% barrier). */
 val PolliModalBarrier: Color = Color(0x60000000)
 
-private const val FROST_TINT_ALPHA = 0.72f
+private const val FROST_TINT_ALPHA = 0.88f
 
 /** Shared frosted-glass blur style for Polli chrome surfaces (composer, modals, search bar). */
 fun polliHazeStyle(tint: Color = PolliColors.Gray66): HazeStyle = HazeStyle(
     backgroundColor = tint.copy(alpha = FROST_TINT_ALPHA),
     tints = listOf(
-        HazeTint(Color.Black.copy(alpha = 0.32f)),
-        HazeTint(tint.copy(alpha = 0.52f)),
+        HazeTint(Color.Black.copy(alpha = 0.38f)),
+        HazeTint(tint.copy(alpha = 0.62f)),
     ),
     blurRadius = 40.dp,
     noiseFactor = HazeDefaults.noiseFactor,
@@ -119,9 +119,12 @@ fun FrostedChromeSurface(
 ) {
     val style = hazeStyle ?: polliHazeStyle(tint)
     val frostTint = style.backgroundColor
+    // Always paint an opaque-enough underlay. hazeEffect alone is fully transparent until a
+    // hazeSource has produced a frame — that made the composer / chrome look invisible.
     val chromeModifier = modifier
         .clip(shape)
         .graphicsLayer { clip = true }
+        .background(frostTint)
         .border(PolliDimens.ShellBorderWidth, borderColor, shape)
         .then(
             if (hazeState != null) {
@@ -130,7 +133,7 @@ fun FrostedChromeSurface(
                     backgroundColor = frostTint
                 }
             } else {
-                Modifier.background(frostTint)
+                Modifier
             },
         )
     Box(modifier = chromeModifier, content = content)

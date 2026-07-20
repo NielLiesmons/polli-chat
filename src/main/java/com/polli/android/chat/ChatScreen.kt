@@ -19,17 +19,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,7 +46,6 @@ import com.polli.android.ui.ChatFeedEdgeGradients
 import com.polli.android.ui.rememberComposerChromeLayout
 import com.polli.android.ui.rememberPolliHazeState
 import androidx.compose.ui.res.stringResource
-import kotlinx.coroutines.launch
 import com.polli.android.R
 import com.polli.android.platform.PolliAudioPlaybackViewModel
 import com.polli.android.platform.EngineBridge
@@ -82,27 +77,15 @@ fun ChatScreen(
     onSendMessage: () -> Unit = { viewModel.send() },
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val tabs = remember(isGroup, isBroadcast) { tabsForChat(isGroup, isBroadcast) }
-    val useGroupPager = tabs.size > 1
+    val isSpaceChrome = tabs.size > 1
     var selectedTab by remember { mutableStateOf(ChatDetailTab.Chat) }
-    val pagerState = rememberPagerState(
-        initialPage = tabs.indexOf(ChatDetailTab.Chat).coerceAtLeast(0),
-        pageCount = { tabs.size },
-    )
     val scrollController = remember { ChatRecyclerController() }
     val showScrollToBottom by scrollController.showScrollToBottom
     val headerClearance = if (isGroup && !isBroadcast) {
         PolliDimens.GroupHeaderClearance + AppInsets.statusBarTop()
     } else {
         AppInsets.statusBarTop() + 52.dp
-    }
-
-    LaunchedEffect(selectedTab, useGroupPager) {
-        if (!useGroupPager) return@LaunchedEffect
-        val idx = tabs.indexOf(selectedTab).coerceAtLeast(0)
-        if (pagerState.currentPage == idx) return@LaunchedEffect
-        pagerState.animateScrollToPage(idx)
     }
 
     val actionExecutor = remember(chatId, chatSession) {
@@ -115,6 +98,9 @@ fun ChatScreen(
         )
     }
     val hazeState = rememberPolliHazeState()
+    // Gradients only deferred; chrome keeps hazeState immediately (solid underlay prevents
+    // transparent composer while blur catches up).
+    var chromeEffectsReady by remember { mutableStateOf(false) }
     val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
     val keyboardVisible = imeBottom > 0.dp
 
@@ -124,11 +110,12 @@ fun ChatScreen(
         }
     }
 
-    val openMessageOverlay: (ChatMessage, androidx.compose.ui.geometry.Offset) -> Unit = { message, tap ->
-        viewModel.showOverlay(message, tap.x, tap.y)
-    }
-
     val composerChrome = rememberComposerChromeLayout()
+
+    val openMessageOverlay: (ChatMessage, androidx.compose.ui.geometry.Offset) -> Unit = { message, tap ->
+        val rootTap = composerChrome.windowToRoot(tap.x, tap.y)
+        viewModel.showOverlay(message, rootTap.x, rootTap.y)
+    }
 
     BoxWithConstraints(
         modifier = Modifier
@@ -136,27 +123,9 @@ fun ChatScreen(
             .background(PolliColors.Black)
             .onGloballyPositioned { composerChrome.onRootPositioned(it) },
     ) {
-        if (useGroupPager) {
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize(),
-                userScrollEnabled = false,
-            ) { page ->
-                ChatTabContent(
-                    tab = tabs[page],
-                    viewModel = viewModel,
-                    scrollController = scrollController,
-                    headerClearance = headerClearance,
-                    feedBottomPadding = composerChrome.feedBottomPadding,
-                    hazeState = hazeState,
-                    uiScaleRevision = uiScaleRevision,
-                    playbackViewModel = playbackViewModel,
-                    chatId = chatId,
-                    onOpenMessageOverlay = openMessageOverlay,
-                    onScrollToMessage = scrollToMessage,
-                )
-            }
-        } else {
+        // No HorizontalPager — it only glitched Spaces open (Chat is mid-tab index) while
+        // swipe between tabs was already disabled. Switch content directly.
+        if (!isSpaceChrome || selectedTab == ChatDetailTab.Chat) {
             ChatFeedPage(
                 viewModel = viewModel,
                 scrollController = scrollController,
@@ -167,6 +136,22 @@ fun ChatScreen(
                 playbackViewModel = playbackViewModel,
                 onOpenMessageOverlay = openMessageOverlay,
                 onScrollToMessage = scrollToMessage,
+                onFeedPainted = { chromeEffectsReady = true },
+            )
+        } else {
+            ChatTabContent(
+                tab = selectedTab,
+                viewModel = viewModel,
+                scrollController = scrollController,
+                headerClearance = headerClearance,
+                feedBottomPadding = composerChrome.feedBottomPadding,
+                hazeState = hazeState,
+                uiScaleRevision = uiScaleRevision,
+                playbackViewModel = playbackViewModel,
+                chatId = chatId,
+                onOpenMessageOverlay = openMessageOverlay,
+                onScrollToMessage = scrollToMessage,
+                onFeedPainted = { chromeEffectsReady = true },
             )
         }
 
@@ -176,11 +161,13 @@ fun ChatScreen(
             val composerDockHeight = composerChrome.dockHeight
             val composerGen = viewModel.composerGeneration
 
-            ChatFeedEdgeGradients(
-                modifier = Modifier.fillMaxSize(),
-                topChromeClearance = headerClearance,
-                bottomChromeInset = composerChrome.bottomChromeInset,
-            )
+            if (chromeEffectsReady) {
+                ChatFeedEdgeGradients(
+                    modifier = Modifier.fillMaxSize(),
+                    topChromeClearance = headerClearance,
+                    bottomChromeInset = composerChrome.bottomChromeInset,
+                )
+            }
 
             // Keep composer in sync when reply/edit state changes.
             @Suppress("UNUSED_VARIABLE")
@@ -338,6 +325,7 @@ private fun ChatFeedPage(
     playbackViewModel: PolliAudioPlaybackViewModel?,
     onOpenMessageOverlay: (ChatMessage, androidx.compose.ui.geometry.Offset) -> Unit,
     onScrollToMessage: (Int) -> Unit,
+    onFeedPainted: () -> Unit = {},
 ) {
     ChatFeedRecycler(
         viewModel = viewModel,
@@ -352,6 +340,7 @@ private fun ChatFeedPage(
         onOpenMessageOverlay = onOpenMessageOverlay,
         onScrollToMessage = onScrollToMessage,
         onFirstLoadScrollDone = {
+            onFeedPainted()
             viewModel.highlightScrollIndex.takeIf { it >= 0 }?.let { hi ->
                 viewModel.messageIdAtDisplayIndex(hi)?.let { id ->
                     viewModel.highlightMessage(id)
@@ -378,6 +367,7 @@ private fun ChatTabContent(
     chatId: Int,
     onOpenMessageOverlay: (ChatMessage, androidx.compose.ui.geometry.Offset) -> Unit,
     onScrollToMessage: (Int) -> Unit,
+    onFeedPainted: () -> Unit = {},
 ) {
     val context = LocalContext.current
     when (tab) {
@@ -393,6 +383,7 @@ private fun ChatTabContent(
             playbackViewModel = playbackViewModel,
             onOpenMessageOverlay = onOpenMessageOverlay,
             onScrollToMessage = onScrollToMessage,
+            onFeedPainted = onFeedPainted,
         )
         ChatDetailTab.Files -> ChatMediaTabPanel(
             chatId = chatId,

@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.platform.LocalDensity
@@ -31,6 +32,7 @@ class ComposerChromeLayoutState internal constructor(
 ) {
     private var rootHeightPx by mutableFloatStateOf(0f)
     private var composerTopPx by mutableFloatStateOf(0f)
+    private var rootCoords: LayoutCoordinates? = null
     private val estimatedDockPx =
         with(density) {
             (
@@ -44,6 +46,7 @@ class ComposerChromeLayoutState internal constructor(
         private set
 
     fun onRootPositioned(coords: LayoutCoordinates) {
+        rootCoords = coords
         rootHeightPx = coords.size.height.toFloat()
         if (composerTopPx <= 0f && rootHeightPx > 0f) {
             composerTopPx = (rootHeightPx - estimatedDockPx).coerceAtLeast(0f)
@@ -66,6 +69,14 @@ class ComposerChromeLayoutState internal constructor(
 
     val dockHeight: Dp
         get() = with(density) { dockHeightPx.toDp() }
+
+    /** View feed reports [MotionEvent.rawX/rawY]; overlay expects ChatScreen root coords. */
+    fun windowToRoot(windowX: Float, windowY: Float): Offset {
+        val coords = rootCoords ?: return Offset(windowX, windowY)
+        if (!coords.isAttached) return Offset(windowX, windowY)
+        val origin = coords.localToWindow(Offset.Zero)
+        return Offset(windowX - origin.x, windowY - origin.y)
+    }
 }
 
 @Composable

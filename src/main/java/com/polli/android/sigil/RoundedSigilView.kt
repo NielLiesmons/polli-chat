@@ -82,7 +82,7 @@ private fun DrawScope.drawRoundedSigil(
 }
 
 /** Unit-square (0..1) silhouette — scale to canvas at draw time. */
-internal fun buildSigilSilhouette(
+fun buildSigilSilhouette(
     grid: Array<BooleanArray>,
     contentInsetFraction: Float,
 ): Path {

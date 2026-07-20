@@ -41,10 +41,10 @@ import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-private const val MAX_DRAG = 92f
-private const val TRIGGER_AT = 36f
-private const val ICON_PARALLAX = 0.42f
-private const val ICON_MAX_OUTWARD = 24f
+private const val MAX_DRAG = 100f
+private const val TRIGGER_AT = 80f
+private const val ICON_PARALLAX = 0.28f
+private const val ICON_MAX_OUTWARD = 21f
 private const val ICON_SIZE = 28f
 private const val ICON_GLYPH = 13f
 private const val DRAG_START_PX = 6f
@@ -75,7 +75,7 @@ fun BubbleSwiper(
     fun currentTapInRoot(local: Offset): Offset {
         val coords = contentCoords
         if (coords == null || !coords.isAttached) return Offset.Zero
-        return coords.localToRoot(local)
+        return coords.localToWindow(local)
     }
 
     val settleTarget = if (dragging || popping) dragX else 0f

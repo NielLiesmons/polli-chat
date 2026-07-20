@@ -5,7 +5,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import com.polli.android.icons.PolliIconName
+import com.polli.android.R
 import com.polli.domain.model.chat.ChatMessage
 import com.polli.domain.model.chat.OutgoingState
 
@@ -24,19 +24,19 @@ internal object ViewOutgoingMeta {
         editedView.text = "Edited"
         editedView.setTextColor(ViewChatUi.whiteAlpha(0.33f))
         timeView.text = ViewChatUi.formatTime(message.timestamp)
-        timeView.setTextColor(ViewChatUi.whiteAlpha(0.66f))
+        timeView.setTextColor(ViewChatUi.white66())
         stateText.visibility = View.GONE
         checksHost.visibility = View.GONE
-        check1.setImageResource(PolliIconName.Check.resId)
-        check2.setImageResource(PolliIconName.Check.resId)
-        val checkColor = ViewChatUi.whiteAlpha(0.66f)
+        check1.setImageResource(R.drawable.check)
+        check2.setImageResource(R.drawable.check)
+        val checkColor = ViewChatUi.white66()
         check1.setColorFilter(checkColor)
         check2.setColorFilter(checkColor)
 
         when (message.outgoingState) {
             OutgoingState.Sending -> {
                 stateText.text = "…"
-                stateText.setTextColor(ViewChatUi.whiteAlpha(0.66f))
+                stateText.setTextColor(ViewChatUi.white66())
                 stateText.visibility = View.VISIBLE
             }
             OutgoingState.Sent -> {

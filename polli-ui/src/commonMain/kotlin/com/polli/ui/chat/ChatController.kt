@@ -90,28 +90,52 @@ class ChatController(
         initialDraft: String? = null,
         startingPosition: Int = -1,
         fromArchived: Boolean = false,
+        adapterOnly: Boolean = false,
     ) {
         if (this.chatId == chatId && registered) return
         this.chatId = chatId
         editingMessageId = -1
-        draft = initialDraft?.takeIf { it.isNotBlank() } ?: messages.getDraft(chatId)
+        // Draft I/O is not needed for first feed frame — load after paint when not provided.
+        draft = initialDraft?.takeIf { it.isNotBlank() }.orEmpty()
         val freshMsgs = freshMessageCount()
         showNewMessagesMarker = freshMsgs > 0
         registerEvents()
         store.reset()
+        store.syncAdapterIds(chatId)
         feedItems =
-            store.syncFeedIds(chatId, showNewMessagesMarker, freshMsgs)
-                ?: store.buildFeed(showNewMessagesMarker, freshMsgs)
+            if (adapterOnly) {
+                emptyList()
+            } else {
+                store.syncFeedIds(chatId, showNewMessagesMarker, freshMsgs)
+                    ?: store.buildFeed(showNewMessagesMarker, freshMsgs)
+            }
         initialScrollIndex =
             resolveInitialScrollIndex(
                 startingPosition = startingPosition,
                 freshMsgs = freshMsgs,
             )
+        // Warm the last visible window so first RecyclerView bind hits message cache (DC-shaped).
+        val warmIds = store.adapterMessageIds()
+        if (warmIds.isNotEmpty()) {
+            val from = (warmIds.size - 32).coerceAtLeast(0)
+            store.preloadMessages(warmIds.copyOfRange(from, warmIds.size))
+        }
         pendingFirstLoadScroll = true
         reloadGeneration++
         if (!fromArchived) {
             scope.launch(Dispatchers.Default) {
                 messages.marknoticedChat(chatId)
+            }
+        }
+        if (initialDraft.isNullOrBlank()) {
+            scope.launch(Dispatchers.Default) {
+                val loaded = messages.getDraft(chatId)
+                if (loaded.isNotBlank() && draft.isEmpty() && editingMessageId <= 0) {
+                    withContext(Dispatchers.Main) {
+                        draft = loaded
+                        bumpComposer()
+                    }
+                }
             }
         }
         // DC opens with getChatMsgs + bind visible rows only — no background full-chat preload.
@@ -293,10 +317,17 @@ class ChatController(
         if (chatId <= 0) return false
         val fresh = freshMessageCount()
         if (markRead) messages.marknoticedChat(chatId)
-        val synced = store.syncFeedIds(chatId, showNewMessagesMarker, fresh)
+        val synced = store.syncAdapterIds(chatId)
+        if (synced) {
+            feedItems = store.feedItems()
+            reloadGeneration++
+            sentMsgId?.let { store.preloadMessages(intArrayOf(it)) }
+            return true
+        }
+        val feedSynced = store.syncFeedIds(chatId, showNewMessagesMarker, fresh)
         when {
-            synced != null -> {
-                feedItems = synced
+            feedSynced != null -> {
+                feedItems = feedSynced
                 reloadGeneration++
                 sentMsgId?.let { store.preloadMessages(intArrayOf(it)) }
                 return true

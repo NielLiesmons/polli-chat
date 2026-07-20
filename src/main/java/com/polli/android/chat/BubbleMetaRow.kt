@@ -83,8 +83,10 @@ fun OutgoingBubbleMetaRow(
             .fillMaxWidth()
             .width(IntrinsicSize.Max)
             .padding(
-                horizontal = PolliDimens.ChatBubbleInsetH,
-                vertical = PolliDimens.ChatBubbleMetaRowPaddingV,
+                start = PolliDimens.ChatBubbleInsetH,
+                end = (PolliDimens.ChatBubbleInsetH - 3.dp).coerceAtLeast(0.dp),
+                top = PolliDimens.ChatBubbleMetaRowPaddingV,
+                bottom = PolliDimens.ChatBubbleMetaRowPaddingV,
             )
             .offset(y = PolliDimens.ChatBubbleMetaRowMarginTop),
         horizontalArrangement = Arrangement.End,
@@ -107,14 +109,14 @@ fun OutgoingBubbleMetaRow(
                 )
                 OutgoingState.Sent -> PolliIcon(
                     PolliIconName.Check,
-                    11.dp,
+                    13.dp,
                     PolliColors.White66,
                 )
                 OutgoingState.Read -> Row {
-                    PolliIcon(PolliIconName.Check, 11.dp, PolliColors.White66)
+                    PolliIcon(PolliIconName.Check, 13.dp, PolliColors.White66)
                     PolliIcon(
                         PolliIconName.Check,
-                        11.dp,
+                        13.dp,
                         PolliColors.White66,
                         modifier = Modifier.offset(x = (-3).dp),
                     )

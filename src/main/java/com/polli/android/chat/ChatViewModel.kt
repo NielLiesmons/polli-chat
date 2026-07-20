@@ -166,14 +166,32 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     ) {
         this.chatId = chatId
         val c = ensureController()
-        c.bind(chatId, initialDraft, startingPosition, fromArchived)
+        c.bind(chatId, initialDraft, startingPosition, fromArchived, adapterOnly = true)
         registerChatEvents()
-        if (startingPosition >= 0) {
-            val ids = c.adapterMessageIds()
-            if (ids.isNotEmpty()) {
+        val ids = c.adapterMessageIds()
+        if (ids.isNotEmpty()) {
+            // Warm reaction cache before first bind paints so rows don't flash after open.
+            val from = (ids.size - 32).coerceAtLeast(0)
+            warmReactionCache(ids.copyOfRange(from, ids.size))
+            if (startingPosition >= 0) {
                 val chronIdx = (ids.size - 1 - startingPosition).coerceIn(0, ids.lastIndex)
                 highlightScrollIndex = c.displayIndexForMsgId(ids[chronIdx])
             }
+        }
+    }
+
+    /**
+     * After first feed paint: warm reaction cache for visible rows only, then light-refresh those
+     * positions. Avoids sync JSON-RPC reaction loads on every first-bind (main open lag vs DC).
+     */
+    fun warmVisibleReactions(
+        msgIds: IntArray,
+        onWarmed: (IntArray) -> Unit,
+    ) {
+        if (msgIds.isEmpty()) return
+        viewModelScope.launch(Dispatchers.Default) {
+            MessageReactions.preloadSummaries(app, msgIds)
+            withContext(Dispatchers.Main) { onWarmed(msgIds) }
         }
     }
 

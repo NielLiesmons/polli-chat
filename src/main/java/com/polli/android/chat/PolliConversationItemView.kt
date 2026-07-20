@@ -2,41 +2,47 @@ package com.polli.android.chat
 
 import android.content.Context
 import android.graphics.Typeface
+import android.graphics.drawable.ColorDrawable
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.Space
 import android.widget.TextView
-import com.polli.android.icons.PolliIconName
+import com.polli.android.R
 import com.polli.android.platform.PolliAudioPlaybackViewModel
 import com.polli.android.theme.PolliDimens
 import com.polli.core.chat.MessageGroupLayout
 import com.polli.domain.model.chat.ChatMessage
-import com.polli.domain.model.chat.OutgoingState
 
 /**
  * DC [ConversationItem] equivalent — pure View bind path with Polli grouped bubble chrome.
+ * Layout/padding must match [MessageBubble] / [SingleIncomingMessageRow] / [OutgoingMessageRow].
  */
 class PolliConversationItemView(context: Context) : FrameLayout(context) {
     private val rowPadH = ViewChatUi.dp(context, PolliDimens.ChatRowPaddingH.value)
     private val avatarSize = ViewChatUi.dp(context, PolliDimens.ChatAvatarSize.value)
     private val avatarGap = ViewChatUi.dp(context, PolliDimens.ChatAvatarGap.value)
-    private val avatarReserve = avatarSize + avatarGap
     private val bubbleInsetH = ViewChatUi.dp(context, PolliDimens.ChatBubbleInsetH.value)
     private val bubblePadV = ViewChatUi.dp(context, PolliDimens.ChatBubblePaddingV.value)
     private val quotePadH = ViewChatUi.dp(context, PolliDimens.ChatQuoteBubblePadH.value)
     private val richContentPadH = quotePadH
 
-    private val lane = LinearLayout(context).apply { orientation = LinearLayout.HORIZONTAL }
+    private val highlightBand = View(context)
+    private val incomingLane = IncomingMessageLane(context).apply {
+        avatarSizePx = avatarSize
+        avatarGapPx = avatarGap
+    }
+    private val outgoingLane = FrameLayout(context).apply {
+        clipChildren = false
+        clipToPadding = false
+    }
     private val avatarView = ImageView(context)
-    private val avatarSpacer = Space(context)
-    private val bubbleHost = FrameLayout(context)
-    private val replyIcon = ImageView(context)
     private val bubbleColumn = MaxWidthLinearLayout(context).apply { orientation = LinearLayout.VERTICAL }
+    private val bubbleHost = BubbleSwipeHost(context, bubbleColumn)
     private val incomingHeader = LinearLayout(context).apply { orientation = LinearLayout.HORIZONTAL }
     private val authorView = TextView(context)
     private val incomingMetaView = TextView(context)
@@ -56,11 +62,18 @@ class PolliConversationItemView(context: Context) : FrameLayout(context) {
     private val check1 = ImageView(context)
     private val check2 = ImageView(context)
 
-    private var touchHelper: ViewBubbleTouchHelper? = null
-    private var onTapRoot: ((Float, Float) -> Unit)? = null
-    private var maxBubbleWidthPx = 0
+    private var onTapScreen: ((Float, Float) -> Unit)? = null
+    private var highlightDrawable = ColorDrawable(ViewChatUi.white8())
 
     init {
+        clipChildren = false
+        clipToPadding = false
+
+        highlightBand.background = highlightDrawable
+        highlightBand.alpha = 0f
+        // Full-bleed band across the row (edge-to-edge of the feed column).
+        addView(highlightBand, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+
         bodyView.setLineSpacing(0f, 1.15f)
 
         authorView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
@@ -71,29 +84,41 @@ class PolliConversationItemView(context: Context) : FrameLayout(context) {
         outgoingEdited.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
         outgoingEdited.setTextColor(ViewChatUi.whiteAlpha(0.33f))
         outgoingTime.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
-        outgoingTime.setTextColor(ViewChatUi.whiteAlpha(0.66f))
+        outgoingTime.setTextColor(ViewChatUi.white66())
         outgoingStateText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
-        outgoingStateText.setTextColor(ViewChatUi.whiteAlpha(0.66f))
+        outgoingStateText.setTextColor(ViewChatUi.white66())
 
-        check1.setImageResource(PolliIconName.Check.resId)
-        check2.setImageResource(PolliIconName.Check.resId)
-        val checkSize = ViewChatUi.dp(context, 11f)
+        // DC check.png — tint White66 to match timestamp/Edited (+2px vs prior 11dp).
+        check1.setImageResource(R.drawable.check)
+        check2.setImageResource(R.drawable.check)
+        val checkSize = ViewChatUi.dp(context, 13f)
+        val checkColor = ViewChatUi.white66()
+        check1.setColorFilter(checkColor)
+        check2.setColorFilter(checkColor)
         outgoingChecks.addView(check1, FrameLayout.LayoutParams(checkSize, checkSize, Gravity.START or Gravity.CENTER_VERTICAL))
         outgoingChecks.addView(
             check2,
             FrameLayout.LayoutParams(checkSize, checkSize, Gravity.START or Gravity.CENTER_VERTICAL).apply {
-                marginStart = ViewChatUi.dp(context, 8f) - ViewChatUi.dp(context, 3f)
+                marginStart = ViewChatUi.dp(context, 5f)
             },
         )
 
-        replyIcon.setImageResource(PolliIconName.Reply.resId)
-        replyIcon.alpha = 0f
+        incomingHeader.addView(
+            authorView,
+            LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f),
+        )
+        incomingHeader.addView(
+            incomingMetaView,
+            LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT),
+        )
+        // Shell padding supplies top inset — header only needs horizontal + bottom (Compose parity).
+        incomingHeader.setPadding(bubbleInsetH, 0, bubbleInsetH, ViewChatUi.dp(context, 2f))
+        incomingHeader.isClickable = true
 
-        incomingHeader.addView(authorView, LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f))
-        incomingHeader.addView(incomingMetaView, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT))
-        incomingHeader.setPadding(bubbleInsetH, bubblePadV, bubbleInsetH, ViewChatUi.dp(context, 2f))
-
-        reactionsScroll.addView(reactionsRow, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT))
+        reactionsScroll.addView(
+            reactionsRow,
+            LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT),
+        )
         reactionsScroll.setPadding(
             richContentPadH,
             ViewChatUi.dp(context, PolliDimens.ChatReactionRowTop.value),
@@ -101,35 +126,41 @@ class PolliConversationItemView(context: Context) : FrameLayout(context) {
             0,
         )
 
-        outgoingMeta.addView(outgoingEdited, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT))
+        outgoingMeta.addView(
+            outgoingEdited,
+            LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT),
+        )
         outgoingMeta.addView(
             outgoingTime,
-            LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
+            LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
                 marginStart = ViewChatUi.dp(context, 4f)
             },
         )
         outgoingMeta.addView(
             outgoingStateText,
-            LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
+            LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
                 marginStart = ViewChatUi.dp(context, 4f)
             },
         )
         outgoingMeta.addView(
             outgoingChecks,
-            LayoutParams(ViewChatUi.dp(context, 16f), LayoutParams.WRAP_CONTENT).apply {
+            LinearLayout.LayoutParams(ViewChatUi.dp(context, 20f), LinearLayout.LayoutParams.WRAP_CONTENT).apply {
                 marginStart = ViewChatUi.dp(context, 4f)
+                gravity = Gravity.CENTER_VERTICAL
             },
         )
+        // ~3dp less right pad than bubbleInsetH so timestamp/checks sit tighter to the shell edge.
         outgoingMeta.setPadding(
             bubbleInsetH,
             ViewChatUi.dp(context, PolliDimens.ChatBubbleMetaRowPaddingV.value),
-            bubbleInsetH,
+            (bubbleInsetH - ViewChatUi.dp(context, 3f)).coerceAtLeast(0),
             0,
         )
         outgoingMeta.translationY = ViewChatUi.dp(context, PolliDimens.ChatBubbleMetaRowMarginTop.value).toFloat()
+        outgoingMeta.isClickable = true
 
         quoteBlock.layoutParams =
-            LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+            LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
                 marginStart = quotePadH
                 marginEnd = quotePadH
             }
@@ -141,19 +172,6 @@ class PolliConversationItemView(context: Context) : FrameLayout(context) {
         bubbleColumn.addView(reactionsScroll)
         bubbleColumn.addView(outgoingMeta)
 
-        bubbleHost.addView(
-            replyIcon,
-            LayoutParams(ViewChatUi.dp(context, 20f), ViewChatUi.dp(context, 20f)).apply {
-                gravity = Gravity.CENTER_VERTICAL or Gravity.START
-            },
-        )
-        bubbleHost.addView(
-            bubbleColumn,
-            LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
-                gravity = Gravity.END
-            },
-        )
-
         avatarView.scaleType = ImageView.ScaleType.CENTER_CROP
         avatarView.clipToOutline = true
         avatarView.outlineProvider =
@@ -162,11 +180,31 @@ class PolliConversationItemView(context: Context) : FrameLayout(context) {
                     outline.setOval(0, 0, view.width, view.height)
                 }
             }
-        lane.addView(avatarView, LayoutParams(avatarSize, avatarSize))
-        lane.addView(avatarSpacer, LayoutParams(avatarReserve, 0))
-        lane.addView(bubbleHost, LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f))
 
-        addView(lane, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
+        // Avatar is laid out by IncomingMessageLane and does not contribute to row height.
+        incomingLane.addView(avatarView, ViewGroup.LayoutParams(avatarSize, avatarSize))
+        // bubbleHost is attached in bind() to incoming or outgoing lane (single parent).
+        addView(incomingLane, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
+        addView(outgoingLane, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
+        outgoingLane.visibility = View.GONE
+
+        val openOverlayFromView: (View) -> Unit = { view ->
+            val loc = IntArray(2)
+            view.getLocationOnScreen(loc)
+            onTapScreen?.invoke(loc[0] + view.width / 2f, loc[1] + view.height / 2f)
+        }
+        bodyView.setOnClickListener { openOverlayFromView(it) }
+        incomingHeader.setOnClickListener { openOverlayFromView(it) }
+        outgoingMeta.setOnClickListener { openOverlayFromView(it) }
+        bubbleColumn.setOnClickListener { openOverlayFromView(it) }
+    }
+
+    fun setHighlighted(highlighted: Boolean) {
+        if (highlighted) {
+            highlightBand.animate().alpha(1f).setDuration(120).start()
+        } else {
+            highlightBand.animate().alpha(0f).setDuration(500).start()
+        }
     }
 
     fun bind(
@@ -178,11 +216,11 @@ class PolliConversationItemView(context: Context) : FrameLayout(context) {
         highlighted: Boolean,
         playbackViewModel: PolliAudioPlaybackViewModel?,
         onSwipeReply: () -> Unit,
-        onTap: (rootX: Float, rootY: Float) -> Unit,
+        onTap: (screenX: Float, screenY: Float) -> Unit,
         onQuoteClick: (Int) -> Unit,
     ) {
-        onTapRoot = onTap
-        this.maxBubbleWidthPx = maxBubbleWidthPx
+        onTapScreen = onTap
+        bubbleHost.onTapScreen = onTap
         bubbleColumn.setMaxBubbleWidth(maxBubbleWidthPx)
 
         val incomingInGroup = !layout.isFirstInStack
@@ -200,21 +238,37 @@ class PolliConversationItemView(context: Context) : FrameLayout(context) {
             }
         val endPad =
             if (message.isOutgoing) rowPadH else ViewChatUi.dp(context, PolliDimens.ChatRowIncomingRight.value)
-        setPadding(startPad, rowTop, endPad, 0)
-        alpha = if (highlighted) 1f else 0.98f
-
-        val showAvatar = !message.isOutgoing && layout.isLastInStack
-        avatarView.visibility = if (showAvatar) View.VISIBLE else View.GONE
-        avatarSpacer.visibility = if (!message.isOutgoing && !showAvatar) View.VISIBLE else View.GONE
-        if (showAvatar) {
-            avatarView.setImageDrawable(ViewChatUi.avatarDrawable(context, message.authorName, message.authorKey))
+        setPadding(0, rowTop, 0, 0)
+        (incomingLane.layoutParams as LayoutParams).apply {
+            marginStart = startPad
+            marginEnd = endPad
+        }
+        (outgoingLane.layoutParams as LayoutParams).apply {
+            marginStart = startPad
+            marginEnd = endPad
         }
 
-        lane.gravity = if (message.isOutgoing) Gravity.END else Gravity.BOTTOM
-        (bubbleHost.layoutParams as LinearLayout.LayoutParams).gravity =
-            if (message.isOutgoing) Gravity.END else Gravity.START
-        (bubbleColumn.layoutParams as FrameLayout.LayoutParams).gravity =
-            if (message.isOutgoing) Gravity.END else Gravity.START
+        setHighlighted(highlighted)
+
+        val showAvatar = !message.isOutgoing && layout.isLastInStack
+        attachBubbleLane(outgoing = message.isOutgoing)
+        if (!message.isOutgoing) {
+            incomingLane.showAvatar = showAvatar
+            if (showAvatar) {
+                avatarView.visibility = View.VISIBLE
+                ViewProfileAvatar.bind(
+                    imageView = avatarView,
+                    name = message.authorName,
+                    seed = message.authorKey,
+                    contactId = message.authorId,
+                )
+            } else {
+                avatarView.visibility = View.GONE
+            }
+        } else {
+            avatarView.visibility = View.GONE
+        }
+        bubbleHost.setBubbleGravity(end = message.isOutgoing)
 
         bubbleColumn.background =
             if (message.isOutgoing) {
@@ -228,7 +282,7 @@ class PolliConversationItemView(context: Context) : FrameLayout(context) {
             if (!message.isOutgoing && layout.isFirstInStack) View.VISIBLE else View.GONE
         if (!message.isOutgoing && layout.isFirstInStack) {
             authorView.text = message.authorName
-            authorView.setTextColor(ViewChatUi.authorColor(message.authorKey))
+            authorView.setTextColor(ViewChatUi.authorColor(message.authorColorSeed.ifBlank { message.authorKey }))
             incomingMetaView.text = buildMetaLabel(message.isEdited, ViewChatUi.formatTime(message.timestamp))
         }
 
@@ -249,20 +303,27 @@ class PolliConversationItemView(context: Context) : FrameLayout(context) {
         )
 
         val bodyHasText = message.text.isNotBlank()
+        val hasLinks = bodyHasText && MessageLinkify.splitMessageParts(message.text).any { it is MessagePart.Link }
         if (bodyHasText) {
             bodyView.visibility = View.VISIBLE
             val emojiOnly = EmojiText.isEmojiOnlyShortText(message.text)
             bodyView.setTextSize(TypedValue.COMPLEX_UNIT_SP, if (emojiOnly) 14.5f * EmojiText.EMOJI_MAGNIFY else 14.5f)
             bodyView.setTextColor(if (message.isOutgoing) 0xFFFFFFFF.toInt() else ViewChatUi.whiteAlpha(0.85f))
-            ViewChatUi.configureLinkBody(bodyView, message.isOutgoing, context)
-            bodyView.text = ViewChatUi.linkifiedBody(message.text, message.isOutgoing, context)
-            bodyView.setPadding(bubbleInsetH, bodyTopPad(message), bubbleInsetH, bodyBottomPad(message))
+            if (hasLinks) {
+                ViewChatUi.configureLinkBody(bodyView, message.isOutgoing, context)
+                bodyView.text = ViewChatUi.linkifiedBody(message.text, message.isOutgoing, context)
+            } else {
+                bodyView.movementMethod = null
+                bodyView.text = message.text
+            }
+            bodyView.setPadding(bubbleInsetH, 0, bubbleInsetH, 0)
         } else {
             bodyView.visibility = View.GONE
         }
 
         if (reactions.isEmpty()) {
             reactionsScroll.visibility = View.GONE
+            reactionsRow.removeAllViews()
         } else {
             reactionsScroll.visibility = View.VISIBLE
             ViewReactionPills.populate(reactionsRow, reactions, pulseEmoji)
@@ -282,15 +343,45 @@ class PolliConversationItemView(context: Context) : FrameLayout(context) {
             )
         }
 
-        if (touchHelper == null) {
-            touchHelper = ViewBubbleTouchHelper(bubbleColumn)
+        bubbleHost.onSwipeReply = onSwipeReply
+    }
+
+    /** Light bind for reaction-only updates (pop included). */
+    fun bindReactions(reactions: List<BubbleReaction>, pulseEmoji: String?) {
+        if (reactions.isEmpty()) {
+            reactionsScroll.visibility = View.GONE
+            reactionsRow.removeAllViews()
+        } else {
+            reactionsScroll.visibility = View.VISIBLE
+            ViewReactionPills.populate(reactionsRow, reactions, pulseEmoji)
         }
-        touchHelper?.onSwipeReply = onSwipeReply
-        touchHelper?.onDragProgress = { progress -> replyIcon.alpha = progress }
-        touchHelper?.onTap = { localX, localY ->
-            val loc = IntArray(2)
-            bubbleColumn.getLocationInWindow(loc)
-            onTapRoot?.invoke(loc[0] + localX, loc[1] + localY)
+    }
+
+    private fun attachBubbleLane(outgoing: Boolean) {
+        val target: ViewGroup = if (outgoing) outgoingLane else incomingLane
+        if (bubbleHost.parent === target) {
+            incomingLane.visibility = if (outgoing) View.GONE else View.VISIBLE
+            outgoingLane.visibility = if (outgoing) View.VISIBLE else View.GONE
+            return
+        }
+        (bubbleHost.parent as? ViewGroup)?.removeView(bubbleHost)
+        if (outgoing) {
+            outgoingLane.addView(
+                bubbleHost,
+                LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, Gravity.END),
+            )
+            incomingLane.visibility = View.GONE
+            outgoingLane.visibility = View.VISIBLE
+        } else {
+            incomingLane.addView(
+                bubbleHost,
+                ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                ),
+            )
+            incomingLane.visibility = View.VISIBLE
+            outgoingLane.visibility = View.GONE
         }
     }
 
@@ -329,8 +420,4 @@ class PolliConversationItemView(context: Context) : FrameLayout(context) {
         } else {
             bubblePadV + ViewChatUi.dp(context, PolliDimens.ChatBubbleIncomingBottomExtra.value)
         }
-
-    private fun bodyTopPad(message: ChatMessage): Int = 0
-
-    private fun bodyBottomPad(message: ChatMessage): Int = 0
 }

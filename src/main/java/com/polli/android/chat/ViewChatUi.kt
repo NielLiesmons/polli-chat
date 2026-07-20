@@ -70,9 +70,18 @@ internal object ViewChatUi {
 
     fun incomingBubbleBackground(context: Context, isLastInStack: Boolean): GradientDrawable =
         GradientDrawable().apply {
-            setColor(0xFF666666.toInt())
+            // Exact PolliColors.Gray66 = 0xA8333333 (not opaque #666666).
+            setColor(0xA8333333.toInt())
             setCornerRadii(bubbleRadii(outgoing = false, isLastInStack, context))
         }
+
+    /** PolliColors.White66 = 0xA8FFFFFF. */
+    fun white66(): Int = 0xA8FFFFFF.toInt()
+
+    /** PolliColors.White8 highlight band. */
+    fun white8(): Int = 0x14FFFFFF.toInt()
+
+    fun gray66Color(): Int = 0xA8333333.toInt()
 
     private fun bubbleRadii(outgoing: Boolean, isLastInStack: Boolean, context: Context): FloatArray {
         val full = dp(context, PolliDimens.ChatBubbleRadius.value).toFloat()

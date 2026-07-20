@@ -36,9 +36,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -58,7 +59,6 @@ import com.polli.android.ui.PolliAvatar
 import com.polli.android.ui.PolliModalBarrier
 import com.polli.android.ui.polliOverlayHazeStyle
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -70,18 +70,24 @@ data class BubbleOverlayAnchor(
     val tapY: Float,
 )
 
-private val PanelShape = RoundedCornerShape(16.dp)
-private val ActionsPanelWidth = 280.dp
-private val ReactionsPanelHeight = 52.dp
-private val ReactionsFadeWidth = 52.dp
-private val PlusButtonSize = 36.dp
+private val PanelShape = RoundedCornerShape(14.dp)
+private val ReactionsPanelShape = RoundedCornerShape(percent = 50)
+private val ActionsPanelWidth = 168.dp
+private val ReactionsPanelWidth = 220.dp
+private val ReactionsPanelHeight = 44.dp
+private val ReactionsFadeWidth = 64.dp
+private val PlusButtonSize = 30.dp
 private val PanelGap = 8.dp
 private val EdgePad = 16.dp
 private val OverlayShellBg = PolliColors.Gray66
 private val OverlayShellBorder = PolliColors.ShellBorder
-private val ActionRowVPad = 10.dp
-private val SeenByRowHeight = 44.dp
-private const val ActionRowCount = 7
+private val ActionRowVPad = 6.dp
+private val ActionIconSize = 16.dp
+private val ActionFontSize = 13.5.sp
+private val SeenByRowHeight = 36.dp
+private const val ActionRowCount = 6
+private val EmojiFontSize = 24.sp
+private val EmojiGap = 12.dp
 
 @Composable
 fun BubbleOverlayHost(
@@ -98,6 +104,8 @@ fun BubbleOverlayHost(
     onDelete: () -> Unit,
 ) {
     if (anchor == null) return
+    @Suppress("UNUSED_PARAMETER")
+    val unusedSession = chatSession
     val context = LocalContext.current
     var showEmojiPicker by remember { mutableStateOf(false) }
     val quickEmojis = remember(anchor.message.id) { RecentEmojiStore.orderedQuickPick(context) }
@@ -108,21 +116,22 @@ fun BubbleOverlayHost(
 
     val emojiScroll = rememberScrollState()
     val overlayHazeStyle = remember { polliOverlayHazeStyle(OverlayShellBg) }
-    val panelTapBlock = remember { MutableInteractionSource() }
+    val reactionsTapBlock = remember { MutableInteractionSource() }
+    val actionsTapBlock = remember { MutableInteractionSource() }
     val density = LocalDensity.current
     val statusTopPx = with(density) { AppInsets.statusBarTop().toPx() }
     val navBottomPx = with(density) { AppInsets.navigationBarBottom().toPx() }
     val edgePadPx = with(density) { EdgePad.toPx() }
     val actionsWidthPx = with(density) { ActionsPanelWidth.toPx() }
-    val reactionsWidthPx = with(density) { ActionsPanelWidth.toPx() + with(density) { ReactionsFadeWidth.toPx() } }
+    val reactionsWidthPx = with(density) { ReactionsPanelWidth.toPx() + ReactionsFadeWidth.toPx() }
     val reactionsHeightPx = with(density) { ReactionsPanelHeight.toPx() }
     val gapPx = with(density) { PanelGap.toPx() }
     val seenByHeightPx = with(density) { SeenByRowHeight.toPx() }
-    val actionRowPx = with(density) { (ActionRowVPad * 2 + 24.dp).toPx() }
+    val actionRowPx = with(density) { (ActionRowVPad * 2 + ActionIconSize).toPx() }
     val dividerPx = with(density) { 1.dp.toPx() }
-    // Fixed panel height — reserve Seen-by slot for outgoing so async load cannot resize panels.
-    val actionsHeightPx =
-        remember(anchor.message.id, anchor.message.isOutgoing) {
+    // Estimate only for placement — panel itself wraps content (fixed height was crash-prone).
+    val actionsHeightEstimatePx =
+        remember(anchor.message.isOutgoing, seenByHeightPx, actionRowPx, dividerPx) {
             val seenByBlock = if (anchor.message.isOutgoing) seenByHeightPx + dividerPx else 0f
             seenByBlock + actionRowPx * ActionRowCount + dividerPx * (ActionRowCount - 1)
         }
@@ -131,7 +140,9 @@ fun BubbleOverlayHost(
     LaunchedEffect(anchor.message.id) {
         readers =
             if (anchor.message.isOutgoing) {
-                withContext(Dispatchers.IO) { ReadReceipts.load(context, anchor.message.id) }
+                withContext(Dispatchers.IO) {
+                    runCatching { ReadReceipts.load(context, anchor.message.id) }.getOrDefault(emptyList())
+                }
             } else {
                 emptyList()
             }
@@ -156,51 +167,70 @@ fun BubbleOverlayHost(
         )
 
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            val screenW = constraints.maxWidth.toFloat()
-            val screenH = constraints.maxHeight.toFloat()
+            val screenW = constraints.maxWidth.toFloat().coerceAtLeast(1f)
+            val screenH = constraints.maxHeight.toFloat().coerceAtLeast(1f)
             val safeTop = statusTopPx + edgePadPx
-            val safeBottom = screenH - navBottomPx - edgePadPx
+            val safeBottom = (screenH - navBottomPx - edgePadPx).coerceAtLeast(safeTop + 1f)
 
-            val tapX = anchor.tapX
-            val tapY = anchor.tapY
+            fun clamp(v: Float, min: Float, max: Float): Float =
+                if (!v.isFinite()) (min + max) / 2f
+                else if (min >= max) (min + max) / 2f
+                else v.coerceIn(min, max)
+
+            val tapX = if (anchor.tapX.isFinite()) anchor.tapX else screenW / 2f
+            val tapY = if (anchor.tapY.isFinite()) anchor.tapY else screenH / 2f
 
             val reactionsCenterY =
-                tapY.coerceIn(
+                clamp(
+                    tapY,
                     safeTop + reactionsHeightPx / 2f,
                     safeBottom - reactionsHeightPx / 2f,
                 )
             val reactionsTop = reactionsCenterY - reactionsHeightPx / 2f
             val reactionsLeft =
-                (tapX - reactionsWidthPx / 2f)
-                    .coerceIn(edgePadPx, (screenW - edgePadPx - reactionsWidthPx).coerceAtLeast(edgePadPx))
+                clamp(
+                    tapX - reactionsWidthPx / 2f,
+                    edgePadPx,
+                    (screenW - edgePadPx - reactionsWidthPx).coerceAtLeast(edgePadPx),
+                )
 
             val lowerZoneStart = if (keyboardVisible) screenH * 0.5f else screenH * (2f / 3f)
             val actionsAbove = tapY >= lowerZoneStart
 
             val actionsLeft =
-                (tapX - actionsWidthPx / 2f)
-                    .coerceIn(edgePadPx, (screenW - edgePadPx - actionsWidthPx).coerceAtLeast(edgePadPx))
+                clamp(
+                    tapX - actionsWidthPx / 2f,
+                    edgePadPx,
+                    (screenW - edgePadPx - actionsWidthPx).coerceAtLeast(edgePadPx),
+                )
             val actionsTop =
-                (
+                clamp(
                     if (actionsAbove) {
-                        reactionsTop - gapPx - actionsHeightPx
+                        reactionsTop - gapPx - actionsHeightEstimatePx
                     } else {
                         reactionsTop + reactionsHeightPx + gapPx
-                    }
-                ).coerceIn(safeTop, (safeBottom - actionsHeightPx).coerceAtLeast(safeTop))
+                    },
+                    safeTop,
+                    (safeBottom - actionsHeightEstimatePx).coerceAtLeast(safeTop),
+                )
 
             FrostedChromeSurface(
                 modifier =
                     Modifier
-                        .offset { IntOffset(reactionsLeft.roundToInt(), reactionsTop.roundToInt()) }
-                        .width(ActionsPanelWidth + ReactionsFadeWidth)
+                        .offset {
+                            IntOffset(
+                                reactionsLeft.roundToInt().coerceIn(0, screenW.toInt()),
+                                reactionsTop.roundToInt().coerceIn(0, screenH.toInt()),
+                            )
+                        }
+                        .width(ReactionsPanelWidth + ReactionsFadeWidth)
                         .height(ReactionsPanelHeight)
                         .clickable(
-                            interactionSource = panelTapBlock,
+                            interactionSource = reactionsTapBlock,
                             indication = null,
                             onClick = {},
                         ),
-                shape = PanelShape,
+                shape = ReactionsPanelShape,
                 tint = OverlayShellBg,
                 borderColor = OverlayShellBorder,
                 hazeState = null,
@@ -212,15 +242,15 @@ fun BubbleOverlayHost(
                             Modifier
                                 .fillMaxSize()
                                 .horizontalScroll(emojiScroll)
-                                .padding(start = 14.dp, end = ReactionsFadeWidth + 4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(14.dp),
+                                .padding(start = 12.dp, end = ReactionsFadeWidth + 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(EmojiGap),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         quickEmojis.forEach { emoji ->
                             Text(
                                 text = emoji,
-                                fontSize = 28.sp,
-                                lineHeight = 28.sp,
+                                fontSize = EmojiFontSize,
+                                lineHeight = EmojiFontSize,
                                 modifier =
                                     Modifier
                                         .clip(RoundedCornerShape(8.dp))
@@ -228,7 +258,7 @@ fun BubbleOverlayHost(
                                             RecentEmojiStore.record(context, emoji)
                                             onReaction(emoji)
                                         }
-                                        .padding(horizontal = 2.dp, vertical = 4.dp),
+                                        .padding(horizontal = 1.dp, vertical = 2.dp),
                             )
                         }
                     }
@@ -241,7 +271,8 @@ fun BubbleOverlayHost(
                                 .background(
                                     Brush.horizontalGradient(
                                         0f to Color.Transparent,
-                                        0.35f to OverlayShellBg.copy(alpha = 0.85f),
+                                        0.22f to OverlayShellBg.copy(alpha = 0.75f),
+                                        0.55f to OverlayShellBg.copy(alpha = 0.95f),
                                         1f to OverlayShellBg,
                                     ),
                                 ),
@@ -250,7 +281,7 @@ fun BubbleOverlayHost(
                         modifier =
                             Modifier
                                 .align(Alignment.CenterEnd)
-                                .padding(end = 8.dp)
+                                .padding(end = 7.dp)
                                 .size(PlusButtonSize)
                                 .clip(CircleShape)
                                 .background(OverlayShellBg)
@@ -258,7 +289,7 @@ fun BubbleOverlayHost(
                                 .clickable { showEmojiPicker = true },
                         contentAlignment = Alignment.Center,
                     ) {
-                        PolliIcon(PolliIconName.Plus, 18.dp, PolliColors.White66)
+                        PolliIcon(PolliIconName.Plus, 15.dp, PolliColors.White66)
                     }
                 }
             }
@@ -266,17 +297,21 @@ fun BubbleOverlayHost(
             ActionsPanel(
                 modifier =
                     Modifier
-                        .offset { IntOffset(actionsLeft.roundToInt(), actionsTop.roundToInt()) }
+                        .offset {
+                            IntOffset(
+                                actionsLeft.roundToInt().coerceIn(0, screenW.toInt()),
+                                actionsTop.roundToInt().coerceIn(0, screenH.toInt()),
+                            )
+                        }
                         .width(ActionsPanelWidth)
-                        .height(with(density) { actionsHeightPx.toDp() })
+                        .wrapContentHeight()
                         .clickable(
-                            interactionSource = panelTapBlock,
+                            interactionSource = actionsTapBlock,
                             indication = null,
                             onClick = {},
                         ),
                 message = anchor.message,
                 readers = readers,
-                overlayHazeStyle = overlayHazeStyle,
                 onReply = onReply,
                 onForward = onForward,
                 onReport = onReport,
@@ -302,7 +337,6 @@ private fun ActionsPanel(
     modifier: Modifier,
     message: ChatMessage,
     readers: List<ReadReceiptUser>,
-    overlayHazeStyle: HazeStyle,
     onReply: () -> Unit,
     onForward: () -> Unit,
     onReport: () -> Unit,
@@ -315,10 +349,11 @@ private fun ActionsPanel(
         tint = OverlayShellBg,
         borderColor = OverlayShellBorder,
         hazeState = null,
-        hazeStyle = overlayHazeStyle,
+        hazeStyle = polliOverlayHazeStyle(OverlayShellBg),
     ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
             if (message.isOutgoing) {
+                // Reserve slot so async Seen-by load does not jump panel placement.
                 if (readers.isNotEmpty()) {
                     SeenByRow(readers = readers)
                 } else {
@@ -328,40 +363,38 @@ private fun ActionsPanel(
             }
             OverlayActionRow(
                 label = stringResource(R.string.notify_reply_button),
-                iconRes = null,
                 polliIcon = PolliIconName.Reply,
                 onClick = onReply,
             )
             HorizontalDivider(color = PolliColors.White8)
             OverlayActionRow(
-                label = stringResource(R.string.menu_forward),
+                label = "Forward",
                 iconRes = R.drawable.ic_forward_white_24dp,
                 onClick = onForward,
             )
             HorizontalDivider(color = PolliColors.White8)
             OverlayActionRow(
                 label = "Pin",
-                iconRes = R.drawable.baseline_bookmark_border_24,
+                polliIcon = PolliIconName.Options,
                 enabled = false,
                 onClick = {},
             )
             HorizontalDivider(color = PolliColors.White8)
             OverlayActionRow(
                 label = "Report",
-                iconRes = null,
                 polliIcon = PolliIconName.Options,
                 onClick = onReport,
             )
             HorizontalDivider(color = PolliColors.White8)
             OverlayActionRow(
                 label = stringResource(R.string.info),
-                iconRes = R.drawable.ic_help_24dp,
+                polliIcon = PolliIconName.Options,
                 onClick = onDetails,
             )
             HorizontalDivider(color = PolliColors.White8)
             OverlayActionRow(
                 label = stringResource(R.string.delete),
-                iconRes = R.drawable.ic_delete_white_24dp,
+                polliIcon = PolliIconName.Delete,
                 onClick = onDelete,
             )
         }
@@ -412,10 +445,11 @@ private fun OverlayActionRow(
     label: String,
     onClick: () -> Unit,
     enabled: Boolean = true,
-    iconRes: Int? = null,
     polliIcon: PolliIconName? = null,
+    iconRes: Int? = null,
 ) {
     val alpha = if (enabled) 1f else 0.45f
+    val iconColor = PolliColors.White66.copy(alpha = alpha)
     Row(
         modifier =
             Modifier
@@ -427,26 +461,26 @@ private fun OverlayActionRow(
                         Modifier
                     },
                 )
-                .padding(horizontal = PolliDimens.ChatBubbleInsetH, vertical = ActionRowVPad),
+                .padding(horizontal = 12.dp, vertical = ActionRowVPad),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.size(20.dp), contentAlignment = Alignment.Center) {
             when {
-                polliIcon != null -> PolliIcon(polliIcon, 20.dp, PolliColors.White66)
+                polliIcon != null -> PolliIcon(polliIcon, ActionIconSize, iconColor)
                 iconRes != null ->
-                    androidx.compose.foundation.Image(
+                    Image(
                         painter = painterResource(iconRes),
                         contentDescription = null,
-                        colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(PolliColors.White66),
-                        modifier = Modifier.size(20.dp),
+                        colorFilter = ColorFilter.tint(iconColor),
+                        modifier = Modifier.size(ActionIconSize),
                     )
             }
         }
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(10.dp))
         Text(
             text = label,
             color = PolliColors.White85.copy(alpha = alpha),
-            fontSize = 15.sp,
+            fontSize = ActionFontSize,
         )
     }
 }

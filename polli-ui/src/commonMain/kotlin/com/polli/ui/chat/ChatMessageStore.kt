@@ -25,6 +25,8 @@ class ChatMessageStore(
     private val stubById = LinkedHashMap<Int, MessageStub>()
     private val stubLock = Any()
     private var msgIds: IntArray = intArrayOf()
+    /** Cached adapter view of [msgIds] without day markers — avoid reallocating on every call. */
+    private var adapterIds: IntArray = intArrayOf()
     private var feedItemsCache: List<FeedItem> = emptyList()
 
     fun getMessage(msgId: Int): ChatMessage? {
@@ -80,6 +82,7 @@ class ChatMessageStore(
         clearMessageCache()
         synchronized(stubLock) { stubById.clear() }
         msgIds = intArrayOf()
+        adapterIds = intArrayOf()
         feedItemsCache = emptyList()
     }
 
@@ -104,12 +107,14 @@ class ChatMessageStore(
                 val ids = ChatFeedBuilder.listItemsToIds(listItems)
                 if (ids.contentEquals(msgIds) && feedItemsCache.isNotEmpty()) return null
                 msgIds = ids
+                rebuildAdapterIds()
                 ChatFeedBuilder.buildFromListItems(formatDayLabel, listItems, showNewMessages, freshCount)
             } else {
                 val ids = messages.getMessageIds(chatId, addDaymarker = true)
                 val built = ChatFeedBuilder.build(formatDayLabel, messages, ids, showNewMessages, freshCount)
                 if (ids.contentEquals(msgIds) && built == feedItemsCache) return null
                 msgIds = ids
+                rebuildAdapterIds()
                 built
             }
         val valid = msgIds.toSet()
@@ -127,14 +132,37 @@ class ChatMessageStore(
     ): List<FeedItem> {
         if (msgId in msgIds) return feedItemsCache
         msgIds = msgIds + msgId
+        rebuildAdapterIds()
         feedItemsCache = finalizeFeed(ChatFeedBuilder.build(formatDayLabel, messages, msgIds, showNewMessages, freshCount))
         return feedItemsCache
     }
 
     fun messageIds(): IntArray = msgIds
 
-    /** Message ids only — day markers are [StickyHeaderDecoration] headers (DC parity). */
-    fun adapterMessageIds(): IntArray = msgIds.filter { it > MSG_ID_DAYMARKER }.toIntArray()
+    /** Chron-ordered message + day-marker ids for the RecyclerView. */
+    fun syncAdapterIds(chatId: Int): Boolean {
+        val listItems = messages.getMessageListItems(chatId, addDaymarker = true)
+        val nextIds =
+            if (listItems != null) {
+                ChatFeedBuilder.listItemsToIds(listItems)
+            } else {
+                messages.getMessageIds(chatId, addDaymarker = true)
+            }
+        if (nextIds.contentEquals(msgIds)) return false
+        msgIds = nextIds
+        rebuildAdapterIds()
+        val valid = msgIds.toSet()
+        synchronized(stubLock) { stubById.keys.retainAll(valid) }
+        pruneCache(valid)
+        return true
+    }
+
+    fun adapterMessageIds(): IntArray = adapterIds
+
+    private fun rebuildAdapterIds() {
+        // Include day markers as normal feed rows (not sticky overlays).
+        adapterIds = msgIds.copyOf()
+    }
 
     fun preloadMessages(msgIdsToLoad: IntArray) {
         if (msgIdsToLoad.isEmpty()) return

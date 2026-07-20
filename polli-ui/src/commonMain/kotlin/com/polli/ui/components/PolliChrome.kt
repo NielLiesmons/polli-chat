@@ -29,7 +29,7 @@ import dev.chrisbanes.haze.hazeEffect
 
 val PolliModalBarrier: Color = Color(0x60000000)
 
-private const val FROST_TINT_ALPHA = 0.72f
+private const val FROST_TINT_ALPHA = 0.88f
 
 fun polliHazeStyle(tint: Color = PolliColors.Gray66): HazeStyle =
     HazeStyle(
@@ -94,6 +94,7 @@ fun FrostedChromeSurface(
         modifier
             .clip(shape)
             .graphicsLayer { clip = true }
+            .background(frostTint)
             .border(PolliDimens.ShellBorderWidth, borderColor, shape)
             .then(
                 if (hazeState != null) {
@@ -102,7 +103,7 @@ fun FrostedChromeSurface(
                         backgroundColor = frostTint
                     }
                 } else {
-                    Modifier.background(frostTint)
+                    Modifier
                 },
             )
     Box(modifier = chromeModifier, content = content)

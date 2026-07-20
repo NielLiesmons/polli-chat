@@ -21,16 +21,39 @@ internal class ViewQuoteBlock(context: Context) : LinearLayout(context) {
     private val previewView = TextView(context)
     private val cornerPx = ViewChatUi.dp(context, 8f)
     private val accentWidthPx = ViewChatUi.dp(context, PolliDimens.ChatQuoteAccentWidth.value)
-    private val marginBottomPx = ViewChatUi.dp(context, PolliDimens.ChatQuoteMarginBottom.value)
+    private val marginBottomPx = ViewChatUi.dp(context, PolliDimens.ChatQuoteMarginBottom.value) + ViewChatUi.dp(context, 2f)
 
     init {
         orientation = HORIZONTAL
+        // Clip accent bar to the same 8dp rounded rect on all corners.
+        clipToOutline = true
+        clipChildren = true
+        outlineProvider =
+            object : android.view.ViewOutlineProvider() {
+                override fun getOutline(view: android.view.View, outline: android.graphics.Outline) {
+                    outline.setRoundRect(0, 0, view.width, view.height, cornerPx.toFloat())
+                }
+            }
         background =
             GradientDrawable().apply {
                 cornerRadius = cornerPx.toFloat()
                 setColor(0x55000000) // PolliColors.Black33
             }
-        accentBar.setBackgroundColor(0x55FFFFFF.toInt())
+        accentBar.background =
+            GradientDrawable().apply {
+                setColor(0x55FFFFFF.toInt())
+                cornerRadii =
+                    floatArrayOf(
+                        cornerPx.toFloat(),
+                        cornerPx.toFloat(),
+                        0f,
+                        0f,
+                        0f,
+                        0f,
+                        cornerPx.toFloat(),
+                        cornerPx.toFloat(),
+                    )
+            }
         authorView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
         authorView.typeface = Typeface.DEFAULT_BOLD
         authorView.maxLines = 1
@@ -84,7 +107,8 @@ internal class ViewQuoteBlock(context: Context) : LinearLayout(context) {
                     (c.blue * 255).roundToInt(),
                 )
             }
-        accentBar.setBackgroundColor(accentColor)
+        (accentBar.background as? GradientDrawable)?.setColor(accentColor)
+            ?: accentBar.setBackgroundColor(accentColor)
         if (quote.authorName.isNotEmpty()) {
             authorView.visibility = VISIBLE
             authorView.text = quote.authorName

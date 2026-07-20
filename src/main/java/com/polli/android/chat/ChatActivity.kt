@@ -28,7 +28,6 @@ import com.polli.domain.navigation.ChatIntentExtras
 import com.polli.domain.model.chat.ChatActionContext
 import com.polli.domain.model.chat.ChatSessionInfo
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.polli.android.platform.EngineBridge
@@ -103,6 +102,15 @@ class ChatActivity : BaseComposeActivity() {
         val fromArchived = intent.getBooleanExtra(ChatIntentExtras.FROM_ARCHIVED, false)
         val prefs = AppPrefs(this)
 
+        // DC ConversationActivity binds chat msgs before first layout. Binding after setContent
+        // caused an empty first Compose pass + second feed sync — the main open lag vs DC.
+        viewModel.bind(
+            chatId = chatId,
+            initialDraft = draftText,
+            startingPosition = startingPosition,
+            fromArchived = fromArchived,
+        )
+
         setContent {
             val sessionInfo = chatSessionInfo
             val settingsTick = com.polli.android.settings.AppSettingsNotifier.generation
@@ -167,17 +175,10 @@ class ChatActivity : BaseComposeActivity() {
         }
 
         lifecycleScope.launch {
-            val sessionDeferred =
-                async(Dispatchers.IO) {
+            val sessionInfo =
+                withContext(Dispatchers.IO) {
                     PolliRepositories.chat(this@ChatActivity).getSession(chatId)
                 }
-            viewModel.bind(
-                chatId = chatId,
-                initialDraft = draftText,
-                startingPosition = startingPosition,
-                fromArchived = fromArchived,
-            )
-            val sessionInfo = sessionDeferred.await()
             if (sessionInfo == null) {
                 finish()
                 return@launch

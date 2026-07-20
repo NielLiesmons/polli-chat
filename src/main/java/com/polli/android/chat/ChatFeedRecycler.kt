@@ -27,7 +27,7 @@ import dev.chrisbanes.haze.hazeSource
 
 /**
  * DC [ConversationFragment] — reverse [RecyclerView], [PolliConversationAdapter] on `int[]`,
- * [StickyHeaderDecoration] for day pills, no scroll-idle work.
+ * day markers as normal rows, no scroll-idle work.
  */
 @Composable
 fun ChatFeedRecycler(
@@ -63,6 +63,12 @@ fun ChatFeedRecycler(
     val topPadPx = remember(headerClearance, density) { with(density) { headerClearance.roundToPx() } }
     val bottomPadPx = remember(feedBottomPadding, density) { with(density) { feedBottomPadding.roundToPx() } }
     val hazeEnabled = BuildConfig.CHAT_HAZE_ENABLED
+    val hazeActive = hazeEnabled
+    // Observe chrome in composition so reaction pop / highlight refresh the AndroidView update.
+    val highlightId = viewModel.highlightId
+    val reactionPulse = viewModel.reactionPulse
+    @Suppress("UNUSED_VARIABLE")
+    val contentGenTick = contentGeneration
 
     val adapter =
         remember(maxBubbleWidth) {
@@ -72,16 +78,13 @@ fun ChatFeedRecycler(
                 playbackViewModel = playbackViewModel,
                 onOpenMessageOverlay = onOpenMessageOverlay,
                 onQuoteClick = onScrollToMessage,
-            ).also { it.changeData(viewModel.adapterMessageIds()) }
+            )
         }
-
-    val headerDecoration = remember { StickyHeaderDecoration(adapter) }
 
     var prevMsgCount by remember { mutableIntStateOf(0) }
     var appliedGeneration by remember { mutableIntStateOf(-1) }
     var appliedRowRefresh by remember { mutableIntStateOf(0) }
     var appliedUiScaleRevision by remember { mutableIntStateOf(uiScaleRevision) }
-
     fun applyStartingPosition(layoutManager: PolliChatLayoutManager, msgCount: Int) {
         if (!viewModel.pendingFirstLoadScroll || msgCount <= 0) return
         val target = viewModel.initialScrollIndex.coerceIn(0, msgCount - 1)
@@ -94,6 +97,7 @@ fun ChatFeedRecycler(
             when {
                 viewModel.pendingFirstLoadScroll && msgCount > 0 -> {
                     scrollController.updateScrollFabVisibility()
+                    // Reactions are pre-warmed in ViewModel.bind — no post-paint notify flash.
                     onFirstLoadScrollDone()
                     onScrolledToBottom()
                 }
@@ -136,9 +140,8 @@ fun ChatFeedRecycler(
             } else {
                 null
             }
-        headerDecoration.clearHeaderCache()
         adapter.changeData(msgIds)
-        adapter.updateChrome(viewModel.highlightId, viewModel.reactionPulse)
+        adapter.updateChrome(highlightId, reactionPulse)
         if (anchor != null) {
             ChatFeedScrollAnchor.restore(layoutManager, anchor, adapter.itemCount)
         }
@@ -148,7 +151,7 @@ fun ChatFeedRecycler(
 
     val feedModifier =
         Modifier.fillMaxSize().let { base ->
-            if (hazeEnabled) base.hazeSource(state = hazeState) else base
+            if (hazeActive) base.hazeSource(state = hazeState) else base
         }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -161,16 +164,16 @@ fun ChatFeedRecycler(
                         applyStartingPosition(it, msgIds.size)
                     }
                 adapter.changeData(msgIds)
-                adapter.updateChrome(viewModel.highlightId, viewModel.reactionPulse)
+                adapter.updateChrome(highlightId, reactionPulse)
                 RecyclerView(context).apply {
                     this.layoutManager = layoutManager
                     itemAnimator = null
                     overScrollMode = RecyclerView.OVER_SCROLL_NEVER
                     clipToPadding = false
+                    clipChildren = false
                     setItemViewCacheSize(24)
                     setPadding(0, topPadPx, 0, bottomPadPx)
                     this.adapter = adapter
-                    addItemDecoration(headerDecoration)
                     addOnScrollListener(
                         object : RecyclerView.OnScrollListener() {
                             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -195,7 +198,7 @@ fun ChatFeedRecycler(
                     }
                 }
                 scrollController.recyclerView = recycler
-                adapter.updateChrome(viewModel.highlightId, viewModel.reactionPulse)
+                adapter.updateChrome(highlightId, reactionPulse)
                 if (appliedRowRefresh != viewModel.rowRefreshToken) {
                     appliedRowRefresh = viewModel.rowRefreshToken
                     adapter.refreshMessage(viewModel.rowRefreshMsgId)

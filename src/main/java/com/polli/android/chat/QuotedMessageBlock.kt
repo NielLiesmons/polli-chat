@@ -2,14 +2,7 @@ package com.polli.android.chat
 
 import com.polli.domain.model.chat.ChatMessage
 import com.polli.domain.model.chat.MessageQuote
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -33,6 +26,14 @@ import androidx.compose.ui.unit.sp
 import com.polli.android.theme.PolliColors
 import com.polli.android.theme.PolliDimens
 import com.polli.android.theme.ProfileColors
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 
 enum class QuotedMessageStyle { Composer, InIncomingBubble, InOutgoingBubble }
 
@@ -65,13 +66,13 @@ fun QuotedMessageBlock(
     }
     val bodyPad = when (style) {
         QuotedMessageStyle.Composer ->
-            PaddingValues(top = 4.dp, end = 28.dp, bottom = 5.dp, start = 8.dp)
+            PaddingValues(top = 4.dp, end = 8.dp, bottom = 5.dp, start = 8.dp)
         else ->
             PaddingValues(top = 5.dp, end = 10.dp, bottom = 6.dp, start = 8.dp)
     }
     val marginBottom = when (style) {
         QuotedMessageStyle.Composer -> 0.dp
-        else -> PolliDimens.ChatQuoteMarginBottom
+        else -> PolliDimens.ChatQuoteMarginBottom + 2.dp
     }
 
     val shell = Modifier
@@ -83,25 +84,56 @@ fun QuotedMessageBlock(
         .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
 
     if (style == QuotedMessageStyle.Composer && onClear != null) {
-        Box(modifier = modifier.then(shell)) {
-            QuoteBodyRow(
-                accent = accent,
-                nameColor = nameColor,
-                quote = quote,
-                preview = preview,
-                previewColor = previewColor,
-                bodyPad = bodyPad,
-            )
-            Text(
-                text = "×",
-                color = PolliColors.White33,
-                fontSize = 22.sp,
-                lineHeight = 22.sp,
+        Row(
+            modifier = modifier.then(shell),
+            verticalAlignment = Alignment.Top,
+        ) {
+            QuoteAccentBar(accent = accent)
+            Column(
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 4.dp, end = 4.dp)
-                    .clickable(onClick = onClear),
-            )
+                    .weight(1f)
+                    .widthIn(min = 0.dp)
+                    .padding(bodyPad),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (quote.authorName.isNotEmpty()) {
+                        Text(
+                            text = quote.authorName,
+                            color = nameColor,
+                            style = QuoteTextStyle.copy(fontWeight = FontWeight.Bold),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            softWrap = false,
+                            modifier = Modifier
+                                .weight(1f)
+                                .widthIn(min = 0.dp)
+                                .padding(bottom = 1.dp, end = 4.dp),
+                        )
+                    } else {
+                        Spacer(Modifier.weight(1f))
+                    }
+                    Text(
+                        text = "×",
+                        color = PolliColors.White33,
+                        fontSize = 20.sp,
+                        lineHeight = 20.sp,
+                        modifier = Modifier.clickable(onClick = onClear),
+                    )
+                }
+                if (preview.isNotEmpty()) {
+                    Text(
+                        text = preview,
+                        color = previewColor,
+                        style = QuoteTextStyle.copy(fontWeight = FontWeight.Normal),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        softWrap = false,
+                    )
+                }
+            }
         }
         return
     }
@@ -111,32 +143,16 @@ fun QuotedMessageBlock(
         verticalAlignment = Alignment.Top,
     ) {
         QuoteAccentBar(accent = accent)
-        Row(
+        QuoteTextColumn(
+            quote = quote,
+            preview = preview,
+            nameColor = nameColor,
+            previewColor = previewColor,
             modifier = Modifier
                 .weight(1f)
                 .widthIn(min = 0.dp)
                 .padding(bodyPad),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.Top,
-        ) {
-            QuoteTextColumn(
-                quote = quote,
-                preview = preview,
-                nameColor = nameColor,
-                previewColor = previewColor,
-            )
-            if (onClear != null) {
-                Text(
-                    text = "×",
-                    color = PolliColors.White33,
-                    fontSize = 20.sp,
-                    lineHeight = 20.sp,
-                    modifier = Modifier
-                        .padding(start = 4.dp)
-                        .clickable(onClick = onClear),
-                )
-            }
-        }
+        )
     }
 }
 

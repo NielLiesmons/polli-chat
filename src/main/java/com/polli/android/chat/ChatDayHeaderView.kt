@@ -9,7 +9,7 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import kotlin.math.roundToInt
 
-/** DC conversation_item_header — centered day pill for [StickyHeaderDecoration]. */
+/** In-feed day pill — scrolls with the list (not sticky). */
 class ChatDayHeaderView(context: Context) : FrameLayout(context) {
     private val label = TextView(context)
 

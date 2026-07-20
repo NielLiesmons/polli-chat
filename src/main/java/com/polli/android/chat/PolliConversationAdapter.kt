@@ -6,15 +6,17 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Dp
 import androidx.recyclerview.widget.RecyclerView
-import com.polli.domain.model.chat.ChatMessage
-import com.polli.android.platform.PolliAudioPlaybackViewModel
 import com.polli.android.platform.PlatformDates
+import com.polli.android.platform.PolliAudioPlaybackViewModel
+import com.polli.core.chat.MessageGroupLayout
+import com.polli.domain.model.chat.ChatMessage
+import com.polli.domain.model.chat.MSG_ID_DAYMARKER
 import java.lang.ref.SoftReference
 import java.util.Collections
 import java.util.LinkedHashMap
 
 /**
- * DC [org.thoughtcrime.securesms.ConversationAdapter] — `int[]` + View bind, no Compose on scroll path.
+ * DC-style `int[]` adapter — View bind, day markers as normal in-feed rows (not sticky).
  */
 class PolliConversationAdapter(
     private val viewModel: ChatViewModel,
@@ -22,12 +24,10 @@ class PolliConversationAdapter(
     private val playbackViewModel: PolliAudioPlaybackViewModel?,
     private val onOpenMessageOverlay: (ChatMessage, Offset) -> Unit,
     private val onQuoteClick: (Int) -> Unit,
-) : RecyclerView.Adapter<PolliConversationAdapter.BaseHolder>(),
-    StickyHeaderDecoration.StickyHeaderAdapter {
+) : RecyclerView.Adapter<PolliConversationAdapter.BaseHolder>() {
 
     companion object {
         private const val MAX_CACHE_SIZE = 40
-        const val NO_HEADER_ID = -1L
 
         private const val TYPE_OUTGOING = 0
         private const val TYPE_INCOMING = 1
@@ -40,8 +40,10 @@ class PolliConversationAdapter(
         private const val TYPE_DOCUMENT_INCOMING = 8
         private const val TYPE_STICKER_INCOMING = 9
         private const val TYPE_STICKER_OUTGOING = 10
+        private const val TYPE_DAY = 11
 
         const val PAYLOAD_HIGHLIGHT = "highlight"
+        const val PAYLOAD_REACTIONS = "reactions"
     }
 
     private var dcMsgList: IntArray = intArrayOf()
@@ -63,7 +65,9 @@ class PolliConversationAdapter(
     }
 
     fun changeData(next: IntArray?) {
-        dcMsgList = next ?: intArrayOf()
+        val incoming = next ?: intArrayOf()
+        if (dcMsgList.contentEquals(incoming)) return
+        dcMsgList = incoming
         recordCache.clear()
         notifyDataSetChanged()
     }
@@ -80,8 +84,15 @@ class PolliConversationAdapter(
     }
 
     fun refreshMessage(msgId: Int) {
+        if (msgId <= MSG_ID_DAYMARKER) return
         val pos = positionForMsgId(dcMsgList, msgId)
         if (pos >= 0) notifyItemChanged(pos)
+    }
+
+    fun refreshReactionsForPositions(positions: IntArray) {
+        for (pos in positions) {
+            if (pos in 0 until itemCount) notifyItemChanged(pos, PAYLOAD_REACTIONS)
+        }
     }
 
     fun msgIdToPosition(msgId: Int): Int = positionForMsgId(dcMsgList, msgId)
@@ -90,13 +101,18 @@ class PolliConversationAdapter(
 
     override fun getItemId(position: Int): Long {
         if (position < 0 || position >= dcMsgList.size) return RecyclerView.NO_ID
-        return dcMsgList[dcMsgList.size - 1 - position].toLong()
+        val chron = chronIndex(position)
+        val id = dcMsgList[chron]
+        // Day markers share id 9 — encode chron index for stable unique ids.
+        if (id <= MSG_ID_DAYMARKER) return -(chron + 1L)
+        return id.toLong()
     }
 
     fun getMsg(position: Int): ChatMessage? {
         if (position < 0 || position >= dcMsgList.size) return null
+        val msgId = dcMsgList[chronIndex(position)]
+        if (msgId <= MSG_ID_DAYMARKER) return null
         recordCache[position]?.get()?.let { return it }
-        val msgId = getItemId(position).toInt()
         val loaded = viewModel.getChatMessage(msgId) ?: return null
         recordCache[position] = SoftReference(loaded)
         return loaded
@@ -104,7 +120,27 @@ class PolliConversationAdapter(
 
     private fun chronIndex(position: Int): Int = chronIndexForPosition(position, dcMsgList)
 
+    private fun dayLabelAt(position: Int): String {
+        val chron = chronIndex(position)
+        fun labelForId(id: Int): String? {
+            if (id <= MSG_ID_DAYMARKER) return null
+            val ts = viewModel.getStub(id)?.timestamp ?: viewModel.getChatMessage(id)?.timestamp ?: return null
+            if (ts <= 0) return null
+            return PlatformDates.relativeDate(viewModel.getApplication(), ts * 1000)
+        }
+        for (j in chron + 1 until dcMsgList.size) {
+            labelForId(dcMsgList[j])?.let { return it }
+        }
+        for (j in chron - 1 downTo 0) {
+            labelForId(dcMsgList[j])?.let { return it }
+        }
+        return ""
+    }
+
     override fun getItemViewType(position: Int): Int {
+        val chron = chronIndex(position)
+        val id = dcMsgList.getOrNull(chron) ?: return TYPE_INCOMING
+        if (id <= MSG_ID_DAYMARKER) return TYPE_DAY
         val msg = getMsg(position) ?: return TYPE_INCOMING
         if (msg.isInfo) return TYPE_INFO
         return when (msg.viewType) {
@@ -127,6 +163,12 @@ class PolliConversationAdapter(
                 (maxBubbleWidth.value * density).toInt()
             }
         return when (viewType) {
+            TYPE_DAY ->
+                DayHolder(
+                    ChatDayHeaderView(parent.context).apply {
+                        layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+                    },
+                )
             TYPE_INFO ->
                 InfoHolder(
                     PolliInfoMessageView(parent.context).apply {
@@ -153,12 +195,22 @@ class PolliConversationAdapter(
     }
 
     private fun bindInternal(holder: BaseHolder, position: Int, payloads: List<Any>) {
+        if (holder is DayHolder) {
+            if (payloads.isNotEmpty()) return
+            holder.bindLabel(dayLabelAt(position))
+            return
+        }
         val msg = getMsg(position) ?: return
         val highlighted = msg.id == highlightMsgId
         val rowPulse = if (msg.id == pulseMsgId) pulseEmoji else null
         val highlightOnly = payloads.isNotEmpty() && payloads.all { it == PAYLOAD_HIGHLIGHT }
+        val reactionsOnly = payloads.isNotEmpty() && payloads.all { it == PAYLOAD_REACTIONS }
+        val reactions = MessageReactions.cachedSummary(msg.id).orEmpty()
         val layout = groupLayoutAtChronIndex(chronIndex(position), dcMsgList) { viewModel.getStub(it) }
-        val reactions = MessageReactions.loadReactionSummary(holder.itemView.context, msg.id)
+        if (reactionsOnly && holder is MessageHolder) {
+            holder.bindReactionsOnly(reactions, rowPulse)
+            return
+        }
         holder.bind(
             message = msg,
             layout = layout,
@@ -172,29 +224,10 @@ class PolliConversationAdapter(
         )
     }
 
-    override fun getHeaderId(position: Int): Long {
-        if (position !in 0 until itemCount) return NO_HEADER_ID
-        val ts = getMsg(position)?.timestamp ?: return NO_HEADER_ID
-        return dayHeaderId(ts)
-    }
-
-    override fun onCreateHeaderViewHolder(parent: ViewGroup): StickyHeaderDecoration.HeaderViewHolder {
-        val view = ChatDayHeaderView(parent.context).apply {
-            layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
-        }
-        return DayHeaderHolder(view)
-    }
-
-    override fun onBindHeaderViewHolder(holder: StickyHeaderDecoration.HeaderViewHolder, position: Int) {
-        val header = holder as DayHeaderHolder
-        val ts = getMsg(position)?.timestamp ?: 0L
-        header.view.setLabel(PlatformDates.relativeDate(header.view.context, ts * 1000))
-    }
-
     abstract class BaseHolder(itemView: android.view.View) : RecyclerView.ViewHolder(itemView) {
         abstract fun bind(
             message: ChatMessage,
-            layout: com.polli.core.chat.MessageGroupLayout,
+            layout: MessageGroupLayout,
             reactions: List<BubbleReaction>,
             highlighted: Boolean,
             pulseEmoji: String?,
@@ -205,14 +238,32 @@ class PolliConversationAdapter(
         )
     }
 
-    private class DayHeaderHolder(val view: ChatDayHeaderView) : StickyHeaderDecoration.HeaderViewHolder(view)
+    private class DayHolder(
+        private val dayView: ChatDayHeaderView,
+    ) : BaseHolder(dayView) {
+        fun bindLabel(label: String) {
+            dayView.setLabel(label)
+        }
+
+        override fun bind(
+            message: ChatMessage,
+            layout: MessageGroupLayout,
+            reactions: List<BubbleReaction>,
+            highlighted: Boolean,
+            pulseEmoji: String?,
+            highlightOnly: Boolean,
+            onSwipeReply: () -> Unit,
+            onTap: (Float, Float) -> Unit,
+            onQuoteClick: (Int) -> Unit,
+        ) = Unit
+    }
 
     private class InfoHolder(
         private val infoView: PolliInfoMessageView,
     ) : BaseHolder(infoView) {
         override fun bind(
             message: ChatMessage,
-            layout: com.polli.core.chat.MessageGroupLayout,
+            layout: MessageGroupLayout,
             reactions: List<BubbleReaction>,
             highlighted: Boolean,
             pulseEmoji: String?,
@@ -231,9 +282,13 @@ class PolliConversationAdapter(
         private val maxBubbleWidthPx: Int,
         private val playbackViewModel: PolliAudioPlaybackViewModel?,
     ) : BaseHolder(rowView) {
+        fun bindReactionsOnly(reactions: List<BubbleReaction>, pulseEmoji: String?) {
+            rowView.bindReactions(reactions, pulseEmoji)
+        }
+
         override fun bind(
             message: ChatMessage,
-            layout: com.polli.core.chat.MessageGroupLayout,
+            layout: MessageGroupLayout,
             reactions: List<BubbleReaction>,
             highlighted: Boolean,
             pulseEmoji: String?,
@@ -243,7 +298,14 @@ class PolliConversationAdapter(
             onQuoteClick: (Int) -> Unit,
         ) {
             if (highlightOnly) {
-                rowView.alpha = if (highlighted) 1f else 0.98f
+                rowView.setHighlighted(highlighted)
+                // Pulse can ride on the same chrome payload as highlight.
+                if (pulseEmoji != null) {
+                    rowView.bindReactions(
+                        MessageReactions.cachedSummary(message.id).orEmpty(),
+                        pulseEmoji,
+                    )
+                }
                 return
             }
             rowView.bind(

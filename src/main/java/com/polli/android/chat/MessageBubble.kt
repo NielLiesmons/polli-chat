@@ -7,13 +7,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,6 +20,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.polli.android.theme.PolliColors
@@ -245,7 +247,13 @@ fun SingleIncomingMessageRow(
     val rowTop = if (layout.isFirstInStack) PolliDimens.ChatRowTop else PolliDimens.ChatRowTopCollapsed
     val showAvatar = layout.isLastInStack
 
-    Box(
+    val density = LocalDensity.current
+    val avatarSizePx = with(density) { PolliDimens.ChatAvatarSize.roundToPx() }
+    val avatarGapPx = with(density) { PolliDimens.ChatAvatarGap.roundToPx() }
+    val avatarOffsetPx = avatarSizePx + avatarGapPx
+
+    // Height follows the bubble; avatar bottom-aligns and may overflow upward.
+    Layout(
         modifier = Modifier
             .fillMaxWidth()
             .padding(
@@ -253,22 +261,7 @@ fun SingleIncomingMessageRow(
                 end = incomingRight,
                 top = rowTop,
             ),
-        contentAlignment = Alignment.BottomStart,
-    ) {
-        Row(
-            verticalAlignment = Alignment.Bottom,
-        ) {
-            if (showAvatar) {
-                PolliAvatar(
-                    name = message.authorName,
-                    seed = message.authorKey,
-                    size = PolliDimens.ChatAvatarSize,
-                    contactId = message.authorId,
-                )
-                Spacer(modifier = Modifier.width(PolliDimens.ChatAvatarGap))
-            } else {
-                Spacer(modifier = Modifier.width(PolliDimens.ChatIncomingGroupAvatarOffset))
-            }
+        content = {
             BubbleSwiper(
                 modifier = Modifier
                     .widthIn(max = maxBubbleWidth)
@@ -289,6 +282,28 @@ fun SingleIncomingMessageRow(
                     onQuoteClick = onQuoteClick,
                 )
             }
+            if (showAvatar) {
+                PolliAvatar(
+                    name = message.authorName,
+                    seed = message.authorKey,
+                    size = PolliDimens.ChatAvatarSize,
+                    contactId = message.authorId,
+                )
+            }
+        },
+    ) { measurables, constraints ->
+        val bubbleMaxW = (constraints.maxWidth - avatarOffsetPx).coerceAtLeast(0)
+        val bubblePlaceable =
+            measurables[0].measure(
+                constraints.copy(minWidth = 0, maxWidth = bubbleMaxW),
+            )
+        val avatarPlaceable =
+            measurables.getOrNull(1)?.measure(
+                Constraints.fixed(avatarSizePx, avatarSizePx),
+            )
+        layout(constraints.maxWidth, bubblePlaceable.height) {
+            bubblePlaceable.placeRelative(avatarOffsetPx, 0)
+            avatarPlaceable?.placeRelative(0, bubblePlaceable.height - avatarPlaceable.height)
         }
     }
 }
