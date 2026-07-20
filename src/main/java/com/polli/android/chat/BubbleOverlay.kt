@@ -58,7 +58,7 @@ import com.polli.android.ui.FrostedChromeSurface
 import com.polli.android.ui.PolliAvatar
 import com.polli.android.ui.PolliModalBarrier
 import com.polli.android.ui.polliOverlayHazeStyle
-import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -75,9 +75,11 @@ private val ReactionsPanelShape = RoundedCornerShape(percent = 50)
 private val ActionsPanelWidth = 168.dp
 private val ReactionsPanelWidth = 220.dp
 private val ReactionsPanelHeight = 44.dp
-private val ReactionsFadeWidth = 64.dp
-private val PlusButtonSize = 30.dp
-private val PanelGap = 8.dp
+/** Narrow fade at the emoji → plus column seam only. */
+private val ReactionsFadeWidth = 12.dp
+private val PlusColumnWidth = 40.dp
+/** Extra clearance between actions panel and reactions row when stacked. */
+private val StackGap = 16.dp
 private val EdgePad = 16.dp
 private val OverlayShellBg = PolliColors.Gray66
 private val OverlayShellBorder = PolliColors.ShellBorder
@@ -92,11 +94,11 @@ private val EmojiGap = 12.dp
 @Composable
 fun BubbleOverlayHost(
     anchor: BubbleOverlayAnchor?,
-    hazeState: HazeState?,
     keyboardVisible: Boolean,
     chatSession: com.polli.domain.model.chat.ChatActionContext,
     onDismiss: () -> Unit,
     onReaction: (String) -> Unit,
+    onOpenEmojiPicker: () -> Unit,
     onReply: () -> Unit,
     onForward: () -> Unit,
     onReport: () -> Unit,
@@ -107,12 +109,9 @@ fun BubbleOverlayHost(
     @Suppress("UNUSED_PARAMETER")
     val unusedSession = chatSession
     val context = LocalContext.current
-    var showEmojiPicker by remember { mutableStateOf(false) }
     val quickEmojis = remember(anchor.message.id) { RecentEmojiStore.orderedQuickPick(context) }
 
-    BackHandler {
-        if (showEmojiPicker) showEmojiPicker = false else onDismiss()
-    }
+    BackHandler(onBack = onDismiss)
 
     val emojiScroll = rememberScrollState()
     val overlayHazeStyle = remember { polliOverlayHazeStyle(OverlayShellBg) }
@@ -123,17 +122,19 @@ fun BubbleOverlayHost(
     val navBottomPx = with(density) { AppInsets.navigationBarBottom().toPx() }
     val edgePadPx = with(density) { EdgePad.toPx() }
     val actionsWidthPx = with(density) { ActionsPanelWidth.toPx() }
-    val reactionsWidthPx = with(density) { ReactionsPanelWidth.toPx() + ReactionsFadeWidth.toPx() }
+    val plusColumnPx = with(density) { PlusColumnWidth.toPx() }
+    val emojiAreaWidthPx = with(density) { ReactionsPanelWidth.toPx() }
+    val totalReactionsBarWidthPx = emojiAreaWidthPx + plusColumnPx
     val reactionsHeightPx = with(density) { ReactionsPanelHeight.toPx() }
-    val gapPx = with(density) { PanelGap.toPx() }
+    val stackGapPx = with(density) { StackGap.toPx() }
     val seenByHeightPx = with(density) { SeenByRowHeight.toPx() }
-    val actionRowPx = with(density) { (ActionRowVPad * 2 + ActionIconSize).toPx() }
+    val actionRowPx = with(density) { 28.dp.toPx() }
     val dividerPx = with(density) { 1.dp.toPx() }
-    // Estimate only for placement — panel itself wraps content (fixed height was crash-prone).
+    // Generous estimate so placement never overlaps reactions when actions sit above.
     val actionsHeightEstimatePx =
         remember(anchor.message.isOutgoing, seenByHeightPx, actionRowPx, dividerPx) {
             val seenByBlock = if (anchor.message.isOutgoing) seenByHeightPx + dividerPx else 0f
-            seenByBlock + actionRowPx * ActionRowCount + dividerPx * (ActionRowCount - 1)
+            seenByBlock + actionRowPx * ActionRowCount + dividerPx * (ActionRowCount - 1) + 8f
         }
 
     var readers by remember(anchor.message.id) { mutableStateOf<List<ReadReceiptUser>>(emptyList()) }
@@ -186,12 +187,12 @@ fun BubbleOverlayHost(
                     safeTop + reactionsHeightPx / 2f,
                     safeBottom - reactionsHeightPx / 2f,
                 )
-            val reactionsTop = reactionsCenterY - reactionsHeightPx / 2f
+            var reactionsTop = reactionsCenterY - reactionsHeightPx / 2f
             val reactionsLeft =
                 clamp(
-                    tapX - reactionsWidthPx / 2f,
+                    tapX - totalReactionsBarWidthPx / 2f,
                     edgePadPx,
-                    (screenW - edgePadPx - reactionsWidthPx).coerceAtLeast(edgePadPx),
+                    (screenW - edgePadPx - totalReactionsBarWidthPx).coerceAtLeast(edgePadPx),
                 )
 
             val lowerZoneStart = if (keyboardVisible) screenH * 0.5f else screenH * (2f / 3f)
@@ -203,18 +204,60 @@ fun BubbleOverlayHost(
                     edgePadPx,
                     (screenW - edgePadPx - actionsWidthPx).coerceAtLeast(edgePadPx),
                 )
-            val actionsTop =
+
+            var actionsTop =
+                if (actionsAbove) {
+                    reactionsTop - stackGapPx - actionsHeightEstimatePx
+                } else {
+                    reactionsTop + reactionsHeightPx + stackGapPx
+                }
+
+            if (actionsAbove) {
+                // Never let the actions block sit on top of the reactions row.
+                val maxActionsBottom = reactionsTop - stackGapPx
+                if (actionsTop + actionsHeightEstimatePx > maxActionsBottom) {
+                    actionsTop = maxActionsBottom - actionsHeightEstimatePx
+                }
+                // Lift the whole stack if actions would clip the top safe area.
+                if (actionsTop < safeTop) {
+                    val lift = safeTop - actionsTop
+                    actionsTop = safeTop
+                    reactionsTop =
+                        clamp(
+                            reactionsTop + lift,
+                            safeTop,
+                            safeBottom - reactionsHeightPx,
+                        )
+                }
+            } else {
+                val minActionsTop = reactionsTop + reactionsHeightPx + stackGapPx
+                if (actionsTop < minActionsTop) {
+                    actionsTop = minActionsTop
+                }
+            }
+
+            actionsTop =
                 clamp(
-                    if (actionsAbove) {
-                        reactionsTop - gapPx - actionsHeightEstimatePx
-                    } else {
-                        reactionsTop + reactionsHeightPx + gapPx
-                    },
+                    actionsTop,
                     safeTop,
                     (safeBottom - actionsHeightEstimatePx).coerceAtLeast(safeTop),
                 )
 
-            FrostedChromeSurface(
+            if (actionsAbove) {
+                val maxActionsBottom = reactionsTop - stackGapPx
+                if (actionsTop + actionsHeightEstimatePx > maxActionsBottom) {
+                    actionsTop = (maxActionsBottom - actionsHeightEstimatePx).coerceAtLeast(safeTop)
+                }
+            } else {
+                val minActionsTop = reactionsTop + reactionsHeightPx + stackGapPx
+                if (actionsTop < minActionsTop) {
+                    actionsTop = minActionsTop.coerceAtMost(
+                        (safeBottom - actionsHeightEstimatePx).coerceAtLeast(safeTop),
+                    )
+                }
+            }
+
+            ReactionsPanel(
                 modifier =
                     Modifier
                         .offset {
@@ -222,77 +265,17 @@ fun BubbleOverlayHost(
                                 reactionsLeft.roundToInt().coerceIn(0, screenW.toInt()),
                                 reactionsTop.roundToInt().coerceIn(0, screenH.toInt()),
                             )
-                        }
-                        .width(ReactionsPanelWidth + ReactionsFadeWidth)
-                        .height(ReactionsPanelHeight)
-                        .clickable(
-                            interactionSource = reactionsTapBlock,
-                            indication = null,
-                            onClick = {},
-                        ),
-                shape = ReactionsPanelShape,
-                tint = OverlayShellBg,
-                borderColor = OverlayShellBorder,
-                hazeState = null,
-                hazeStyle = overlayHazeStyle,
-            ) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Row(
-                        modifier =
-                            Modifier
-                                .fillMaxSize()
-                                .horizontalScroll(emojiScroll)
-                                .padding(start = 12.dp, end = ReactionsFadeWidth + 4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(EmojiGap),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        quickEmojis.forEach { emoji ->
-                            Text(
-                                text = emoji,
-                                fontSize = EmojiFontSize,
-                                lineHeight = EmojiFontSize,
-                                modifier =
-                                    Modifier
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .clickable {
-                                            RecentEmojiStore.record(context, emoji)
-                                            onReaction(emoji)
-                                        }
-                                        .padding(horizontal = 1.dp, vertical = 2.dp),
-                            )
-                        }
-                    }
-                    Box(
-                        modifier =
-                            Modifier
-                                .align(Alignment.CenterEnd)
-                                .width(ReactionsFadeWidth)
-                                .fillMaxHeight()
-                                .background(
-                                    Brush.horizontalGradient(
-                                        0f to Color.Transparent,
-                                        0.22f to OverlayShellBg.copy(alpha = 0.75f),
-                                        0.55f to OverlayShellBg.copy(alpha = 0.95f),
-                                        1f to OverlayShellBg,
-                                    ),
-                                ),
-                    )
-                    Box(
-                        modifier =
-                            Modifier
-                                .align(Alignment.CenterEnd)
-                                .padding(end = 7.dp)
-                                .size(PlusButtonSize)
-                                .clip(CircleShape)
-                                .background(OverlayShellBg)
-                                .border(PolliDimens.ShellBorderWidth, OverlayShellBorder, CircleShape)
-                                .clickable { showEmojiPicker = true },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        PolliIcon(PolliIconName.Plus, 15.dp, PolliColors.White66)
-                    }
-                }
-            }
+                        },
+                quickEmojis = quickEmojis,
+                emojiScroll = emojiScroll,
+                overlayHazeStyle = overlayHazeStyle,
+                reactionsTapBlock = reactionsTapBlock,
+                onReaction = { emoji ->
+                    RecentEmojiStore.record(context, emoji)
+                    onReaction(emoji)
+                },
+                onOpenEmojiPicker = onOpenEmojiPicker,
+            )
 
             ActionsPanel(
                 modifier =
@@ -320,16 +303,93 @@ fun BubbleOverlayHost(
             )
         }
     }
+}
 
-    EmojiPickerModal(
-        visible = showEmojiPicker,
-        hazeState = hazeState,
-        onPick = { emoji ->
-            RecentEmojiStore.record(context, emoji)
-            onReaction(emoji)
-        },
-        onDismiss = { showEmojiPicker = false },
-    )
+@Composable
+private fun ReactionsPanel(
+    modifier: Modifier,
+    quickEmojis: List<String>,
+    emojiScroll: androidx.compose.foundation.ScrollState,
+    overlayHazeStyle: HazeStyle,
+    reactionsTapBlock: MutableInteractionSource,
+    onReaction: (String) -> Unit,
+    onOpenEmojiPicker: () -> Unit,
+) {
+    FrostedChromeSurface(
+        modifier =
+            modifier
+                .width(ReactionsPanelWidth + PlusColumnWidth)
+                .height(ReactionsPanelHeight)
+                .clickable(
+                    interactionSource = reactionsTapBlock,
+                    indication = null,
+                    onClick = {},
+                ),
+        shape = ReactionsPanelShape,
+        tint = OverlayShellBg,
+        borderColor = OverlayShellBorder,
+        hazeState = null,
+        hazeStyle = overlayHazeStyle,
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+            ) {
+                Row(
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .horizontalScroll(emojiScroll)
+                            .padding(start = 12.dp, end = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(EmojiGap),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    quickEmojis.forEach { emoji ->
+                        Text(
+                            text = emoji,
+                            fontSize = EmojiFontSize,
+                            lineHeight = EmojiFontSize,
+                            modifier =
+                                Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { onReaction(emoji) }
+                                    .padding(horizontal = 1.dp, vertical = 2.dp),
+                        )
+                    }
+                }
+                Box(
+                    modifier =
+                        Modifier
+                            .align(Alignment.CenterEnd)
+                            .width(ReactionsFadeWidth)
+                            .fillMaxHeight()
+                            .background(
+                                Brush.horizontalGradient(
+                                    0f to Color.Transparent,
+                                    1f to OverlayShellBg,
+                                ),
+                            ),
+                )
+            }
+            Box(
+                modifier =
+                    Modifier
+                        .width(PlusColumnWidth)
+                        .fillMaxHeight()
+                        .background(PolliColors.White8)
+                        .clickable(onClick = onOpenEmojiPicker),
+                contentAlignment = Alignment.Center,
+            ) {
+                PolliIcon(PolliIconName.Plus, 15.dp, PolliColors.White66)
+            }
+        }
+    }
 }
 
 @Composable

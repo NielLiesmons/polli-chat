@@ -271,9 +271,21 @@ fun ChatScreen(
             )
         }
 
+        if (viewModel.emojiPickerMsgId > 0) {
+            EmojiPickerModal(
+                visible = true,
+                hazeState = hazeState,
+                onPick = { emoji ->
+                    val msgId = viewModel.emojiPickerMsgId
+                    viewModel.dismissEmojiPicker()
+                    viewModel.sendReaction(msgId, emoji)
+                },
+                onDismiss = viewModel::dismissEmojiPicker,
+            )
+        }
+
         BubbleOverlayHost(
             anchor = viewModel.overlayAnchor,
-            hazeState = hazeState,
             keyboardVisible = keyboardVisible,
             chatSession = chatSession,
             onDismiss = viewModel::dismissOverlay,
@@ -281,6 +293,10 @@ fun ChatScreen(
                 val msgId = viewModel.overlayAnchor?.message?.id ?: return@BubbleOverlayHost
                 viewModel.dismissOverlay()
                 viewModel.sendReaction(msgId, emoji)
+            },
+            onOpenEmojiPicker = {
+                val msgId = viewModel.overlayAnchor?.message?.id ?: return@BubbleOverlayHost
+                viewModel.openEmojiPicker(msgId)
             },
             onReply = {
                 val msg = viewModel.overlayAnchor?.message ?: return@BubbleOverlayHost

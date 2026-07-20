@@ -270,6 +270,14 @@
         <item name="android:windowFullscreen">true</item>
     </style>
 
+    <!-- EmojiPickerView category tabs + grid — dark Polli chrome. -->
+    <style name="PolliEmojiPickerTheme" parent="Theme.AppCompat">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="colorControlNormal">#A8FFFFFF</item>
+        <item name="colorControlActivated">#FFFFFFFF</item>
+        <item name="colorAccent">#FFFFFFFF</item>
+    </style>
+
     <style
         name="Theme.App.NoActionBar.Fullscreen"
         parent="Theme.Material3.Dark.NoActionBar">

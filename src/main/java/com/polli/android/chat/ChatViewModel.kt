@@ -38,6 +38,8 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         private set
     var overlayAnchor by mutableStateOf<BubbleOverlayAnchor?>(null)
         private set
+    var emojiPickerMsgId by mutableIntStateOf(-1)
+        private set
     var highlightScrollIndex by mutableIntStateOf(-1)
         private set
     var unreadBelowCount by mutableIntStateOf(0)
@@ -233,6 +235,15 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     fun dismissOverlay() {
         overlayAnchor = null
+    }
+
+    fun openEmojiPicker(msgId: Int) {
+        overlayAnchor = null
+        emojiPickerMsgId = msgId
+    }
+
+    fun dismissEmojiPicker() {
+        emojiPickerMsgId = -1
     }
 
     fun sendReaction(msgId: Int, emoji: String) {
