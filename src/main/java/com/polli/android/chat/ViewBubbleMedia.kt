@@ -34,6 +34,7 @@ internal object ViewBubbleMedia {
         isOutgoing: Boolean,
         playbackViewModel: PolliAudioPlaybackViewModel?,
         horizontalPadPx: Int,
+        gapAboveWhenQuoted: Boolean = false,
     ) {
         host.removeAllViews()
         if (!message.hasAttachment) {
@@ -41,7 +42,8 @@ internal object ViewBubbleMedia {
             return
         }
         host.visibility = View.VISIBLE
-        host.setPadding(horizontalPadPx, 0, horizontalPadPx, ViewChatUi.dp(host.context, 4f))
+        val topPad = if (gapAboveWhenQuoted) ViewChatUi.dp(host.context, 2f) else 0
+        host.setPadding(horizontalPadPx, topPad, horizontalPadPx, ViewChatUi.dp(host.context, 4f))
 
         val file = message.filePath?.takeIf { it.isNotBlank() }?.let(::File)
         val aspect =
@@ -90,7 +92,7 @@ internal object ViewBubbleMedia {
         val heightPx = frameHeightPx(host.context, contentWidthPx, aspect)
         val frame = mediaFrame(host.context, contentWidthPx, heightPx, messageId)
         val image = ImageView(host.context).apply {
-            scaleType = ImageView.ScaleType.FIT_CENTER
+            scaleType = ImageView.ScaleType.CENTER_CROP
             contentDescription = label
             load(file) { crossfade(false) }
         }
@@ -109,7 +111,7 @@ internal object ViewBubbleMedia {
         val heightPx = frameHeightPx(host.context, contentWidthPx, ratio)
         val frame = mediaFrame(host.context, contentWidthPx, heightPx, messageId)
         val image = ImageView(host.context).apply {
-            scaleType = ImageView.ScaleType.FIT_CENTER
+            scaleType = ImageView.ScaleType.CENTER_CROP
             load(
                 ImageRequest.Builder(context)
                     .data(file)
@@ -156,15 +158,25 @@ internal object ViewBubbleMedia {
         )
     }
 
-    private fun mediaFrame(context: Context, widthPx: Int, heightPx: Int, messageId: Int): FrameLayout =
-        FrameLayout(context).apply {
+    private fun mediaFrame(context: Context, widthPx: Int, heightPx: Int, messageId: Int): FrameLayout {
+        val corner = ViewChatUi.dp(context, 8f).toFloat()
+        return FrameLayout(context).apply {
             background =
                 GradientDrawable().apply {
-                    cornerRadius = ViewChatUi.dp(context, 8f).toFloat()
+                    cornerRadius = corner
                     setColor(0x29000000) // Black16
+                }
+            clipToOutline = true
+            clipChildren = true
+            outlineProvider =
+                object : android.view.ViewOutlineProvider() {
+                    override fun getOutline(view: android.view.View, outline: android.graphics.Outline) {
+                        outline.setRoundRect(0, 0, view.width, view.height, corner)
+                    }
                 }
             setOnClickListener { AppNav.openMediaPreview(context, messageId) }
         }
+    }
 
     private fun frameHeightPx(context: Context, contentWidthPx: Int, aspectRatio: Float): Int {
         val ratio = aspectRatio.coerceIn(MIN_ASPECT, MAX_ASPECT)

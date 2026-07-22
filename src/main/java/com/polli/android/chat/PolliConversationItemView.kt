@@ -297,6 +297,7 @@ class PolliConversationItemView(context: Context) : FrameLayout(context) {
         }
 
         val richContentWidthPx = (maxBubbleWidthPx - richContentPadH * 2).coerceAtLeast(0)
+        val hasVisibleQuote = message.quote != null && quoteBlock.visibility == View.VISIBLE
         ViewBubbleMedia.bind(
             host = mediaHost,
             message = message,
@@ -304,6 +305,7 @@ class PolliConversationItemView(context: Context) : FrameLayout(context) {
             isOutgoing = message.isOutgoing,
             playbackViewModel = playbackViewModel,
             horizontalPadPx = richContentPadH,
+            gapAboveWhenQuoted = hasVisibleQuote && message.hasAttachment,
         )
 
         val bodyHasText = message.text.isNotBlank()

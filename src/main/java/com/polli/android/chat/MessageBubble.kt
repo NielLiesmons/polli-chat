@@ -145,6 +145,7 @@ fun MessageBubble(
                     isOutgoing = message.isOutgoing,
                     modifier = Modifier
                         .padding(horizontal = richContentPadH)
+                        .padding(top = if (hasQuote) 2.dp else 0.dp)
                         .padding(bottom = 4.dp),
                 )
             }

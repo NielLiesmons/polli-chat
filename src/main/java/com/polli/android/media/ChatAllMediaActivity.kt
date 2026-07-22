@@ -72,9 +72,11 @@ fun ChatMediaTabPanel(
     topPadding: androidx.compose.ui.unit.Dp,
     onOpenMessage: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    /** Single filter for top-level Space tabs — hides nested Media/Audio/Files strip. */
+    fixedFilter: ChatMediaFilter? = null,
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
-    val filter = ChatMediaFilter.entries[selectedTab]
+    val filter = fixedFilter ?: ChatMediaFilter.entries[selectedTab]
     val context = LocalContext.current
     val mediaRepo = remember { PolliRepositories.media(context) }
     val msgIds = remember(chatId, filter) {
@@ -83,10 +85,12 @@ fun ChatMediaTabPanel(
 
     ChatMediaBrowser(
         messageIds = msgIds,
-        selectedFilterIndex = selectedTab,
+        selectedFilterIndex = if (fixedFilter != null) 0 else selectedTab,
         onFilterSelected = { selectedTab = it },
         modifier = modifier,
         topPadding = topPadding,
+        showFilterTabs = fixedFilter == null,
+        fixedFilter = fixedFilter,
         gridCell = { msgId, cellModifier ->
             GalleryThumb(
                 msgId = msgId,

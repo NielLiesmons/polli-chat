@@ -6,8 +6,10 @@ enum class ChatDetailTab(val label: String) {
     Info("Info"),
     Chat("Chat"),
     Apps("Apps"),
-    Tasks("Tasks"),
+    Media("Media"),
+    Audio("Audio"),
     Files("Files"),
+    Tasks("Tasks"),
     Docs("Docs"),
 }
 
@@ -20,8 +22,10 @@ fun tabsForChat(isGroup: Boolean, isBroadcast: Boolean): List<ChatDetailTab> {
         ChatDetailTab.Info,
         ChatDetailTab.Chat,
         ChatDetailTab.Apps,
-        ChatDetailTab.Tasks,
+        ChatDetailTab.Media,
+        ChatDetailTab.Audio,
         ChatDetailTab.Files,
+        ChatDetailTab.Tasks,
         ChatDetailTab.Docs,
     )
 }

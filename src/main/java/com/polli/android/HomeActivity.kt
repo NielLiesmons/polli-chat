@@ -53,6 +53,9 @@ open class HomeActivity : BaseComposeActivity() {
                             AppNav.openChat(this, chatId)
                         }
                     },
+                    onChannelProfileClick = { chatId ->
+                        startActivity(AppNav.chatProfileIntent(this, chatId))
+                    },
                     onArchiveClick = { AppNav.openArchive(this) },
                     onNewNote = { AppNav.openNewNote(this) },
                     onOpenNote = { msgId -> AppNav.openNoteEditor(this, msgId) },

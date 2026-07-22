@@ -22,16 +22,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import coil.compose.AsyncImage
 import coil.decode.VideoFrameDecoder
+import coil.load
 import coil.request.ImageRequest
 import coil.request.videoFrameMillis
+import com.github.chrisbanes.photoview.PhotoView
 import com.b44t.messenger.DcMsg
 import com.polli.android.BaseComposeActivity
 import com.polli.android.icons.PolliIcon
@@ -153,6 +159,7 @@ fun MediaPreviewScreen(
     }
 
     val msgIds = gallery.messageIds
+    var pageZoomed by remember { mutableStateOf(false) }
     val pagerState = rememberPagerState(
         initialPage = gallery.initialIndex.coerceIn(0, msgIds.lastIndex),
         pageCount = { msgIds.size },
@@ -195,11 +202,17 @@ fun MediaPreviewScreen(
 
         HorizontalPager(
             state = pagerState,
+            userScrollEnabled = !pageZoomed,
             modifier = Modifier
                 .fillMaxSize()
                 .weight(1f),
         ) { page ->
-            MediaPage(msgIds[page])
+            MediaPage(
+                msgId = msgIds[page],
+                onZoomChanged = { zoomed ->
+                    if (page == pagerState.currentPage) pageZoomed = zoomed
+                },
+            )
         }
     }
 }
@@ -249,7 +262,10 @@ private fun AvatarPreviewScreen(
 }
 
 @Composable
-private fun MediaPage(msgId: Int) {
+private fun MediaPage(
+    msgId: Int,
+    onZoomChanged: (Boolean) -> Unit = {},
+) {
     val context = LocalContext.current
     val msg = remember(msgId) { EngineBridge.getContext(context).getMsg(msgId) }
 
@@ -285,11 +301,23 @@ private fun MediaPage(msgId: Int) {
             Text("▶ Tap to play", color = PolliColors.White85)
         }
     } else {
-        AsyncImage(
-            model = file,
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
+        AndroidView(
             modifier = Modifier.fillMaxSize(),
+            factory = { ctx ->
+                PhotoView(ctx).apply {
+                    maximumScale = 5f
+                    mediumScale = 2.5f
+                    setOnScaleChangeListener { _, _, _ ->
+                        onZoomChanged(scale > 1.05f)
+                    }
+                    load(file) { crossfade(false) }
+                }
+            },
+            update = { photo ->
+                photo.setOnScaleChangeListener { _, _, _ ->
+                    onZoomChanged(photo.scale > 1.05f)
+                }
+            },
         )
     }
 }

@@ -121,6 +121,8 @@ fun HomeScreen(
     onPlusClick: () -> Unit,
     onChatClick: (Int) -> Unit,
     onChannelClick: (Int) -> Unit = {},
+    /** Tapping a story ring with no recent highlight opens the channel/profile page. */
+    onChannelProfileClick: (Int) -> Unit = onChannelClick,
     onSearch: (String) -> Unit = {},
     onArchiveClick: () -> Unit = {},
     onNewNote: () -> Unit = {},
@@ -301,7 +303,7 @@ fun HomeScreen(
                                 chatAvatar = chatAvatar,
                                 onSelect = { entry, bounds ->
                                     when (entry.style) {
-                                        StoryRingStyle.Stale -> onChannelClick(entry.channel.chatId)
+                                        StoryRingStyle.Stale -> onChannelProfileClick(entry.channel.chatId)
                                         else -> {
                                             val ids = StoryRingLogic.storyChannelIds(storyRingEntries)
                                             if (storiesOverlay != null) {

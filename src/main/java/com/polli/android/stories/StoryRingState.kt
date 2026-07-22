@@ -57,6 +57,18 @@ object ChannelStoryRingLogic {
         return AppNav.loadChannelPosts(dc, chatId).filter { it.timestamp >= cutoff }
     }
 
+    /**
+     * Index to open in the story viewer:
+     * - first unread/fresh post when present
+     * - otherwise the newest post (avoid replaying from the oldest in the window)
+     */
+    fun startPostIndex(posts: List<DcMsg>): Int {
+        if (posts.isEmpty()) return 0
+        val firstFresh = posts.indexOfFirst { it.getState() == DcMsg.DC_STATE_IN_FRESH }
+        if (firstFresh >= 0) return firstFresh
+        return posts.lastIndex
+    }
+
     private fun analyze(dc: DcContext, channel: InboxItem, nowSec: Long): StoryRingEntry {
         val cutoff = nowSec - STORY_RECENT_WINDOW_SEC
         val posts = AppNav.loadChannelPosts(dc, channel.chatId)

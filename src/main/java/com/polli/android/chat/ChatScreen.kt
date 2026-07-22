@@ -405,6 +405,19 @@ private fun ChatTabContent(
             chatId = chatId,
             topPadding = headerClearance,
             onOpenMessage = { msgId -> AppNav.openMediaPreview(context, msgId) },
+            fixedFilter = com.polli.core.chat.ChatMediaFilter.Files,
+        )
+        ChatDetailTab.Media -> ChatMediaTabPanel(
+            chatId = chatId,
+            topPadding = headerClearance,
+            onOpenMessage = { msgId -> AppNav.openMediaPreview(context, msgId) },
+            fixedFilter = com.polli.core.chat.ChatMediaFilter.Media,
+        )
+        ChatDetailTab.Audio -> ChatMediaTabPanel(
+            chatId = chatId,
+            topPadding = headerClearance,
+            onOpenMessage = { msgId -> AppNav.openMediaPreview(context, msgId) },
+            fixedFilter = com.polli.core.chat.ChatMediaFilter.Audio,
         )
         ChatDetailTab.Apps -> ChatComingSoonTab("Apps")
         ChatDetailTab.Tasks -> ChatComingSoonTab("Tasks")

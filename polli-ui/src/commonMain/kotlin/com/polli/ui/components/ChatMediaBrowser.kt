@@ -29,10 +29,13 @@ fun ChatMediaBrowser(
     onFilterSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
     topPadding: Dp = 0.dp,
+    /** When false, only [fixedFilter] content is shown — no nested tab strip. */
+    showFilterTabs: Boolean = true,
+    fixedFilter: ChatMediaFilter? = null,
     gridCell: @Composable (msgId: Int, modifier: Modifier) -> Unit,
     listRow: @Composable (msgId: Int, modifier: Modifier) -> Unit,
 ) {
-    val filter = ChatMediaFilter.entries[selectedFilterIndex]
+    val filter = fixedFilter ?: ChatMediaFilter.entries[selectedFilterIndex]
     val ids = messageIds.toList()
 
     Column(
@@ -40,18 +43,20 @@ fun ChatMediaBrowser(
             .fillMaxSize()
             .padding(top = topPadding),
     ) {
-        ScrollableTabRow(
-            selectedTabIndex = selectedFilterIndex,
-            containerColor = PolliColors.Black,
-            contentColor = PolliColors.White85,
-            edgePadding = 16.dp,
-        ) {
-            ChatMediaFilter.entries.forEachIndexed { index, item ->
-                Tab(
-                    selected = selectedFilterIndex == index,
-                    onClick = { onFilterSelected(index) },
-                    text = { Text(item.label) },
-                )
+        if (showFilterTabs) {
+            ScrollableTabRow(
+                selectedTabIndex = selectedFilterIndex,
+                containerColor = PolliColors.Black,
+                contentColor = PolliColors.White85,
+                edgePadding = 16.dp,
+            ) {
+                ChatMediaFilter.entries.forEachIndexed { index, item ->
+                    Tab(
+                        selected = selectedFilterIndex == index,
+                        onClick = { onFilterSelected(index) },
+                        text = { Text(item.label) },
+                    )
+                }
             }
         }
 
