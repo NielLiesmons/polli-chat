@@ -1,7 +1,6 @@
 package com.polli.android.chat
 
 import android.content.Context
-import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.util.TypedValue
 import android.view.Gravity
@@ -79,7 +78,12 @@ class PolliTextMessageRowView(context: Context) : FrameLayout(context) {
                 }
             }
         bubble.setTextColor(0xFFFFFFFF.toInt())
-        bubble.typeface = if (message.isEdited) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+        bubble.typeface =
+            if (message.isEdited) {
+                com.polli.android.theme.PolliTypefaces.bold(context)
+            } else {
+                com.polli.android.theme.PolliTypefaces.regular(context)
+            }
         bubble.alpha = if (highlighted) 1f else 0.98f
 
         (bubble.layoutParams as LayoutParams).gravity =

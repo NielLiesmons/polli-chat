@@ -270,8 +270,7 @@ private fun ChatHeaderTabRow(
                     }
 
                 if (tab == ChatDetailTab.Search) {
-                    ChatHeaderIconTabPill(
-                        icon = PolliIconName.Search,
+                    ChatHeaderSearchTabPill(
                         selected = tab == selectedTab,
                         onClick = { onTabSelected(tab) },
                         modifier = tabModifier,
@@ -288,6 +287,59 @@ private fun ChatHeaderTabRow(
 
             Spacer(Modifier.width(edgePad.coerceAtLeast(48.dp)))
         }
+    }
+}
+
+@Composable
+private fun ChatHeaderSearchTabPill(
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val height = if (selected) TAB_SELECTED_HEIGHT else TAB_UNSELECTED_HEIGHT
+    val startPad = if (selected) TAB_SELECTED_H_PADDING else TAB_UNSELECTED_H_PADDING
+    val endPad = 16.dp
+    val corner = if (selected) TAB_SELECTED_CORNER else TAB_UNSELECTED_CORNER
+    val shape = RoundedCornerShape(corner)
+    val interaction = remember { MutableInteractionSource() }
+    val iconColor = if (selected) PolliColors.White else PolliColors.White66
+    val labelColor = PolliColors.White33
+
+    Row(
+        modifier =
+            modifier
+                .height(height)
+                .clip(shape)
+                .then(
+                    if (selected) {
+                        Modifier.background(accent().gradientBrush(0.66f))
+                    } else {
+                        Modifier
+                            .background(PolliColors.Gray66)
+                            .border(PolliDimens.ShellBorderWidth, PolliColors.ShellBorder, shape)
+                    },
+                )
+                .clickable(
+                    interactionSource = interaction,
+                    indication = null,
+                    onClick = onClick,
+                )
+                .padding(start = startPad, end = endPad),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        PolliIcon(
+            icon = PolliIconName.Search,
+            size = PolliDimens.HomeSearchGlyphSize,
+            color = iconColor,
+        )
+        Spacer(Modifier.width(PolliDimens.HomeSearchGapAfterGlyph))
+        Text(
+            text = "Search",
+            color = labelColor,
+            fontSize = if (selected) TAB_SELECTED_FONT else TAB_UNSELECTED_FONT,
+            fontWeight = FontWeight.Medium,
+            maxLines = 1,
+        )
     }
 }
 

@@ -1,7 +1,6 @@
 package com.polli.android.chat
 
 import android.content.Context
-import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
 import android.util.TypedValue
 import android.view.Gravity
@@ -77,16 +76,21 @@ class PolliConversationItemView(context: Context) : FrameLayout(context) {
         bodyView.setLineSpacing(0f, 1.15f)
 
         authorView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
-        authorView.typeface = Typeface.DEFAULT_BOLD
+        authorView.typeface = com.polli.android.theme.PolliTypefaces.bold(context)
+        bodyView.typeface = com.polli.android.theme.PolliTypefaces.regular(context)
         incomingMetaView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
         incomingMetaView.setTextColor(ViewChatUi.whiteAlpha(0.33f))
+        incomingMetaView.typeface = com.polli.android.theme.PolliTypefaces.regular(context)
 
         outgoingEdited.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
         outgoingEdited.setTextColor(ViewChatUi.whiteAlpha(0.33f))
+        outgoingEdited.typeface = com.polli.android.theme.PolliTypefaces.regular(context)
         outgoingTime.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
         outgoingTime.setTextColor(ViewChatUi.white66())
+        outgoingTime.typeface = com.polli.android.theme.PolliTypefaces.regular(context)
         outgoingStateText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
         outgoingStateText.setTextColor(ViewChatUi.white66())
+        outgoingStateText.typeface = com.polli.android.theme.PolliTypefaces.regular(context)
 
         // DC check.png — tint White66 to match timestamp/Edited (+2px vs prior 11dp).
         check1.setImageResource(R.drawable.check)

@@ -73,13 +73,14 @@ data class BubbleOverlayAnchor(
 private val PanelShape = RoundedCornerShape(14.dp)
 private val ReactionsPanelShape = RoundedCornerShape(percent = 50)
 private val ActionsPanelWidth = 168.dp
-private val ReactionsPanelWidth = 220.dp
+private val ReactionsPanelWidth = 236.dp
 private val ReactionsPanelHeight = 44.dp
-/** Narrow fade at the emoji → plus column seam only. */
+/** Narrow fade at the emoji → plus seam only. */
 private val ReactionsFadeWidth = 12.dp
-private val PlusColumnWidth = 40.dp
-/** Extra clearance between actions panel and reactions row when stacked. */
-private val StackGap = 16.dp
+/** Slot for the round plus — sized so the 33dp circle sits concentric in the stadium end. */
+private val PlusColumnWidth = 44.dp
+/** Clearance between actions panel and reactions row when stacked. */
+private val StackGap = 28.dp
 private val EdgePad = 16.dp
 private val OverlayShellBg = PolliColors.Gray66
 private val OverlayShellBorder = PolliColors.ShellBorder
@@ -128,13 +129,14 @@ fun BubbleOverlayHost(
     val reactionsHeightPx = with(density) { ReactionsPanelHeight.toPx() }
     val stackGapPx = with(density) { StackGap.toPx() }
     val seenByHeightPx = with(density) { SeenByRowHeight.toPx() }
-    val actionRowPx = with(density) { 28.dp.toPx() }
+    // Match real row height: 6dp pad × 2 + ~20dp content.
+    val actionRowPx = with(density) { 32.dp.toPx() }
     val dividerPx = with(density) { 1.dp.toPx() }
-    // Generous estimate so placement never overlaps reactions when actions sit above.
+    // Overestimate so actions never sit on the reactions row when placed above.
     val actionsHeightEstimatePx =
         remember(anchor.message.isOutgoing, seenByHeightPx, actionRowPx, dividerPx) {
             val seenByBlock = if (anchor.message.isOutgoing) seenByHeightPx + dividerPx else 0f
-            seenByBlock + actionRowPx * ActionRowCount + dividerPx * (ActionRowCount - 1) + 8f
+            seenByBlock + actionRowPx * ActionRowCount + dividerPx * (ActionRowCount - 1) + 16f
         }
 
     var readers by remember(anchor.message.id) { mutableStateOf<List<ReadReceiptUser>>(emptyList()) }
@@ -381,12 +383,20 @@ private fun ReactionsPanel(
                 modifier =
                     Modifier
                         .width(PlusColumnWidth)
-                        .fillMaxHeight()
-                        .background(PolliColors.White8)
-                        .clickable(onClick = onOpenEmojiPicker),
+                        .fillMaxHeight(),
                 contentAlignment = Alignment.Center,
             ) {
-                PolliIcon(PolliIconName.Plus, 15.dp, PolliColors.White66)
+                Box(
+                    modifier =
+                        Modifier
+                            .size(PolliDimens.ChatComposerPlusSize)
+                            .clip(CircleShape)
+                            .background(PolliColors.White16)
+                            .clickable(onClick = onOpenEmojiPicker),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    PolliIcon(PolliIconName.Plus, 18.dp, PolliColors.White66)
+                }
             }
         }
     }
@@ -435,20 +445,20 @@ private fun ActionsPanel(
             HorizontalDivider(color = PolliColors.White8)
             OverlayActionRow(
                 label = "Pin",
-                polliIcon = PolliIconName.Options,
+                polliIcon = PolliIconName.Pin,
                 enabled = false,
                 onClick = {},
             )
             HorizontalDivider(color = PolliColors.White8)
             OverlayActionRow(
                 label = "Report",
-                polliIcon = PolliIconName.Options,
+                polliIcon = PolliIconName.Alert,
                 onClick = onReport,
             )
             HorizontalDivider(color = PolliColors.White8)
             OverlayActionRow(
                 label = stringResource(R.string.info),
-                polliIcon = PolliIconName.Options,
+                polliIcon = PolliIconName.Info,
                 onClick = onDetails,
             )
             HorizontalDivider(color = PolliColors.White8)
@@ -509,7 +519,8 @@ private fun OverlayActionRow(
     iconRes: Int? = null,
 ) {
     val alpha = if (enabled) 1f else 0.45f
-    val iconColor = PolliColors.White66.copy(alpha = alpha)
+    val iconColor = PolliColors.White66.copy(alpha = PolliColors.White66.alpha * alpha)
+    val labelColor = PolliColors.White85.copy(alpha = alpha)
     Row(
         modifier =
             Modifier
@@ -539,7 +550,7 @@ private fun OverlayActionRow(
         Spacer(Modifier.width(10.dp))
         Text(
             text = label,
-            color = PolliColors.White85.copy(alpha = alpha),
+            color = labelColor,
             fontSize = ActionFontSize,
         )
     }

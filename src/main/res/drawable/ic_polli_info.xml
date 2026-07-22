@@ -1,0 +1,15 @@
+<vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="18dp"
+    android:height="18dp"
+    android:viewportWidth="18"
+    android:viewportHeight="18">
+    <!-- Port of zapstore/assets/icons/info.svg (stroke) -->
+    <path
+        android:pathData="M8.7,5.22V5.72M0.74,8.72C0.74,4.313 4.313,0.74 8.72,0.74C13.127,0.74 16.7,4.313 16.7,8.72C16.7,13.127 13.127,16.7 8.72,16.7C4.313,16.7 0.74,13.127 0.74,8.72ZM8.74,7.92C8.74,7.909 8.731,7.9 8.72,7.9C8.709,7.9 8.7,7.909 8.7,7.92V11.92C8.7,11.931 8.709,11.94 8.72,11.94C8.731,11.94 8.74,11.931 8.74,11.92V7.92Z"
+        android:strokeWidth="1.6"
+        android:strokeColor="#FFFFFF"
+        android:fillColor="@android:color/transparent"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

@@ -1,7 +1,6 @@
 package com.polli.android.chat
 
 import android.content.Context
-import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.text.TextUtils
 import android.util.TypedValue
@@ -55,10 +54,11 @@ internal class ViewQuoteBlock(context: Context) : LinearLayout(context) {
                     )
             }
         authorView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
-        authorView.typeface = Typeface.DEFAULT_BOLD
+        authorView.typeface = com.polli.android.theme.PolliTypefaces.bold(context)
         authorView.maxLines = 1
         authorView.ellipsize = TextUtils.TruncateAt.END
         previewView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+        previewView.typeface = com.polli.android.theme.PolliTypefaces.regular(context)
         previewView.maxLines = 1
         previewView.ellipsize = TextUtils.TruncateAt.END
 

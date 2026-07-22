@@ -187,11 +187,11 @@ internal class BubbleSwipeHost(
     }
 
     private companion object {
-        const val MAX_DRAG = 100f
-        /** Longer pull before reply fires — aligned with pop peak. */
-        const val TRIGGER_AT = 80f
-        const val ICON_PARALLAX = 0.28f
-        const val ICON_MAX_OUTWARD = 21f
+        /** Wider reveal so the reply circle is clearly visible while dragging. */
+        const val MAX_DRAG = 148f
+        const val TRIGGER_AT = 112f
+        const val ICON_PARALLAX = 0.18f
+        const val ICON_MAX_OUTWARD = 16f
         const val ICON_SIZE = 28f
         const val ICON_GLYPH = 13f
         const val POP_SCALE = 1.22f
